@@ -1,0 +1,6 @@
+.idea/
+config/onix.json
+*.generated.go
+/onix
+/fixtures.sql
+/dump-*.sql

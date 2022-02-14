@@ -1,0 +1,115 @@
+version: '3.9'
+
+services:
+  frontend-dev:
+    restart: 'always'
+    image: node:16-buster
+    volumes:
+      - ./frontend:/code/
+    working_dir: /code/
+    command: "bash -c 'npm install && npm start'"
+    environment:
+      API_DASHBOARD_MAIN_BASE_ADDR: http://api-dashboard-main:8080/api/dashboard-main
+    ports:
+      - "3002:3000"
+    depends_on:
+      - api-dashboard-main
+
+  frontend-prod-builder:
+    restart: 'on-failure'
+    image: node:16-buster
+    working_dir: /code/
+    volumes:
+      - ./frontend:/code/
+    command: "bash -c 'npm install && npm run build'"
+    healthcheck:
+      test: "bash -c '[ -f /code/build/index.html ]'"
+
+  frontend-prod:
+    restart: 'always'
+    image: nginx:1.21.6-alpine
+    volumes:
+      - ./frontend/build:/usr/share/nginx/html
+    environment:
+      API_DASHBOARD_MAIN_BASE_ADDR: http://api-dashboard-main:8080/api/dashboard-main
+    ports:
+      - "3001:80"
+    depends_on:
+      - api-dashboard-main
+      - frontend-prod-builder
+
+  api-system:
+    restart: 'always'
+    image: golang:1.16
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go api system"
+    ports: [ "8081:8080" ]
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres ]
+
+  api-dashboard-main:
+    restart: 'always'
+    image: golang:1.16
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go api dashboard-main"
+    ports: [ "8082:8080" ]
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres ]
+
+  daemon-metrics-extractor:
+    restart: 'on-failure'
+    image: golang:1.16
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go daemon metrics-extractor"
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres ]
+
+  stub_prometheus:
+    restart: 'always'
+    image: golang:1.16
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go stub prometheus"
+    ports: [ "19091:19090" ]
+
+  postgres:
+    restart: 'on-failure'
+    image: postgres:10.0
+    environment:
+      POSTGRES_DB: 'onix'
+      POSTGRES_USER: 'onix'
+      POSTGRES_PASSWORD: 'onix'
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    restart: 'on-failure'
+    image: amacneil/dbmate:v1.12
+    command:
+      - -d
+      - "/migrations"
+      - -u
+      - "postgres://onix:onix@postgres:5432/onix?sslmode=disable"
+      - up
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgresql-data: ~

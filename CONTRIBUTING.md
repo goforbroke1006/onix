@@ -1,0 +1,52 @@
+# onix
+
+### Setup local environment
+
+```shell
+docker-compose down --volumes
+docker-compose up -d --force-recreate --remove-orphans
+docker-compose restart
+
+echo 'Open dev build http://localhost:3002/'
+echo 'Open dev build http://localhost:3001/'
+```
+
+### Make and apply local DB dump
+
+```shell
+export PGPASSWORD=onix
+pg_dump --host=localhost --port=5432 --username=onix --data-only -T public.schema_migrations onix > dump-data.tmp.sql
+rm -f dump-data.sql
+mv dump-data.tmp.sql dump-data.sql
+
+psql --host=localhost --port=5432 --username=onix onix < dump-data.sql
+```
+
+
+### Debug API v1
+
+```shell
+curl -X GET 'http://127.0.0.1:8081/api/system/register?service_name=<service>&release_name=0.0.1'
+curl -X GET 'http://127.0.0.1:8081/api/system/register?service_name=<service>&release_name=0.0.1&start_at=1581182379'
+```
+
+
+### Debug dashboard-main API
+
+```shell
+curl -X GET 'http://127.0.0.1:8082/api/dashboard-main/service'
+curl -X GET 'http://127.0.0.1:8082/api/dashboard-main/release?service=<service>'
+curl -X GET 'http://127.0.0.1:8082/api/dashboard-main/compare?service=<service>&release_one_title=1.17.1&release_one_start=1643894400&release_two_title=1.19.0&release_two_start=1643894940&period=1h'
+```
+
+### Create migration
+
+```shell
+dbmate -d "./migrations" new <migration_name>
+```
+
+### Up migrations
+
+```shell
+dbmate -d "./migrations" -u "postgres://onix:onix@localhost:5432/onix?sslmode=disable" up
+```

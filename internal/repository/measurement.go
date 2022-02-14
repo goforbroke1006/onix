@@ -1,0 +1,129 @@
+package repository
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/goforbroke1006/onix/domain"
+)
+
+func NewMeasurementRepository(conn *pgxpool.Pool) *measurementRepository {
+	return &measurementRepository{
+		conn: conn,
+	}
+}
+
+var (
+	_ domain.MeasurementRepository = &measurementRepository{}
+)
+
+type measurementRepository struct {
+	conn *pgxpool.Pool
+}
+
+func (repo measurementRepository) Store(sourceID, criteriaID int64, moment time.Time, value float64) error {
+	query := fmt.Sprintf(
+		`
+		INSERT INTO measurement (source_id, criteria_id, moment, value, updated_at) 
+		VALUES (%d, %d, '%s', %f, NOW())
+		ON CONFLICT (source_id, criteria_id, moment) 
+		  DO UPDATE SET 
+            value      = EXCLUDED.value,
+			updated_at = EXCLUDED.updated_at
+        ;
+		`,
+		sourceID, criteriaID, moment.UTC().Format(time.RFC3339), value,
+	)
+	_, err := repo.conn.Exec(context.TODO(), query)
+	return err
+}
+
+func (repo measurementRepository) StoreBatch(sourceID, criteriaID int64, measurements []domain.MeasurementRow) error {
+	valuesStrs := make([]string, 0, len(measurements))
+	for _, m := range measurements {
+		valuesStrs = append(
+			valuesStrs,
+			fmt.Sprintf("(%d, %d, '%s', %f, NOW())", sourceID, criteriaID, m.Moment.UTC().Format(time.RFC3339), m.Value),
+		)
+	}
+	query := fmt.Sprintf(
+		`
+		INSERT INTO measurement (source_id, criteria_id, moment, value, updated_at) 
+		VALUES %s
+		ON CONFLICT (source_id, criteria_id, moment) 
+		  DO UPDATE SET 
+			value      = EXCLUDED.value,
+			updated_at = EXCLUDED.updated_at
+		;	
+		`,
+		strings.Join(valuesStrs, ", "),
+	)
+	_, err := repo.conn.Exec(context.TODO(), query)
+	return err
+}
+
+func (repo measurementRepository) GetBy(sourceID, criteriaID int64, from, till time.Time) ([]domain.MeasurementShortRow, error) {
+	query := fmt.Sprintf(`
+		SELECT moment, value
+		FROM measurement
+		WHERE source_id = %d 
+			AND criteria_id = %d 
+			AND moment BETWEEN '%s' AND '%s'
+		ORDER BY moment ASC
+		`,
+		sourceID, criteriaID, from.UTC().Format(time.RFC3339), till.UTC().Format(time.RFC3339))
+
+	rows, err := repo.conn.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]domain.MeasurementShortRow, 0, len(rows.RawValues()))
+
+	var (
+		moment time.Time
+		value  float64
+	)
+
+	for rows.Next() {
+		if err := rows.Scan(&moment, &value); err != nil {
+			return nil, err
+		}
+
+		result = append(result, domain.MeasurementShortRow{
+			Moment: moment,
+			Value:  value,
+		})
+	}
+
+	return result, nil
+}
+
+func (repo measurementRepository) Count(sourceID, criteriaID int64, from, till time.Time) (int64, error) {
+	query := fmt.Sprintf(`
+	SELECT COUNT(id) 
+	FROM measurement
+	WHERE source_id = %d 
+		AND criteria_id = %d 
+		AND moment BETWEEN '%s' AND '%s'
+	`, sourceID, criteriaID, from.Format(time.RFC3339), till.Format(time.RFC3339))
+
+	rows, err := repo.conn.Query(context.Background(), query)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var id int64
+		err := rows.Scan(&id)
+		return id, err
+	}
+
+	return 0, domain.ErrNotFound
+}

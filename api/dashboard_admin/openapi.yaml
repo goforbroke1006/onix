@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Dashboard Admin
+  description: Dashboard Admin
+  version: 1.0.0
+servers:
+  - url: 'http//localhost:8083/api/admin'
+paths:
+  /criteria:
+    post:
+      description: create new criteria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCriteriaRequest'
+      responses:
+        201:
+          description: successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResourceResponse'
+
+
+components:
+  schemas:
+    CreateResourceResponse:
+      type: object
+      required: [ status, new_id ]
+      properties:
+        status:
+          type: string
+          enum: [ "ok", "fail" ]
+        new_id:
+          type: string
+    CreateCriteriaRequest:
+      type: object
+      required: [ service_name, title, selector, expected_dir, pull_period ]
+      properties:
+        service_name:
+          type: string
+        title:
+          type: string
+        selector:
+          type: string
+        expected_dir:
+          type: string
+          enum: [ 'increase', 'decrease', 'equal' ]
+        pull_period:
+          type: string
+          enum: [ '30s', '1m', '2m', '5m', '15m' ]
