@@ -10,12 +10,12 @@ Releases comparison tool. Use same metrics for 2 different releases and visualiz
 
 ### Components
 
-* api dashboard-admin
-* api dashboard-main
-* api system
-* daemon metrics-extractor
-* stub prometheus
-* util load-historical-metrics
+* **api dashboard-admin** - CRUD for services, release, sources and criteria
+* **api dashboard-main** - handle request from compare releases frontend side
+* **api system** - http handlers for CI integration
+* **daemon metrics-extractor** - periodic run extracting data from prometheus API
+* **stub prometheus** - fake prom API for demo build
+* **util load-historical-metrics** - tool for loading missing metrics
 
 ### Definitions
 
