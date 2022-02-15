@@ -30,6 +30,7 @@ Releases comparison tool. Use same metrics for 2 different releases and visualiz
 ```shell
 docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
 docker-compose -f docker-compose.demo.yml up -d
+sleep 10
 echo "Open http://localhost:23001/"
 ```
 
