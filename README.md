@@ -33,4 +33,6 @@ docker-compose -f docker-compose.demo.yml up -d
 echo "Open http://localhost:23001/"
 ```
 
-<img src="docs/demo-screen.png" alt="Demo screen"/>
+<kbd>
+    <img src="docs/demo-screen.png" alt="Demo screen"/>
+</kbd>
