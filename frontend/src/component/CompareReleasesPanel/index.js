@@ -67,7 +67,7 @@ class CompareReleasesPanel extends React.Component {
         if (!this.props.releaseTwoStartAt) return;
         if (!this.props.period) return;
 
-        let baseUrl = process.env.API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
+        let baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
 
         let url = baseUrl + `/compare?service=${this.props.serviceTitle}&source_id=${this.props.sourceId}` +
             `&release_one_title=${this.props.releaseOneTitle}` +

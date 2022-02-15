@@ -59,7 +59,7 @@ class ReleaseDropDown extends React.Component {
         if (!this.props.serviceName) return;
         if (!this.props.sourceId) return;
 
-        let baseUrl = process.env.API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
+        let baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
         fetch(`${baseUrl}/release-summary?service=${this.props.serviceName}&source_id=${this.props.sourceId}`)
             .then(response => response.json())
             .then(data => this.setState({items: data}))

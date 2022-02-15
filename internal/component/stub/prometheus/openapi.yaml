@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Prometheus API v1
+  description: Prometheus API (fake) to replace https://prometheus.io/docs/prometheus/latest/querying/api/
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:19091/api/v1'
+paths:
+  /query:
+    get:
+      responses:
+        200:
+          description: The following endpoint evaluates an instant query at a single point in time |
+            https://prometheus.io/docs/prometheus/latest/querying/api/#instant-queries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+  /query_range:
+    get:
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: start
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+                format: int64
+              - type: string
+        - in: query
+          name: end
+          required: true
+          schema:
+            oneOf:
+              - type: integer
+                format: int64
+              - type: string
+        - in: query
+          name: step
+          required: true
+          schema:
+            oneOf:
+              - type: number
+              - $ref: '#/components/schemas/duration'
+        - in: query
+          name: timeout
+          required: true
+          schema:
+            $ref: '#/components/schemas/duration'
+      responses:
+        200:
+          description: The following endpoint evaluates an expression query over a range of time |
+            https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryRangeResponse'
+
+components:
+  schemas:
+    QueryResponse:
+      type: object
+      properties:
+        resultType:
+          type: string
+          enum:
+            - matrix
+            - vector
+            - scalar
+            - string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/queryResult'
+    queryResult:
+      type: object
+      properties:
+        metric:
+          type: object
+          additionalProperties:
+            properties:
+              name:
+                type: number
+              value:
+                type: string
+        value:
+          type: array
+          items:
+            oneOf:
+              - type: number
+              - type: string
+
+    QueryRangeResponse:
+      type: object
+      required: [ resultType, result ]
+      properties:
+        resultType:
+          type: string
+          enum:
+            - matrix
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/queryRangeResult'
+    queryRangeResult:
+      type: object
+      required: [ metric, values ]
+      properties:
+        metric:
+          type: object
+          additionalProperties:
+            required: [ name, value ]
+            properties:
+              name:
+                type: number
+              value:
+                type: string
+        values:
+          type: array
+          items:
+            type: array
+            items:
+              oneOf:
+                - type: number
+                - type: string
+
+    duration:
+      type: string
+      pattern: '[\d]+[a-z]{1}'
