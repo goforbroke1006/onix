@@ -8,7 +8,7 @@ INSERT INTO service (title)
 VALUES ('foo/bar/backend');
 
 INSERT INTO source (title, kind, address)
-VALUES ('stub prometheus', 'prometheus', 'http://stub_prometheus:19090');
+VALUES ('stub prometheus', 'prometheus', 'http://stub-prometheus:19090');
 
 INSERT INTO release (service, name, start_at)
 VALUES ('foo/bar/backend', '2.1.0', '2020-12-26 00:00:00'), -- 1608940800

@@ -3,12 +3,15 @@
 ### Setup local environment
 
 ```shell
-docker-compose down --volumes
-docker-compose up -d --force-recreate --remove-orphans
+docker-compose down --volumes --remove-orphans
+docker-compose up -d
 docker-compose restart
 
 echo 'Open dev build http://localhost:3002/'
 echo 'Open prod build http://localhost:3001/'
+
+make test/functional
+make test/integration
 ```
 
 ### Make and apply local DB dump

@@ -4,7 +4,7 @@ INSERT INTO service (title)
 VALUES ('foo/bar/backend');
 
 INSERT INTO source (title, kind, address)
-VALUES ('stub prometheus', 'prometheus', 'http://stub_prometheus:19090');
+VALUES ('stub prometheus', 'prometheus', 'http://stub-prometheus:19090');
 
 INSERT INTO release (service, name, start_at)
 VALUES ('foo/bar/backend', '2.1.0', '2020-12-26 00:00:00'), -- 1608940800
@@ -28,13 +28,13 @@ VALUES ('foo/bar/backend', 'processing duration instrument=ONE',
 -- fake data for processing duration instrument=ONE
 INSERT INTO measurement (source_id, criteria_id, moment, value)
 SELECT 1, 1, to_timestamp(_gen_moment), random() * 200 + 100
-FROM generate_series(1607817600, 1608940800 + 31 * 24 * 60 * 60, 300) AS t(_gen_moment)
+FROM generate_series(1607817600, 1608940800 + 2 * 12 * 31 * 24 * 60 * 60, 300) AS t(_gen_moment)
 ON CONFLICT (source_id, criteria_id, moment) DO UPDATE SET value = EXCLUDED.value;
 
 -- fake data for processing duration instrument=TWO
 INSERT INTO measurement (source_id, criteria_id, moment, value)
 SELECT 1, 2, to_timestamp(_gen_moment), random() * 200 + 100
-FROM generate_series(1607817600, 1608940800 + 31 * 24 * 60 * 60, 300) AS t(_gen_moment)
+FROM generate_series(1607817600, 1608940800 + 2 * 12 * 31 * 24 * 60 * 60, 300) AS t(_gen_moment)
 ON CONFLICT (source_id, criteria_id, moment) DO UPDATE SET value = EXCLUDED.value;
 
 -- migrate:down

@@ -6,6 +6,15 @@ info:
 servers:
   - url: 'http://localhost:19091/api/v1'
 paths:
+  /healthz:
+    get:
+      responses:
+        200:
+          description: health check for docker-compose
+          content:
+            application/json:
+              schema:
+                type: string
   /query:
     get:
       responses:
@@ -26,27 +35,22 @@ paths:
             type: string
         - in: query
           name: start
+          description: '<rfc3339 | unix_timestamp>: Start timestamp, inclusive.'
           required: true
           schema:
-            oneOf:
-              - type: integer
-                format: int64
-              - type: string
+            type: string
         - in: query
           name: end
+          description: '<rfc3339 | unix_timestamp>: End timestamp, inclusive.'
           required: true
           schema:
-            oneOf:
-              - type: integer
-                format: int64
-              - type: string
+            type: string
         - in: query
           name: step
+          description: '<duration | float>: Query resolution step width in duration format or float number of seconds.'
           required: true
           schema:
-            oneOf:
-              - type: number
-              - $ref: '#/components/schemas/duration'
+            type: string
         - in: query
           name: timeout
           required: true
@@ -63,6 +67,12 @@ paths:
 
 components:
   schemas:
+    status:
+      type: string
+      enum:
+        - success
+        - error
+
     QueryResponse:
       type: object
       properties:
@@ -96,6 +106,14 @@ components:
               - type: string
 
     QueryRangeResponse:
+      type: object
+      required: [ status, data ]
+      properties:
+        status:
+          $ref: '#/components/schemas/status'
+        data:
+          $ref: '#/components/schemas/QueryRangeData'
+    QueryRangeData:
       type: object
       required: [ resultType, result ]
       properties:
