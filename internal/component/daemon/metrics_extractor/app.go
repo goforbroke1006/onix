@@ -2,12 +2,11 @@ package metrics_extractor
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/goforbroke1006/onix/domain"
-	"github.com/goforbroke1006/onix/external/prom"
+	"github.com/goforbroke1006/onix/internal/service"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
@@ -81,10 +80,10 @@ func (app application) extractMetrics(period time.Duration) {
 	}
 
 	for _, source := range sources {
-		for _, service := range services {
-			criteriaList, err := app.criteriaRepo.GetAll(service.Title)
+		for _, svc := range services {
+			criteriaList, err := app.criteriaRepo.GetAll(svc.Title)
 			if err != nil {
-				app.logger.WithErr(err).Warn("can't find criteria list for service", service.Title)
+				app.logger.WithErr(err).Warn("can't find criteria list for service", svc.Title)
 				continue
 			}
 
@@ -98,40 +97,36 @@ func (app application) extractMetrics(period time.Duration) {
 						criteriaWg.Done()
 					}()
 
-					client := prom.NewClient(source.Address)
+					provider := service.NewMetricsProvider(source)
 
 					var (
 						startAt = time.Now().Add(period)
 						stopAt  = time.Now()
 					)
 
-					resp, err := client.QueryRange(cr.Selector, startAt, stopAt, cr.PullPeriod, 10*time.Second)
+					resp, err := provider.LoadSeries(cr.Selector, startAt, stopAt, cr.PullPeriod)
 					if err != nil {
 						app.logger.WithErr(err).Warn("can't extract metric", cr.Title, "from", source.Address)
 						return
 					}
 
-					if len(resp.Data.Result) == 0 {
+					if len(resp) == 0 {
 						fmt.Printf("no '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
 						return
 					}
 
-					batch := make([]domain.MeasurementRow, 0, len(resp.Data.Result[0].Values))
-					for _, gv := range resp.Data.Result[0].Values {
-						unix := int64(gv[0].(float64))
-						moment := time.Unix(unix, 0)
-						value, _ := strconv.ParseFloat(gv[1].(string), 64)
-
+					batch := make([]domain.MeasurementRow, 0, len(resp))
+					for _, item := range resp {
 						batch = append(batch, domain.MeasurementRow{
-							Moment: moment,
-							Value:  value,
+							Moment: item.Timestamp,
+							Value:  item.Value,
 						})
 					}
 					if err := app.measurementRepo.StoreBatch(source.ID, cr.ID, batch); err != nil {
 						app.logger.WithErr(err).Warn("can't extract metric", cr.Title, "from", source.Address)
 					}
 
-					app.logger.Infof("extract %s '%s' %d metrics", service.Title, cr.Title, len(batch))
+					app.logger.Infof("extract %s '%s' %d metrics", svc.Title, cr.Title, len(batch))
 				}(cr)
 
 			}

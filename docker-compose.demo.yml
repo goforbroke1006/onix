@@ -9,7 +9,7 @@ services:
     volumes:
       - ./frontend:/code/
     environment:
-      REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:28082/api/dashboard-main
+      REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
 
   frontend-prod:
     restart: 'always'
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./frontend/build:/usr/share/nginx/html
     ports:
-      - "23001:80"
+      - "3001:80"
     depends_on:
       - api-dashboard-main
       - frontend-prod-builder
@@ -31,7 +31,7 @@ services:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
     command: "api system"
-    ports: [ "28081:8080" ]
+    ports: [ "8081:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
@@ -44,7 +44,7 @@ services:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
     command: "api dashboard-main"
-    ports: [ "28082:8080" ]
+    ports: [ "8082:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
@@ -71,7 +71,7 @@ services:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
     command: "stub prometheus"
-    ports: [ "29091:19090" ]
+    ports: [ "19090:19090" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:19090/api/v1/healthz" ]
       interval: 5s
@@ -85,7 +85,7 @@ services:
       POSTGRES_DB: 'onix'
       POSTGRES_USER: 'onix'
       POSTGRES_PASSWORD: 'onix'
-    ports: [ "25432:5432" ]
+    ports: [ "5432:5432" ]
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     healthcheck:

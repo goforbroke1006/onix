@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/goforbroke1006/onix/domain"
-	"strconv"
+	"github.com/goforbroke1006/onix/internal/service"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/spf13/cobra"
 
 	"github.com/goforbroke1006/onix/common"
-	"github.com/goforbroke1006/onix/external/prom"
 	"github.com/goforbroke1006/onix/internal/repository"
 )
 
@@ -69,27 +68,23 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 					if err != nil {
 						panic(err)
 					}
-					p := prom.NewClient(source.Address)
+					provider := service.NewMetricsProvider(*source)
 
-					resp, err := p.QueryRange(cr.Selector, startAt, stopAt, cr.PullPeriod, 10*time.Second)
+					series, err := provider.LoadSeries(cr.Selector, startAt, stopAt, cr.PullPeriod)
 					if err != nil {
 						panic(err)
 					}
 
-					if len(resp.Data.Result) == 0 {
+					if len(series) == 0 {
 						fmt.Printf("no '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
 						continue
 					}
 
-					batch := make([]domain.MeasurementRow, 0, len(resp.Data.Result[0].Values))
-					for _, gv := range resp.Data.Result[0].Values {
-						unix := int64(gv[0].(float64))
-						moment := time.Unix(unix, 0)
-						value, _ := strconv.ParseFloat(gv[1].(string), 64)
-
+					batch := make([]domain.MeasurementRow, 0, len(series))
+					for _, item := range series {
 						batch = append(batch, domain.MeasurementRow{
-							Moment: moment,
-							Value:  value,
+							Moment: item.Timestamp,
+							Value:  item.Value,
 						})
 					}
 					if err := measurementRepo.StoreBatch(source.ID, cr.ID, batch); err != nil {
