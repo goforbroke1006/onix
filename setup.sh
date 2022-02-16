@@ -11,3 +11,7 @@ sudo apt install -y nodejs
 node --version
 
 sudo npm install -g npm
+
+if [[ ! -f config/onix.json ]]; then
+  cp config/onix.dist.json config/onix.json
+fi
