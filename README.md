@@ -33,7 +33,7 @@ Run demo with commands:
 docker-compose -f docker-compose.demo.yml build
 docker-compose -f docker-compose.demo.yml up -d
 sleep 30 # wait for frontend-prod-builder finished work
-echo "Open http://localhost:23001/"
+echo "Open http://localhost:3001/"
 
 ```
 
