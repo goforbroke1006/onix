@@ -27,15 +27,22 @@ Releases comparison tool. Use same metrics for 2 different releases and visualiz
 
 ### Demo
 
+Run demo with commands:
+
 ```shell
 docker-compose -f docker-compose.demo.yml build
-docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
 docker-compose -f docker-compose.demo.yml up -d
-sleep 10
+sleep 30 # wait for frontend-prod-builder finished work
 echo "Open http://localhost:23001/"
 
 ```
 
 <kbd>
-    <img src="docs/demo-screen.png" alt="Demo screen"/>
+    <img src="docs/demo-screen.png" alt="Main dashboard screenshot"/>
 </kbd>
+
+And remove demo containers with commands:
+
+```shell
+docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
+```
