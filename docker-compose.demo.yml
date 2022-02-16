@@ -2,12 +2,12 @@ version: '3.9'
 
 services:
   frontend-prod-builder:
-    restart: 'on-failure'
-    image: node:16-buster
-    working_dir: /code/
+    restart: "on-failure"
+    build:
+      dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
+      context: ./
     volumes:
       - ./frontend:/code/
-    command: "bash -c 'npm install && chmod -R 0777 /code/node_modules/ && chmod 0777 /code/package-lock.json && mkdir -p /code/build/ && chmod -R 0777 /code/build/ && npm run build'"
     environment:
       REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:28082/api/dashboard-main
 
@@ -24,33 +24,39 @@ services:
 
   api-system:
     restart: 'always'
-    image: golang:1.16
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go api system"
+    command: "api system"
     ports: [ "28081:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
   api-dashboard-main:
     restart: 'always'
-    image: golang:1.16
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go api dashboard-main"
+    command: "api dashboard-main"
     ports: [ "28082:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
   daemon-metrics-extractor:
     restart: 'on-failure'
-    image: golang:1.16
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go daemon metrics-extractor"
+    command: "daemon metrics-extractor"
     environment: { DB_HOST: postgres }
     depends_on:
       - postgres
@@ -58,11 +64,13 @@ services:
 
   stub-prometheus:
     restart: 'always'
-    image: golang:1.16
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go stub prometheus"
+    command: "stub prometheus"
     ports: [ "29091:19090" ]
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:19090/api/v1/healthz" ]

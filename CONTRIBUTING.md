@@ -4,6 +4,7 @@
 
 ```shell
 docker-compose down --volumes --remove-orphans
+docker-compose build
 docker-compose up -d
 docker-compose restart
 
@@ -12,6 +13,7 @@ echo 'Open prod build http://localhost:3001/'
 
 make test/functional
 make test/integration
+
 ```
 
 ### Make and apply local DB dump
@@ -21,7 +23,10 @@ export PGPASSWORD=onix
 pg_dump --host=localhost --port=5432 --username=onix --data-only -T public.schema_migrations onix > dump-data.tmp.sql
 rm -f dump-data.sql
 mv dump-data.tmp.sql dump-data.sql
+```
 
+```shell
+export PGPASSWORD=onix
 psql --host=localhost --port=5432 --username=onix onix < dump-data.sql
 ```
 

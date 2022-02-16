@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   frontend-dev:
-    restart: 'always'
+    restart: "always"
     image: node:16-buster
     volumes:
       - ./frontend:/code/
@@ -16,19 +16,17 @@ services:
       - api-dashboard-main
 
   frontend-prod-builder:
-    restart: 'on-failure'
-    image: node:16-buster
-    working_dir: /code/
+    restart: "on-failure"
+    build:
+      dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
+      context: ./
     volumes:
       - ./frontend:/code/
-    command: "bash -c 'npm install && npm run build'"
     environment:
       REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
-    healthcheck:
-      test: "bash -c '[ -f /code/build/index.html ]'"
 
   frontend-prod:
-    restart: 'always'
+    restart: "always"
     image: nginx:1.21.6-alpine
     volumes:
       - ./frontend/build:/usr/share/nginx/html
@@ -39,44 +37,50 @@ services:
       - frontend-prod-builder
 
   api-system:
-    restart: 'always'
-    image: golang:1.16
+    restart: "on-failure"
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go api system"
+    command: "api system"
     ports: [ "8081:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
   api-dashboard-main:
-    restart: 'always'
-    image: golang:1.16
+    restart: "on-failure"
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go api dashboard-main"
+    command: "api dashboard-main"
     ports: [ "8082:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
   daemon-metrics-extractor:
-    restart: 'on-failure'
-    image: golang:1.16
+    restart: "on-failure"
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
     volumes:
       - ./:/go/src/github.com/goforbroke1006/onix
     working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go daemon metrics-extractor"
+    command: "daemon metrics-extractor"
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
   postgres:
-    restart: 'on-failure'
+    restart: "on-failure"
     image: postgres:10.0
     environment:
-      POSTGRES_DB: 'onix'
-      POSTGRES_USER: 'onix'
-      POSTGRES_PASSWORD: 'onix'
+      POSTGRES_DB: "onix"
+      POSTGRES_USER: "onix"
+      POSTGRES_PASSWORD: "onix"
     ports:
       - "5432:5432"
     volumes:
@@ -88,14 +92,11 @@ services:
       retries: 5
 
   migrate:
-    restart: 'on-failure'
+    restart: "on-failure"
     image: amacneil/dbmate:v1.12
-    command:
-      - -d
-      - "/migrations"
-      - -u
-      - "postgres://onix:onix@postgres:5432/onix?sslmode=disable"
-      - up
+    command: "-d /migrations up"
+    environment:
+      DATABASE_URL: postgres://onix:onix@postgres:5432/onix?sslmode=disable
     volumes:
       - ./migrations:/migrations
     depends_on:
