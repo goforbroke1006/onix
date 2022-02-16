@@ -28,6 +28,7 @@ Releases comparison tool. Use same metrics for 2 different releases and visualiz
 ### Demo
 
 ```shell
+make
 docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
 docker-compose -f docker-compose.demo.yml up -d
 sleep 10

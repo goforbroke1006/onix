@@ -5,8 +5,8 @@ all: dep gen build test/unit
 clean:
 	find ./ -name '*.generated.go' | xargs rm -f '{}'
 	rm -rf ./onix
-	rm -rf ./frontend/build/* || true
-	rm -rf ./frontend/node_modules
+	rm -rf ./frontend/build || true
+	rm -rf ./frontend/node_modules || true
 
 dep:
 	go mod download
