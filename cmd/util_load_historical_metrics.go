@@ -3,15 +3,15 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/goforbroke1006/onix/domain"
-	"github.com/goforbroke1006/onix/internal/service"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/spf13/cobra"
 
 	"github.com/goforbroke1006/onix/common"
+	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/internal/service"
 )
 
 func NewUtilLoadHistoricalMetrics() *cobra.Command {
