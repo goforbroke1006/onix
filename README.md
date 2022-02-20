@@ -55,9 +55,7 @@ docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
 
 At first, deploy components to server.
 
-Next step - integration to CI (GitLab CI sample).
-
-Add command to deploy job:
+Next step - integration to CI. Add command to deploy job (GitLab CI sample) or to your performance stand runner.
 
 ```shell
 curl -X GET "http//onix.your-company-name.com:8081/api/system/register?service_name=${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}&release_name=${CI_COMMIT_REF_NAME}-${CI_COMMIT_REF_SLUG}"
