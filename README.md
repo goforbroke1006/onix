@@ -75,7 +75,7 @@ And then you can open **main dashboard**, select *service*, *source*, *release #
 if you need load previous releases, run this command manually to set previous releases start time:
 
 ```shell
-curl -X GET "http//onix.your-company-name.com:8081/api/system/register?service_name=${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}&release_name=${CI_COMMIT_REF_NAME}-${CI_COMMIT_REF_SLUG}&start_at=UNIX_TIME_SECONDS"
+curl -X GET "http//onix.your-company-name.com:8081/api/system/register?service_name=MY-TEAM/SERVICE-NAME&release_name=TAG-latest&start_at=UNIX_TIME_SECONDS"
 ```
 
 After you can use **util load-historical-metrics** to load old metrics
