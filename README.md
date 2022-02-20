@@ -48,7 +48,7 @@ echo "Open admin dashboard http://localhost:3002/"
 And remove demo containers with commands:
 
 ```shell
-docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
+docker-compose down --volumes --remove-orphans
 ```
 
 ### How to use
