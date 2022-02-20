@@ -44,8 +44,48 @@ echo "Open admin dashboard http://localhost:3002/"
     <img src="docs/demo-screen.png" alt="Main dashboard screenshot"/>
 </kbd>
 
+
 And remove demo containers with commands:
 
 ```shell
 docker-compose -f docker-compose.demo.yml down --volumes --remove-orphans
+```
+
+### How to use
+
+At first, deploy components to server.
+
+Next step - integration to CI (GitLab CI sample).
+
+Add command to deploy job:
+
+```shell
+curl -X GET "http//onix.your-company-name.com:8081/api/system/register?service_name=${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}&release_name=${CI_COMMIT_REF_NAME}-${CI_COMMIT_REF_SLUG}"
+```
+
+Go to **admin dashboard** and add criteria items for this service.
+
+What about field *Selector* - write here PromQL query, that returns single vector of values.
+If you are not sure, open http://prometheus.your-company-name.com/graph (where prometheus hosted) and debug your query.
+
+Every 15 minutes **daemon metrics-extractor** update data. To update data faster, you can reload daemon.
+
+And then you can open **main dashboard**, select *service*, *source*, *release #1*, *release #2*, *period* and see comparison graphs.
+
+if you need load previous releases, run this command manually to set previous releases start time:
+
+```shell
+curl -X GET "http//onix.your-company-name.com:8081/api/system/register?service_name=${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}&release_name=${CI_COMMIT_REF_NAME}-${CI_COMMIT_REF_SLUG}&start_at=UNIX_TIME_SECONDS"
+```
+
+After you can use **util load-historical-metrics** to load old metrics
+
+```shell
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=onix
+export DB_PASS=onix
+export DB_DBNAME=onix
+
+./onix util load-historical-metrics --service foo/backend --source 2 --from 2022-02-01 --till 2022-02-14
 ```
