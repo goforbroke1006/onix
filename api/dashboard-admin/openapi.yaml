@@ -6,6 +6,15 @@ info:
 servers:
   - url: 'http//localhost:8083/api/admin'
 paths:
+  /service:
+    get:
+      responses:
+        200:
+          description: returns services list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesListResponse'
   /source:
     get:
       responses:
@@ -35,6 +44,17 @@ paths:
 
 components:
   schemas:
+    ServicesListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/service'
+    service:
+      type: object
+      required: [ title, releases ]
+      properties:
+        title: { type: string }
+        releases: { type: array, items: { type: string } }
+
     SourceListResponse:
       type: array
       items:
@@ -43,18 +63,10 @@ components:
       type: object
       required: [ id, title, kind, address ]
       properties:
-        id:
-          type: integer
-          format: int64
-        title:
-          type: string
-        kind:
-          type: string
-          enum:
-            - prometheus
-            - influxdb
-        address:
-          type: string
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        kind: { type: string, enum: [ prometheus, influxdb ] }
+        address: { type: string }
 
     CreateResourceResponse:
       type: object

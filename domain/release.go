@@ -25,6 +25,7 @@ type ReleaseRepository interface {
 	GetByName(serviceName, releaseName string) (*Release, error)
 	GetNextAfter(serviceName, releaseName string) (*Release, error)
 	GetLast(serviceName string) (*Release, error)
+	GetNLasts(serviceName string, count uint) ([]Release, error)
 	GetAll(serviceName string) ([]Release, error)
 }
 

@@ -115,6 +115,11 @@ func (repo stubReleaseRepository) GetLast(serviceName string) (*domain.Release, 
 	panic("implement me")
 }
 
+func (repo stubReleaseRepository) GetNLasts(serviceName string, count uint) ([]domain.Release, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repo stubReleaseRepository) GetAll(serviceName string) ([]domain.Release, error) {
 	var releases []domain.Release
 

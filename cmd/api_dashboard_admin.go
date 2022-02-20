@@ -35,8 +35,8 @@ func NewApiDashboardAdminCmd() *cobra.Command {
 			defer conn.Close()
 
 			var (
-				//serviceRepo     = repository.NewServiceRepository(conn)
-				//releaseSvc      = service.NewReleaseService(repository.NewReleaseRepository(conn))
+				serviceRepo  = repository.NewServiceRepository(conn)
+				releaseRepo  = repository.NewReleaseRepository(conn)
 				sourceRepo   = repository.NewSourceRepository(conn)
 				criteriaRepo = repository.NewCriteriaRepository(conn)
 				logger       = log.NewLogger()
@@ -45,7 +45,7 @@ func NewApiDashboardAdminCmd() *cobra.Command {
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := dashboard_admin.NewServer(sourceRepo, criteriaRepo, logger)
+			server := dashboard_admin.NewServer(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
 
 			dashboard_admin.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); err != http.ErrServerClosed {

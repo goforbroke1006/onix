@@ -193,6 +193,45 @@ LIMIT 1
 	return nil, domain.ErrNotFound
 }
 
+func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domain.Release, error) {
+	query := fmt.Sprintf(
+		`
+		SELECT id, name, start_at 
+		FROM release 
+		WHERE service = '%s'
+		ORDER BY start_at DESC
+		LIMIT %d
+		;`,
+		serviceName, count,
+	)
+	rows, err := repo.conn.Query(context.TODO(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var (
+		id          int64
+		releaseName string
+		startAt     time.Time
+	)
+
+	result := make([]domain.Release, 0, len(rows.RawValues()))
+	for rows.Next() {
+		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
+			return nil, err
+		}
+		result = append(result, domain.Release{
+			ID:      id,
+			Service: serviceName,
+			Name:    releaseName,
+			StartAt: startAt,
+		})
+	}
+
+	return result, nil
+}
+
 func (repo releaseRepository) GetReleases(serviceName string, from, till time.Time) ([]domain.Release, error) {
 	query := fmt.Sprintf(
 		`

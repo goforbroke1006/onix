@@ -7,6 +7,9 @@ import {BrowserRouter, Link, Route, Routes} from "react-router-dom";
 import MainPage from './pages/MainPage';
 import SourceListPage from "./pages/SourceListPage";
 import CriteriaListPage from './pages/CriteriaListPage';
+import ApiDataProvider from "./external/api-data-provider";
+
+const apiDataProvider = new ApiDataProvider();
 
 ReactDOM.render(
     <BrowserRouter>
@@ -19,9 +22,9 @@ ReactDOM.render(
             </ul>
 
             <Routes>
-                <Route path={"/"} element={<MainPage/>} exact/>
-                <Route path={"/source/list"} element={<SourceListPage/>}/>
-                <Route path={"/criteria/list"} element={<CriteriaListPage/>}/>
+                <Route path={"/"} element={<MainPage provider={apiDataProvider}/>} exact/>
+                <Route path={"/source/list"} element={<SourceListPage provider={apiDataProvider}/>}/>
+                <Route path={"/criteria/list"} element={<CriteriaListPage provider={apiDataProvider}/>}/>
             </Routes>
 
         </div>

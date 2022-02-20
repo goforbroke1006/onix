@@ -1,4 +1,4 @@
-all: dep gen build test/unit
+all: dep gen build test
 
 .PHONY: dep gen build test/unit test/functional test/integration
 
@@ -22,6 +22,9 @@ build:
 	go build ./
 	npm --prefix ./frontend/dashboard-admin/ run build
 	npm --prefix ./frontend/dashboard-main/ run build
+
+test: test/unit
+test-all: test/unit test/functional test/integration
 
 test/unit:
 	go test --tags=unit ./...

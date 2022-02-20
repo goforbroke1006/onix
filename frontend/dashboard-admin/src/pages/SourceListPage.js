@@ -5,7 +5,7 @@ class SourceListPage extends React.Component {
         super(props);
 
         this.state = {
-            items: [],
+            sources: [],
         }
     }
 
@@ -29,7 +29,7 @@ class SourceListPage extends React.Component {
                         </thead>
 
                         <tbody>
-                        {this.state.items.map((item, index) => {
+                        {this.state.sources.map((item, index) => {
                             return (
                                 <tr key={"source-list-item-" + index}>
                                     <td>{item.id}</td>
@@ -51,10 +51,8 @@ class SourceListPage extends React.Component {
     }
 
     loadSourcesList = () => {
-        let baseUrl = process.env.REACT_APP_API_DASHBOARD_ADMIN_BASE_ADDR ?? 'http://127.0.0.1:8083/api/dashboard-admin';
-        fetch(baseUrl + "/source")
-            .then(response => response.json())
-            .then(data => this.setState({items: data}))
+        this.props.provider.loadSources()
+            .then(sources => this.setState({sources: sources}));
     }
 }
 

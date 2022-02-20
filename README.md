@@ -2,6 +2,8 @@
 
 Releases comparison tool. Use same metrics for 2 different releases and visualize it.
 
+Allow to establish the fact of components regression.
+
 ### Stack
 
 * Go 1.16
@@ -30,10 +32,11 @@ Releases comparison tool. Use same metrics for 2 different releases and visualiz
 Run demo with commands:
 
 ```shell
-docker-compose -f docker-compose.demo.yml build
-docker-compose -f docker-compose.demo.yml up -d
+docker-compose build
+docker-compose up -d
 sleep 30 # wait for frontend-prod-builder finished work
-echo "Open http://localhost:3001/"
+echo "Open main dashboard http://localhost:3001/"
+echo "Open admin dashboard http://localhost:3002/"
 
 ```
 

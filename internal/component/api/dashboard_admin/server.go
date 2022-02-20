@@ -12,11 +12,15 @@ import (
 )
 
 func NewServer(
+	serviceRepo domain.ServiceRepository,
+	releaseRepo domain.ReleaseRepository,
 	sourceRepo domain.SourceRepository,
 	criteriaRepo domain.CriteriaRepository,
 	logger log.Logger,
 ) *server {
 	return &server{
+		serviceRepo:  serviceRepo,
+		releaseRepo:  releaseRepo,
 		sourceRepo:   sourceRepo,
 		criteriaRepo: criteriaRepo,
 		logger:       logger,
@@ -28,9 +32,42 @@ var (
 )
 
 type server struct {
+	serviceRepo  domain.ServiceRepository
+	releaseRepo  domain.ReleaseRepository
 	sourceRepo   domain.SourceRepository
 	criteriaRepo domain.CriteriaRepository
 	logger       log.Logger
+}
+
+func (s server) GetService(ctx echo.Context) error {
+	const (
+		defaultReleasesCount = 5
+	)
+
+	services, err := s.serviceRepo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	resp := ServicesListResponse{}
+	for _, svc := range services {
+		service := Service{
+			Title:    svc.Title,
+			Releases: []string{},
+		}
+
+		releases, err := s.releaseRepo.GetNLasts(svc.Title, defaultReleasesCount)
+		if err != nil {
+			return err
+		}
+
+		for _, r := range releases {
+			service.Releases = append(service.Releases, r.Name)
+		}
+
+		resp = append(resp, service)
+	}
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (s server) GetSource(ctx echo.Context) error {

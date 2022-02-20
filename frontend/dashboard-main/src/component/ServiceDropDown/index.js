@@ -42,7 +42,7 @@ class ServiceDropDown extends React.Component {
         )
     }
 
-    loadServices = () => {
+     loadServices = () => {
         let baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
         fetch(baseUrl + "/service")
             .then(response => response.json())
