@@ -33,6 +33,23 @@ type server struct {
 	logger       log.Logger
 }
 
+func (s server) GetSource(ctx echo.Context) error {
+	sources, err := s.sourceRepo.GetAll()
+	if err != nil {
+		return err
+	}
+	resp := make(SourceListResponse, 0, len(sources))
+	for _, s := range sources {
+		resp = append(resp, Source{
+			Id:      s.ID,
+			Title:   s.Title,
+			Kind:    SourceKind(s.Kind),
+			Address: s.Address,
+		})
+	}
+	return ctx.JSON(http.StatusOK, resp)
+}
+
 func (s server) PostCriteria(ctx echo.Context) error {
 	requestBody := CreateCriteriaRequest{}
 	if err := json.NewDecoder(ctx.Request().Body).Decode(&requestBody); err != nil {
