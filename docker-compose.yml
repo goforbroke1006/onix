@@ -15,26 +15,26 @@ services:
     depends_on:
       - api-dashboard-main
 
-  frontend-prod-builder:
+  frontend-dashboard-main-prod-builder:
     restart: "on-failure"
     build:
       dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
       context: ./
     volumes:
-      - ./frontend:/code/
+      - ./frontend/dashboard-main/:/code/
     environment:
       REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
 
-  frontend-prod:
-    restart: "always"
+  frontend-dashboard-main-prod:
+    restart: 'always'
     image: nginx:1.21.6-alpine
     volumes:
-      - ./frontend/build:/usr/share/nginx/html
+      - ./frontend/dashboard-main/build:/usr/share/nginx/html
     ports:
       - "3001:80"
     depends_on:
       - api-dashboard-main
-      - frontend-prod-builder
+      - frontend-dashboard-main-prod-builder
 
   api-system:
     restart: "on-failure"
