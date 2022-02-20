@@ -1,12 +1,17 @@
 # onix
 
+### Before writing code
+
+```shell
+bash ./setup.sh
+```
+
 ### Setup local environment
 
 ```shell
 docker-compose down --volumes --remove-orphans
 docker-compose build
 docker-compose up -d
-docker-compose restart
 
 echo 'Open dev build http://localhost:3002/'
 echo 'Open prod build http://localhost:3001/'
