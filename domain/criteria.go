@@ -57,12 +57,12 @@ func (ppt PullPeriodType) String() string {
 }
 
 type Criteria struct {
-	ID          int64
-	Service     string
-	Title       string
-	Selector    string
-	ExpectedDir DynamicDirType
-	PullPeriod  time.Duration
+	ID               int64
+	Service          string
+	Title            string
+	Selector         string
+	ExpectedDir      DynamicDirType
+	GroupingInterval time.Duration
 }
 
 type CriteriaRepository interface {

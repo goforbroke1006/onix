@@ -32,7 +32,7 @@ func (repo criteriaRepository) Create(
 ) (int64, error) {
 	query := fmt.Sprintf(
 		`
-		INSERT INTO criteria (service, title, selector, expected_dir, pull_period) 
+		INSERT INTO criteria (service, title, selector, expected_dir, grouping_interval) 
 		VALUES ('%s', '%s', '%s', '%s', '%s') 
 		RETURNING id;`,
 		serviceName, title, selector, expectedDir, pullPeriod,
@@ -63,7 +63,7 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 			title,
 			selector, 
 			expected_dir, 
-			pull_period
+			grouping_interval
 		FROM criteria 
 		WHERE service = '%s'
 		ORDER BY id ASC
@@ -94,12 +94,12 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 		duration, _ := time.ParseDuration(pullPeriod)
 
 		result = append(result, domain.Criteria{
-			ID:          id,
-			Service:     serviceName,
-			Title:       title,
-			Selector:    selector,
-			ExpectedDir: expectedDir,
-			PullPeriod:  duration,
+			ID:               id,
+			Service:          serviceName,
+			Title:            title,
+			Selector:         selector,
+			ExpectedDir:      expectedDir,
+			GroupingInterval: duration,
 		})
 	}
 

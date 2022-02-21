@@ -20,7 +20,7 @@ VALUES ('foo/bar/backend', '2.1.0', '2020-12-26 00:00:00'), -- 1608940800
        ('foo/bar/backend', '1.0.0', '2020-10-25 00:00:00')
 ;
 
-INSERT INTO criteria (service, title, selector, expected_dir, pull_period)
+INSERT INTO criteria (service, title, selector, expected_dir, grouping_interval)
 VALUES ('foo/bar/backend', 'processing duration instrument=ONE',
         'histogram_quantile(0.95, sum(increase(api_request_count{environment="prod",instrument="one"}[15m])) by (le))',
         'decrease', '15m'),

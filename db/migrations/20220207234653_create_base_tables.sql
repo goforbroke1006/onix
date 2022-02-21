@@ -31,17 +31,16 @@ CREATE TABLE source
 
 CREATE TYPE dynamic_direction_type AS ENUM ('increase', 'decrease', 'equal');
 
-CREATE TYPE pull_period_type AS ENUM ('30s', '1m', '2m', '5m', '15m');
+CREATE TYPE grouping_interval_type AS ENUM ('30s', '1m', '2m', '5m', '15m');
 
 CREATE TABLE criteria
 (
-    id           SERIAL PRIMARY KEY,
-    service      VARCHAR(512)           NOT NULL,
-    title        VARCHAR(512)           NOT NULL,
-    selector     TEXT                   NOT NULL,
-    expected_dir DYNAMIC_DIRECTION_TYPE NOT NULL,
-    pull_period  PULL_PERIOD_TYPE DEFAULT '1m'
-
+    id                SERIAL PRIMARY KEY,
+    service           VARCHAR(512)           NOT NULL,
+    title             VARCHAR(512)           NOT NULL,
+    selector          TEXT                   NOT NULL,
+    expected_dir      DYNAMIC_DIRECTION_TYPE NOT NULL,
+    grouping_interval GROUPING_INTERVAL_TYPE DEFAULT '1m'
 );
 
 ALTER TABLE criteria

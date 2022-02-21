@@ -79,7 +79,7 @@ components:
           type: string
     CreateCriteriaRequest:
       type: object
-      required: [ service_name, title, selector, expected_dir, pull_period ]
+      required: [ service_name, title, selector, expected_dir, interval ]
       properties:
         service_name:
           type: string
@@ -90,6 +90,6 @@ components:
         expected_dir:
           type: string
           enum: [ 'increase', 'decrease', 'equal' ]
-        pull_period:
+        interval:
           type: string
           enum: [ '30s', '1m', '2m', '5m', '15m' ]
