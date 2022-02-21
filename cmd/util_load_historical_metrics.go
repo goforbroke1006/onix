@@ -70,7 +70,7 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 					}
 					provider := service.NewMetricsProvider(*source)
 
-					series, err := provider.LoadSeries(cr.Selector, startAt, stopAt, cr.GroupingInterval)
+					series, err := provider.LoadSeries(cr.Selector, startAt, stopAt, time.Duration(cr.GroupingInterval))
 					if err != nil {
 						panic(err)
 					}

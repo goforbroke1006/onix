@@ -95,7 +95,7 @@ func (s server) PostCriteria(ctx echo.Context) error {
 	criteriaID, err := s.criteriaRepo.Create(
 		requestBody.ServiceName, requestBody.Title, requestBody.Selector,
 		domain.DynamicDirType(requestBody.ExpectedDir),
-		domain.MustParsePullPeriodType(string(requestBody.Interval)))
+		domain.MustParseGroupingIntervalType(string(requestBody.Interval)))
 	if err != nil {
 		return err
 	}

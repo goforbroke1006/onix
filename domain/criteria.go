@@ -13,44 +13,44 @@ const (
 	DynamicDirTypeEqual    = DynamicDirType("equal")
 )
 
-func MustParsePullPeriodType(s string) PullPeriodType {
+func MustParseGroupingIntervalType(s string) GroupingIntervalType {
 	switch s {
 	case "30s":
-		return PullPeriodType30s
+		return GroupingIntervalType30s
 	case "1m":
-		return PullPeriodType1m
+		return GroupingIntervalType1m
 	case "2m":
-		return PullPeriodType2m
+		return GroupingIntervalType2m
 	case "5m":
-		return PullPeriodType5m
+		return GroupingIntervalType5m
 	case "15":
-		return PullPeriodType15m
+		return GroupingIntervalType15m
 	}
 
-	panic(fmt.Errorf("unexpected pull period %s", s))
+	panic(fmt.Errorf("unexpected interval %s", s))
 }
 
-type PullPeriodType time.Duration
+type GroupingIntervalType time.Duration
 
 const (
-	PullPeriodType30s = PullPeriodType(30 * time.Second)
-	PullPeriodType1m  = PullPeriodType(1 * time.Minute)
-	PullPeriodType2m  = PullPeriodType(2 * time.Minute)
-	PullPeriodType5m  = PullPeriodType(5 * time.Minute)
-	PullPeriodType15m = PullPeriodType(15 * time.Minute)
+	GroupingIntervalType30s = GroupingIntervalType(30 * time.Second)
+	GroupingIntervalType1m  = GroupingIntervalType(1 * time.Minute)
+	GroupingIntervalType2m  = GroupingIntervalType(2 * time.Minute)
+	GroupingIntervalType5m  = GroupingIntervalType(5 * time.Minute)
+	GroupingIntervalType15m = GroupingIntervalType(15 * time.Minute)
 )
 
-func (ppt PullPeriodType) String() string {
+func (ppt GroupingIntervalType) String() string {
 	switch ppt {
-	case PullPeriodType30s:
+	case GroupingIntervalType30s:
 		return "30s"
-	case PullPeriodType1m:
+	case GroupingIntervalType1m:
 		return "1m"
-	case PullPeriodType2m:
+	case GroupingIntervalType2m:
 		return "2m"
-	case PullPeriodType5m:
+	case GroupingIntervalType5m:
 		return "5m"
-	case PullPeriodType15m:
+	case GroupingIntervalType15m:
 		return "15m"
 	}
 	return ""
@@ -62,7 +62,7 @@ type Criteria struct {
 	Title            string
 	Selector         string
 	ExpectedDir      DynamicDirType
-	GroupingInterval time.Duration
+	GroupingInterval GroupingIntervalType
 }
 
 type CriteriaRepository interface {
@@ -70,7 +70,7 @@ type CriteriaRepository interface {
 		serviceName, title string,
 		selector string,
 		expectedDir DynamicDirType,
-		pullPeriod PullPeriodType,
+		interval GroupingIntervalType,
 	) (int64, error)
 
 	GetAll(serviceName string) ([]Criteria, error)

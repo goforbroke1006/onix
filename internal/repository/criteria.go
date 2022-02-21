@@ -28,14 +28,14 @@ func (repo criteriaRepository) Create(
 	serviceName, title string,
 	selector string,
 	expectedDir domain.DynamicDirType,
-	pullPeriod domain.PullPeriodType,
+	interval domain.GroupingIntervalType,
 ) (int64, error) {
 	query := fmt.Sprintf(
 		`
 		INSERT INTO criteria (service, title, selector, expected_dir, grouping_interval) 
 		VALUES ('%s', '%s', '%s', '%s', '%s') 
 		RETURNING id;`,
-		serviceName, title, selector, expectedDir, pullPeriod,
+		serviceName, title, selector, expectedDir, interval,
 	)
 	rows, err := repo.conn.Query(context.TODO(), query)
 	if err != nil {
@@ -81,17 +81,17 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 		title       string
 		selector    string
 		expectedDir domain.DynamicDirType
-		pullPeriod  string
+		interval    string
 	)
 
 	result := make([]domain.Criteria, 0, len(rows.RawValues()))
 
 	for rows.Next() {
-		if err := rows.Scan(&id, &title, &selector, &expectedDir, &pullPeriod); err != nil {
+		if err := rows.Scan(&id, &title, &selector, &expectedDir, &interval); err != nil {
 			return nil, err
 		}
 
-		duration, _ := time.ParseDuration(pullPeriod)
+		duration, _ := time.ParseDuration(interval)
 
 		result = append(result, domain.Criteria{
 			ID:               id,
@@ -99,7 +99,7 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 			Title:            title,
 			Selector:         selector,
 			ExpectedDir:      expectedDir,
-			GroupingInterval: duration,
+			GroupingInterval: domain.GroupingIntervalType(duration),
 		})
 	}
 

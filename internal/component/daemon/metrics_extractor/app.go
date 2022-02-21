@@ -104,7 +104,7 @@ func (app application) extractMetrics(period time.Duration) {
 						stopAt  = time.Now()
 					)
 
-					resp, err := provider.LoadSeries(cr.Selector, startAt, stopAt, cr.GroupingInterval)
+					resp, err := provider.LoadSeries(cr.Selector, startAt, stopAt, time.Duration(cr.GroupingInterval))
 					if err != nil {
 						app.logger.WithErr(err).Warn("can't extract metric", cr.Title, "from", source.Address)
 						return
