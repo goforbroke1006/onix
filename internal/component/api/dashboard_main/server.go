@@ -76,7 +76,7 @@ func (s server) GetSource(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-func (s server) GetReleaseSummary(ctx echo.Context, params GetReleaseSummaryParams) error {
+func (s server) GetRelease(ctx echo.Context, params GetReleaseParams) error {
 	ranges, err := s.releaseSvc.GetAll(params.Service)
 	if err != nil {
 		return err
@@ -84,31 +84,11 @@ func (s server) GetReleaseSummary(ctx echo.Context, params GetReleaseSummaryPara
 
 	response := make([]Release, 0, len(ranges))
 	for _, r := range ranges {
-		criteria := []ReleaseCriteria{}
-		criteriaList, err := s.criteriaRepo.GetAll(params.Service)
-		if err != nil {
-			return err
-		}
-
-		for _, cr := range criteriaList {
-			count, err := s.measurementRepo.Count(params.SourceId, cr.ID, r.StartAt, r.StopAt)
-			if err != nil {
-				return err
-			}
-
-			criteria = append(criteria, ReleaseCriteria{
-				Id:              cr.ID,
-				Title:           cr.Title,
-				HasMeasurements: count > 0,
-			})
-		}
-
 		response = append(response, Release{
-			Id:       r.ID,
-			Title:    r.Name,
-			From:     r.StartAt.Unix(),
-			Till:     r.StopAt.Unix(),
-			Criteria: criteria,
+			Id:    r.ID,
+			Title: r.Name,
+			From:  r.StartAt.Unix(),
+			Till:  r.StopAt.Unix(),
 		})
 	}
 

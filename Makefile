@@ -28,9 +28,14 @@ test-all: test/unit test/functional test/integration
 
 test/unit:
 	go test --tags=unit ./...
+	npm --prefix ./frontend/dashboard-admin/ test -- --watchAll=false
+	npm --prefix ./frontend/dashboard-main/ test -- --watchAll=false
 
 test/functional:
 	go test --tags=functional ./...
 
 test/integration:
 	go test --tags=integration ./...
+
+setup:
+	bash ./setup.sh

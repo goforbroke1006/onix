@@ -8,6 +8,7 @@ import CompareReleasesPanel from "./component/CompareReleasesPanel";
 import DateTimePickerWithLimits from "./component/DateTimePickerWithLimits";
 import PeriodDropDown from "./component/PeriodDropDown";
 import SourceDropDown from "./component/SourceDropDown";
+import DashboardMainApiClient from "./external/client";
 
 class App extends React.Component {
 
@@ -89,17 +90,19 @@ class App extends React.Component {
     }
 
     render() {
+        const client = new DashboardMainApiClient();
+
         return (
             <div className="App">
-                <ServiceDropDown onChange={this.onServiceSelected}/>
+                <ServiceDropDown provider={client} onChange={this.onServiceSelected}/>
 
-                <SourceDropDown onChange={this.onSourceSelected}/>
+                <SourceDropDown provider={client} onChange={this.onSourceSelected}/>
 
-                <ReleaseDropDown serviceName={this.state.serviceTitle}
-                                 sourceId={this.state.sourceId}
+                <ReleaseDropDown provider={client}
+                                 serviceName={this.state.serviceTitle}
                                  onChange={this.onReleaseOneSelected}/>
-                <ReleaseDropDown serviceName={this.state.serviceTitle}
-                                 sourceId={this.state.sourceId}
+                <ReleaseDropDown provider={client}
+                                 serviceName={this.state.serviceTitle}
                                  onChange={this.onReleaseTwoSelected}/>
 
                 <DateTimePickerWithLimits from={this.state.releaseOneFrom} till={this.state.releaseOneTill}

@@ -1,6 +1,6 @@
 import React from "react";
 
-class SourceDropDown extends React.Component {
+export default class SourceDropDown extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -14,7 +14,7 @@ class SourceDropDown extends React.Component {
     }
 
     onChange = (event) => {
-        let sourceId = event.target.value;
+        let sourceId = parseInt(event.target.value);
 
         this.setState({value: sourceId});
 
@@ -23,14 +23,21 @@ class SourceDropDown extends React.Component {
     }
 
     render() {
+        if (this.state.items.length === 0) {
+            return (
+                <select onChange={this.onChange} value={this.state.value}>
+                    <option>-- no data --</option>
+                </select>
+            )
+        }
+
         return (
             <select onChange={this.onChange} value={this.state.value}>
-                <option>----</option>
+                <option>-- none --</option>
                 {this.state.items.map((object, index) => {
                     return (
-                        <option key={"source-" + index} value={object.id}>
-                            {object.title} [{object.kind}] {object.address}
-                        </option>
+                        <option key={`source-${index}`}
+                                value={object.id}>{`${object.title} [${object.kind}] ${object.address}`}</option>
                     )
                 })}
             </select>
@@ -38,11 +45,9 @@ class SourceDropDown extends React.Component {
     }
 
     loadSources = () => {
-        let baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
-        fetch(baseUrl + "/source")
-            .then(response => response.json())
-            .then(data => this.setState({items: data}))
+        return this.props.provider.loadSourcesList()
+            .then(data => {
+                this.setState({items: data})
+            })
     }
 }
-
-export default SourceDropDown;
