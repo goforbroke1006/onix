@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SourceDropDown /> rendering renders correctly 1`] = `
+<SourceDropDown
+  provider={MockDashboardMainApiClient {}}
+>
+  <select
+    onChange={[Function]}
+    value=""
+  >
+    <option>
+      -- none --
+    </option>
+    <option
+      key="source-0"
+      value={101}
+    >
+      Source 1 [prometheus] http://foo-bar:4001/
+    </option>
+    <option
+      key="source-1"
+      value={102}
+    >
+      Source 2 [influxdb] http://foo-bar:4002/
+    </option>
+    <option
+      key="source-2"
+      value={103}
+    >
+      Source 3 [prometheus] http://foo-bar:4003/
+    </option>
+  </select>
+</SourceDropDown>
+`;

@@ -47,7 +47,11 @@ export default class SourceDropDown extends React.Component {
     loadSources = () => {
         return this.props.provider.loadSourcesList()
             .then(data => {
-                this.setState({items: data})
+                this.setState({items: data});
+            })
+            .catch((err) => {
+                console.warn(err);
+                this.setState({items: []});
             })
     }
 }

@@ -56,7 +56,10 @@ class ReleaseDropDown extends React.Component {
         if (!this.props.serviceName) return;
 
         this.props.provider.loadReleasesList(this.props.serviceName)
-            .then(data => this.setState({items: data}))
+            .then(data => {
+                console.debug("load releases");
+                this.setState({items: data})
+            });
     }
 }
 
