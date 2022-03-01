@@ -137,11 +137,11 @@ func (s server) GetCompare(ctx echo.Context, params GetCompareParams) error {
 
 	for _, cr := range criteriaList {
 
-		m1, err := s.measurementRepo.GetBy(params.SourceId, cr.ID, releaseOneStart, releaseOneStop)
+		m1, err := s.measurementRepo.GetBy(params.ReleaseOneSourceId, cr.ID, releaseOneStart, releaseOneStop)
 		if err != nil {
 			return err
 		}
-		m2, err := s.measurementRepo.GetBy(params.SourceId, cr.ID, releaseTwoStart, releaseTwoStop)
+		m2, err := s.measurementRepo.GetBy(params.ReleaseTwoSourceId, cr.ID, releaseTwoStart, releaseTwoStop)
 		if err != nil {
 			return err
 		}
