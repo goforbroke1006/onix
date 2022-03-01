@@ -10,7 +10,11 @@ curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
 sudo apt install -y nodejs
 node --version
 
-sudo npm install -g npm
+sudo chown -R "$(whoami)" "${HOME}/.npm"
+npm config set prefix "${HOME}/.npm"
+echo 'export PATH="${PATH}:${HOME}/.npm/bin"' >> "${HOME}/.profile"
+source "${HOME}/.profile"
+npm install -g npm
 
 if [[ ! -f config/onix.json ]]; then
   cp config/onix.dist.json config/onix.json
