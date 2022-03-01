@@ -1,6 +1,6 @@
 import React from "react";
 
-class ServiceDropDown extends React.Component {
+export default class ServiceDropDown extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -32,9 +32,7 @@ class ServiceDropDown extends React.Component {
                     {this.state.items.map((object, index) => {
                         return (
                             <option key={"service-select-option-" + index}
-                                    value={object.title}>
-                                {object.title}
-                            </option>
+                                    value={object.title}>{object.title}</option>
                         )
                     })}
                 </select>
@@ -46,5 +44,3 @@ class ServiceDropDown extends React.Component {
         this.props.provider.loadServices().then(data => this.setState({items: data}))
     }
 }
-
-export default ServiceDropDown;

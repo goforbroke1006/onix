@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ServiceDropDown /> rendering renders correctly 1`] = `
+<ServiceDropDown
+  provider={MockDashboardMainApiClient {}}
+>
+  <div>
+    <select
+      onChange={[Function]}
+      value=""
+    >
+      <option>
+        ----
+      </option>
+      <option
+        key="service-select-option-0"
+        value="acme/backend"
+      >
+        acme/backend
+      </option>
+      <option
+        key="service-select-option-1"
+        value="foo/backend"
+      >
+        foo/backend
+      </option>
+      <option
+        key="service-select-option-2"
+        value="bar/backend"
+      >
+        bar/backend
+      </option>
+    </select>
+  </div>
+</ServiceDropDown>
+`;

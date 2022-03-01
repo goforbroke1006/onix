@@ -16,7 +16,11 @@ dep:
 	npm --prefix ./frontend/dashboard-main/ install
 
 gen:
+	@echo "Generate backend boilerplate code"
 	go generate ./...
+	@echo "Generate jest test snapshots"
+	npm --prefix ./frontend/dashboard-admin/ test -- -u --watchAll=false
+	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false
 
 build:
 	go build ./
