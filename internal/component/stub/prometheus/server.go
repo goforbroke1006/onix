@@ -57,6 +57,14 @@ func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) erro
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
+	if stop.Before(start) {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if stop.Sub(start) > 24*time.Hour {
+		stop = start.Add(24 * time.Hour)
+	}
+
 	resp := QueryRangeResponse{
 		Status: StatusSuccess,
 		Data: QueryRangeData{

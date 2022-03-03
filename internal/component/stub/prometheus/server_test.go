@@ -2,6 +2,8 @@ package prometheus
 
 import (
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -57,6 +59,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		args         args
 		wantRespCode int
 		wantErr      bool
+		wantCount    int
 	}{
 		{
 			name: "negative 1 - empty query",
@@ -102,7 +105,21 @@ func Test_server_GetQueryRange(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name: "positive 1",
+			name: "negative 1 - invalid range, end before start",
+			args: args{
+				params: GetQueryRangeParams{
+					Query:   `rate(some_metrics{env="prod"})`,
+					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
+					End:     time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+					Step:    "5m",
+					Timeout: "5s",
+				},
+			},
+			wantRespCode: http.StatusBadRequest,
+			wantErr:      false,
+		},
+		{
+			name: "positive 1 - range = 1 hour, step = 5 minutes",
 			args: args{
 				params: GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
@@ -114,6 +131,22 @@ func Test_server_GetQueryRange(t *testing.T) {
 			},
 			wantRespCode: http.StatusOK,
 			wantErr:      false,
+			wantCount:    13,
+		},
+		{
+			name: "positive 2 - big range (1 year) should be cut to 24 hours",
+			args: args{
+				params: GetQueryRangeParams{
+					Query:   `rate(some_metrics{env="prod"})`,
+					Start:   time.Date(2020, time.June, 10, 12, 0, 0, 0, time.UTC).Format(time.RFC3339),
+					End:     time.Date(2021, time.June, 10, 12, 0, 0, 0, time.UTC).Format(time.RFC3339),
+					Step:    "6h",
+					Timeout: "5s",
+				},
+			},
+			wantRespCode: 200,
+			wantErr:      false,
+			wantCount:    5,
 		},
 	}
 	for _, tt := range tests {
@@ -129,6 +162,18 @@ func Test_server_GetQueryRange(t *testing.T) {
 
 			if rec.Code != tt.wantRespCode {
 				t.Errorf("GetQueryRange() code = %v, want %v", rec.Code, tt.wantRespCode)
+			}
+
+			if tt.wantCount > 0 {
+				respBody, _ := ioutil.ReadAll(rec.Body)
+				respObj := QueryRangeResponse{}
+				if err := json.Unmarshal(respBody, &respObj); err != nil {
+					t.Error(err)
+				}
+
+				if len(respObj.Data.Result[0].Values) != tt.wantCount {
+					t.Errorf("GetQueryRange() items len = %v, want %v", len(respObj.Data.Result[0].Values), tt.wantCount)
+				}
 			}
 		})
 	}
