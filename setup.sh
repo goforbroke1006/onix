@@ -15,6 +15,7 @@ npm config set prefix "${HOME}/.npm"
 echo 'export PATH="${PATH}:${HOME}/.npm/bin"' >> "${HOME}/.profile"
 source "${HOME}/.profile"
 npm install -g npm
+npm install -g eslint
 
 if [[ ! -f config/onix.json ]]; then
   cp config/onix.dist.json config/onix.json

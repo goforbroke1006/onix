@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 export default class DashboardMainApiClient {
     constructor() {
         this.baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
@@ -13,6 +15,11 @@ export default class DashboardMainApiClient {
             .then(response => response.json());
     }
 
+    /**
+     *
+     * @param {String} serviceName
+     * @returns {Promise<Response>}
+     */
     loadReleasesList(serviceName) {
         return fetch(`${this.baseUrl}/release?service=${serviceName}`)
             .then((response) => {

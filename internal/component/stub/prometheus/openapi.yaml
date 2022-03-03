@@ -33,6 +33,7 @@ paths:
           required: true
           schema:
             type: string
+            pattern: ^(?!\s*$).+
         - in: query
           name: start
           description: '<rfc3339 | unix_timestamp>: Start timestamp, inclusive.'

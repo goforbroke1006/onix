@@ -4,3 +4,4 @@ config/onix.json
 /onix
 /fixtures.sql
 /dump-*.sql
+/.coverage

@@ -37,6 +37,9 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 			)
 
 			criteriaList, err := criteriaRepo.GetAll(serviceName)
+			if err != nil {
+				panic(err)
+			}
 
 			var (
 				from time.Time
@@ -98,9 +101,9 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 			}
 		},
 	}
-	cmd.PersistentFlags().StringVar(&serviceName, "service", "", "")
-	cmd.PersistentFlags().Int64Var(&sourceID, "source", 0, "")
-	cmd.PersistentFlags().StringVar(&dateFrom, "from", "", "")
-	cmd.PersistentFlags().StringVar(&dateTill, "till", "", "")
+	cmd.PersistentFlags().StringVar(&serviceName, "service", "", "Service name")
+	cmd.PersistentFlags().Int64Var(&sourceID, "source", 0, "Source ID from what need to pull data")
+	cmd.PersistentFlags().StringVar(&dateFrom, "from", "", "Time range start")
+	cmd.PersistentFlags().StringVar(&dateTill, "till", "", "Time range stop")
 	return cmd
 }

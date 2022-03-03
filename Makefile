@@ -1,6 +1,6 @@
-all: dep gen build test
+all: dep gen build test lint
 
-.PHONY: dep gen build test/unit test/functional test/integration
+.PHONY: dep gen build test/unit test/functional test/integration lint coverage
 
 clean:
 	find ./ -name '*.generated.go' -type f -delete
@@ -9,6 +9,7 @@ clean:
 	rm -rf ./frontend/dashboard-admin/node_modules/ || true
 	rm -rf ./frontend/dashboard-main/build/ || true
 	rm -rf ./frontend/dashboard-main/node_modules/ || true
+	rm -f ./.coverage
 
 dep:
 	go mod download
@@ -31,7 +32,7 @@ test: test/unit
 test-all: test/unit test/functional test/integration
 
 test/unit:
-	go test --tags=unit ./...
+	go test --tags=unit ./... -cover
 	npm --prefix ./frontend/dashboard-admin/ test -- --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- --watchAll=false
 
@@ -40,6 +41,17 @@ test/functional:
 
 test/integration:
 	go test --tags=integration ./...
+
+lint:
+	golangci-lint run
+	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd -
+
+benchmark:
+	go test -gcflags="-N" ./... -bench=.
+
+coverage:
+	go test --coverprofile ./.coverage ./...
+	go tool cover -html ./.coverage
 
 setup:
 	bash ./setup.sh
