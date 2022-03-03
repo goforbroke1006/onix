@@ -18,9 +18,6 @@ services:
       - ./frontend/dashboard-main/build:/usr/share/nginx/html
     ports:
       - "3001:80"
-    depends_on:
-      - api-dashboard-main
-      - frontend-dashboard-main-prod-builder
 
   frontend-dashboard-admin-prod-builder:
     restart: "on-failure"
@@ -39,9 +36,6 @@ services:
       - ./frontend/dashboard-admin/build:/usr/share/nginx/html
     ports:
       - "3002:80"
-    depends_on:
-      - api-dashboard-admin
-      - frontend-dashboard-admin-prod-builder
 
   api-system:
     restart: "on-failure"

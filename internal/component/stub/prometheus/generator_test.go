@@ -42,7 +42,7 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 		{
 			name: "positive - closed range = 1 item in result",
 			args: args{query: "hello world", start: time.Time{}, stop: time.Time{}, step: time.Minute},
-			want: []seriesPoint{{-62135596800, 0.04506781937739904}},
+			want: []seriesPoint{{-62135596800, 0.5007022298180581}},
 		},
 		{
 			name: "negative - invalid range = no result",
@@ -58,10 +58,10 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 				step:  5 * time.Minute,
 			},
 			want: []seriesPoint{
-				{645007500, 0.41303833217359776},
-				{645007800, 0.9810321297774659},
-				{645008100, 0.7486117241962266},
-				{645008400, 0.42187743326370014},
+				{645007500, 0.5452772128272665},
+				{645007800, 0.9309666611451856},
+				{645008100, 0.32090824169586474},
+				{645008400, 0.6830072977477972},
 			},
 		},
 	}

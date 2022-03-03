@@ -35,19 +35,19 @@ VALUES ('foo/backend', '2.1.0', '2020-12-26 00:00:00'),   -- 1608940800
 INSERT INTO criteria (service, title, selector, expected_dir, grouping_interval)
 VALUES ('foo/backend', 'processing duration instrument=ONE',
         'histogram_quantile(0.95, sum(increase(api_request_count{environment="prod",instrument="one"}[15m])) by (le))',
-        'decrease', '15m'),
+        'decrease', '5m'),
        ('foo/backend', 'processing duration instrument=TWO',
         'histogram_quantile(0.95, sum(increase(api_request_count{environment="prod",instrument="two"}[15m])) by (le))',
-        'decrease', '15m'),
+        'decrease', '5m'),
        ('bar/backend', 'processing duration API',
         'histogram_quantile(0.95, sum(increase(api_request_count{environment="prod"}[15m])) by (le))',
-        'decrease', '15m'),
+        'decrease', '5m'),
        ('acme/backend', 'processing duration API',
         'histogram_quantile(0.95, sum(increase(api_request_count{environment="prod"}[15m])) by (le))',
-        'decrease', '15m'),
+        'decrease', '5m'),
        ('acme/backend', 'income events count',
         'histogram_quantile(0.95, sum(increase(income_count{environment="prod"}[15m])) by (le))',
-        'decrease', '15m')
+        'decrease', '5m')
 ;
 
 -- -- fake data for processing duration instrument=ONE

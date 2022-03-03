@@ -55,7 +55,7 @@ type fakeMetricsIdempotentGenerator struct {
 }
 
 func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time, step time.Duration) []seriesPoint {
-	rand.Seed(g.hash(query))
+	hash := g.hash(query)
 
 	if step == 0 {
 		panic(fmt.Errorf("step should not be zero"))
@@ -67,6 +67,7 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 	var result []seriesPoint
 	current := start
 	for current.Before(stop) || current.Equal(stop) {
+		rand.Seed(hash * current.UnixNano())
 		result = append(result, seriesPoint{
 			timestamp: current.Unix(),
 			value:     rand.Float64(),
