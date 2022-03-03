@@ -1,6 +1,13 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 class ReleaseDropDown extends React.Component {
+    static propTypes = {
+        serviceName: PropTypes.string,
+        onChange: PropTypes.func,
+        provider: PropTypes.object,
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -22,7 +29,7 @@ class ReleaseDropDown extends React.Component {
         return (
             <div>
                 <select onChange={this.onChange} value={this.state.value}>
-                    {this.state.items.map(function (object, index) {
+                    {this.state.items.map(function (object) {
                         return (
                             <option key={"service-select-option-" + object.id}
                                     value={object.id}>

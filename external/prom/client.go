@@ -50,6 +50,7 @@ func (c client) QueryRange(query string, start, end time.Time, step, timeout tim
 	addr := fmt.Sprintf("%s/api/v1/query_range?query=%s&start=%d&end=%d&step=%d&timeout=%d",
 		c.addr, url.QueryEscape(query), start.Unix(), end.Unix(), int(step.Seconds()), int(timeout.Seconds()),
 	)
+	fmt.Println(addr)
 
 	req, _ := http.NewRequest(http.MethodGet, addr, nil)
 	req.Header.Add("Accept", "application/json")

@@ -1,9 +1,16 @@
 import React from "react";
 import DateTime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
-import {Moment} from 'moment';
+// import {Moment} from 'moment';
+import PropTypes from "prop-types";
 
 class DateTimePickerWithLimits extends React.Component {
+    static propTypes = {
+        from: PropTypes.number,
+        till: PropTypes.number,
+        onChange: PropTypes.func,
+    };
+
     constructor(props) {
         super(props);
         this.state = {

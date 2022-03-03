@@ -1,7 +1,23 @@
 import React from "react";
 import CompareReleasesChart from "../CompareReleasesChart";
+import PropTypes from "prop-types";
 
 class CompareReleasesPanel extends React.Component {
+    static propTypes = {
+        provider: PropTypes.object,
+
+        serviceTitle: PropTypes.string,
+
+        releaseOneTitle: PropTypes.string,
+        releaseOneStartAt: PropTypes.any,
+        releaseOneSourceId: PropTypes.number,
+
+        releaseTwoTitle: PropTypes.string,
+        releaseTwoStartAt: PropTypes.any,
+        releaseTwoSourceId: PropTypes.number,
+
+        period: PropTypes.string,
+    };
 
     constructor(props) {
         super(props);
@@ -31,17 +47,17 @@ class CompareReleasesPanel extends React.Component {
                 <ul>
                     {this.state.reports.map((report, index) => {
                         return (
-                            <li><a href={"#" + report.title}>{report.title}</a></li>
+                            <li key={`jump-to-${index}`}><a href={"#" + report.title}>{report.title}</a></li>
                         )
                     })}
                 </ul>
                 <div>
                     {this.state.reports.map((report, index) => {
                         return (
-                            <div>
+                            <div key={`wrap-chart-${index}`}>
                                 <span id={report.title}>&nbsp;</span>
                                 <CompareReleasesChart
-                                    key={"chart-" + index}
+                                    key={`chart-${index}`}
                                     title={report.title}
                                     measurements={report.measurements}
                                     releaseOneStartAt={this.props.releaseOneStartAt}

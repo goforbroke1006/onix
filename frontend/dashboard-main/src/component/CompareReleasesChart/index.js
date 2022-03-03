@@ -1,7 +1,15 @@
 import React from "react";
+import PropTypes from 'prop-types';
 import {Chart} from "react-google-charts";
 
 class CompareReleasesChart extends React.Component {
+    static propTypes = {
+        title: PropTypes.any,
+        measurements: PropTypes.any,
+        releaseOneStartAt: PropTypes.any,
+        releaseTwoStartAt: PropTypes.any,
+    };
+
     constructor(props) {
         super(props);
         this.state = {

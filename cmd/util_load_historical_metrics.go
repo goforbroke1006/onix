@@ -66,6 +66,9 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 					break
 				}
 
+				fmt.Printf("loading %s (%d criteria)\n",
+					startAt.Format("2006 Jan 02"), len(criteriaList))
+
 				for _, cr := range criteriaList {
 					source, err := sourceRepo.Get(sourceID)
 					if err != nil {
@@ -78,10 +81,14 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 						panic(err)
 					}
 
+					fmt.Printf("for criteria '%s' loaded series len=%d\n",
+						cr.Title, len(criteriaList))
 					if len(series) == 0 {
 						fmt.Printf("no '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
 						continue
 					}
+
+					fmt.Printf("load '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
 
 					batch := make([]domain.MeasurementRow, 0, len(series))
 					for _, item := range series {
@@ -94,7 +101,6 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 						panic(err)
 					}
 				}
-				fmt.Printf("load %s\n", startAt.Format("2006 Jan 02"))
 
 				startAt = startAt.Add(24 * time.Hour)
 				stopAt = stopAt.Add(24 * time.Hour)

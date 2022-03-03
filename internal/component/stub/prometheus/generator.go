@@ -77,6 +77,7 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 }
 
 const defaultIdempotentSeed = 123
+const defaultIdempotentBoost = 12
 
 // hash generates int64 16-digit number for provided query
 func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
@@ -85,14 +86,21 @@ func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
 
 	// mix up with string content
 	for index, letter := range query {
-		result *= int64(letter)%int64(index+1) + 1
+		result += int64(letter) * int64(index)
 	}
 
 	// raise digits count in result
 	bound := int64(math.Pow(10, expectedLen))
 	for result < bound {
-		result *= result
+		//next := result * result
+		//if next == result {
+		//	break
+		//}
+		//result = next
+		result *= defaultIdempotentBoost
 	}
+
+	result *= defaultIdempotentBoost
 
 	// cut extra digits
 	str := fmt.Sprintf("%d", result)[:expectedLen]

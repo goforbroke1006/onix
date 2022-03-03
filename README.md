@@ -32,6 +32,7 @@ Allow to establish the fact of components regression.
 Run demo with commands:
 
 ```shell
+docker-compose down --volumes --remove-orphans
 docker-compose build
 docker-compose up -d
 sleep 30 # wait for frontend-prod-builder finished work

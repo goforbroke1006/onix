@@ -7,7 +7,7 @@ require (
 	github.com/getkin/kin-openapi v0.90.0 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/jackc/pgx/v4 v4.15.0
-	github.com/labstack/echo/v4 v4.6.3
+	github.com/labstack/echo/v4 v4.7.0
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0

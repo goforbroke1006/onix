@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
@@ -38,10 +39,11 @@ func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) erro
 	}
 
 	var (
-		start time.Time
-		stop  time.Time
-		step  time.Duration
-		err   error
+		start   time.Time
+		stop    time.Time
+		step    time.Duration
+		timeout time.Duration
+		err     error
 	)
 
 	// TODO: fix auto-gen validation
@@ -54,6 +56,10 @@ func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) erro
 	}
 	// TODO: fix auto-gen validation
 	if step, _ = s.canParseDuration(params.Step); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+	// TODO: fix auto-gen validation
+	if timeout, _ = s.canParseDuration(string(params.Timeout)); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -76,17 +82,27 @@ func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) erro
 	queryRangeResult := QueryRangeResult{
 		Metric: QueryRangeResult_Metric{},
 	}
-	gen := fakeMetricsIdempotentGenerator{}
-	for _, si := range gen.Load(params.Query, start, stop, step) {
-		var (
-			timestamp = float64(si.timestamp)
-			val       = fmt.Sprintf("%f", si.value)
-		)
-		queryRangeResult.Values = append(queryRangeResult.Values, []interface{}{timestamp, val})
-	}
-	resp.Data.Result = append(resp.Data.Result, queryRangeResult)
 
-	return ctx.JSON(http.StatusOK, resp)
+	ctx2, cancel2 := context.WithTimeout(ctx.Request().Context(), timeout)
+
+	go func() {
+		defer cancel2()
+
+		gen := fakeMetricsIdempotentGenerator{}
+		for _, si := range gen.Load(params.Query, start, stop, step) {
+			var (
+				timestamp = float64(si.timestamp)
+				val       = fmt.Sprintf("%f", si.value)
+			)
+			queryRangeResult.Values = append(queryRangeResult.Values, []interface{}{timestamp, val})
+		}
+		resp.Data.Result = append(resp.Data.Result, queryRangeResult)
+	}()
+
+	select {
+	case <-ctx2.Done():
+		return ctx.JSON(http.StatusOK, resp)
+	}
 }
 
 func (s server) canParseTime(str string) (time.Time, error) {

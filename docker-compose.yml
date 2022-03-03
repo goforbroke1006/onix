@@ -123,7 +123,7 @@ services:
       postgres:
         condition: service_healthy
 
-  fixture:
+  fixture-common:
     restart: 'on-failure'
     image: amacneil/dbmate:v1.12
     command: '-d /fixtures up'
@@ -134,6 +134,49 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  stub-prometheus:
+    restart: "on-failure"
+    build:
+      dockerfile: .docker-compose/golang-runner/Dockerfile
+      context: ./
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "stub prometheus"
+    ports: [ "19091:19090" ]
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres ]
+
+  fixture-foo-backend-measurement:
+    restart: "on-failure"
+    image: golang:1.16-alpine
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go util load-historical-metrics --service=foo/backend --from=2020-10-25 --till=2021-02-26 --source=1"
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres, stub-prometheus ]
+
+  fixture-bar-backend-measurement:
+    restart: "on-failure"
+    image: golang:1.16-alpine
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go util load-historical-metrics --service=bar/backend --from=2021-09-30 --till=2022-04-10 --source=1"
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres, stub-prometheus ]
+
+  fixture-acme-backend-measurement:
+    restart: "on-failure"
+    image: golang:1.16-alpine
+    volumes:
+      - ./:/go/src/github.com/goforbroke1006/onix
+    working_dir: /go/src/github.com/goforbroke1006/onix
+    command: "go run main.go util load-historical-metrics --service=acme/backend --from=2021-12-12 --till=2022-04-10 --source=1"
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres, stub-prometheus ]
 
 volumes:
   postgresql-data: ~

@@ -1,6 +1,12 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export default class ServiceDropDown extends React.Component {
+    static propTypes = {
+        onChange: PropTypes.func,
+        provider: PropTypes.object,
+    };
+
     constructor(props) {
         super(props);
         this.state = {

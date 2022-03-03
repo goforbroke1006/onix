@@ -1,8 +1,14 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const defaultValue = "1h";
 
-class PeriodDropDown extends React.Component {
+export default class PeriodDropDown extends React.Component {
+    static propTypes = {
+        onChange: PropTypes.func,
+        provider: PropTypes.object,
+    };
+
     constructor(props) {
         super(props);
 
@@ -17,7 +23,7 @@ class PeriodDropDown extends React.Component {
     render() {
         return (
             <select onChange={this.onChange} value={this.state.value}>
-                {this.state.items.map((period, index) => {
+                {this.state.items.map((period) => {
                     return (
                         <option key={"period-" + period} value={"" + period}>{period}</option>
                     )
@@ -36,5 +42,3 @@ class PeriodDropDown extends React.Component {
         }
     }
 }
-
-export default PeriodDropDown;

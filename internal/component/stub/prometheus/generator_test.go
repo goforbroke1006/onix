@@ -87,12 +87,17 @@ func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) {
 		{
 			name: "positive - empty string, got default seed",
 			args: args{query: ""},
-			want: 5238909442826288,
+			want: 1579219711395102,
 		},
 		{
 			name: "positive - str 1",
 			args: args{query: "hello world"},
-			want: 5906255178327130,
+			want: 6144619784920104,
+		},
+		{
+			name: "positive 2 - more real sample",
+			args: args{query: `histogram_quantile(0.95, sum(increase(api_request_count{environment="prod",instrument="one"}[15m])) by (le))`},
+			want: 3845172339482296,
 		},
 	}
 	for _, tt := range tests {
