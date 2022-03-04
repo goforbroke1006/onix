@@ -99,10 +99,8 @@ func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) erro
 		resp.Data.Result = append(resp.Data.Result, queryRangeResult)
 	}()
 
-	select {
-	case <-ctx2.Done():
-		return ctx.JSON(http.StatusOK, resp)
-	}
+	<-ctx2.Done()
+	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (s server) canParseTime(str string) (time.Time, error) {

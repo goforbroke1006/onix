@@ -46,7 +46,7 @@ test/integration:
 
 lint:
 	golangci-lint run
-	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd -
+	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd ./../../
 
 benchmark:
 	go test -gcflags="-N" ./... -bench=.
