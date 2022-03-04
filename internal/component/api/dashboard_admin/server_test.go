@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,7 +15,48 @@ import (
 
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/internal/repository/mocks"
+	"github.com/goforbroke1006/onix/pkg/log"
 )
+
+func TestNewServer(t *testing.T) {
+	type args struct {
+		serviceRepo  domain.ServiceRepository
+		releaseRepo  domain.ReleaseRepository
+		sourceRepo   domain.SourceRepository
+		criteriaRepo domain.CriteriaRepository
+		logger       log.Logger
+	}
+	tests := []struct {
+		name string
+		args args
+		want *server
+	}{
+		{
+			name: "positive - returns instance",
+			args: args{
+				serviceRepo:  nil,
+				releaseRepo:  nil,
+				sourceRepo:   nil,
+				criteriaRepo: nil,
+				logger:       nil,
+			},
+			want: &server{
+				serviceRepo:  nil,
+				releaseRepo:  nil,
+				sourceRepo:   nil,
+				criteriaRepo: nil,
+				logger:       nil,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewServer(tt.args.serviceRepo, tt.args.releaseRepo, tt.args.sourceRepo, tt.args.criteriaRepo, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewServer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func Test_server_GetService(t *testing.T) {
 	type fields struct {
@@ -182,7 +225,7 @@ func Test_server_GetSource(t *testing.T) {
 			},
 			args:           args{},
 			wantErr:        false,
-			wantStatusCode: 200,
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "positive 2 - several sources",
@@ -225,6 +268,114 @@ func Test_server_GetSource(t *testing.T) {
 
 			if err := s.GetSource(ctx); (err != nil) != tt.wantErr {
 				t.Errorf("GetSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if rec.Code != tt.wantStatusCode {
+				t.Errorf("GetService() code = %v, want %v", rec.Code, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func Test_server_PostCriteria(t *testing.T) {
+	type fields struct {
+		criteriaRepo func(ctrl *gomock.Controller) domain.CriteriaRepository
+	}
+	type args struct {
+		postBody string
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantStatusCode int
+	}{
+		{
+			name: "negative 1 - DB fail",
+			fields: fields{
+				criteriaRepo: func(ctrl *gomock.Controller) domain.CriteriaRepository {
+					repo := mocks.NewMockCriteriaRepository(ctrl)
+					repo.EXPECT().
+						Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+						Return(int64(0), errors.New("tcp fake error"))
+					return repo
+				},
+			},
+			args: args{
+				postBody: `{
+	"service_name": "foo/backend", 
+	"title":        "some criteria", 
+	"selector":     "some query", 
+	"interval":     "5m", 
+	"expected_dir": "equal" 
+}`,
+			},
+			wantErr:        true,
+			wantStatusCode: 0,
+		},
+		{
+			name:   "negative 1 - broken post data",
+			fields: fields{},
+			args: args{
+				postBody: `{
+	"service_name": "foo/backend", 
+	"title":        "some criteria", 
+	"selector":     "some query", 
+	"interval":     "5m", 
+	"expected_dir": "eq`,
+			},
+			wantErr:        true,
+			wantStatusCode: 0,
+		},
+		{
+			name: "positive 1 - stored OK",
+			fields: fields{
+				criteriaRepo: func(ctrl *gomock.Controller) domain.CriteriaRepository {
+					repo := mocks.NewMockCriteriaRepository(ctrl)
+					repo.EXPECT().
+						Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+						Return(int64(1), nil)
+					return repo
+				},
+			},
+			args: args{
+				postBody: `{
+	"service_name": "foo/backend", 
+	"title":        "some criteria", 
+	"selector":     "some query", 
+	"interval":     "5m", 
+	"expected_dir": "equal" 
+}`,
+			},
+			wantErr:        false,
+			wantStatusCode: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			var (
+				criteriaRepo domain.CriteriaRepository
+			)
+
+			if tt.fields.criteriaRepo != nil {
+				criteriaRepo = tt.fields.criteriaRepo(mockCtrl)
+			}
+
+			s := server{
+				criteriaRepo: criteriaRepo,
+				logger:       log.NewLogger(),
+			}
+
+			req, _ := http.NewRequest(http.MethodGet, "", strings.NewReader(tt.args.postBody))
+			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
+			ctx := echo.New().NewContext(req, rec)
+
+			if err := s.PostCriteria(ctx); (err != nil) != tt.wantErr {
+				t.Errorf("PostCriteria() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if rec.Code != tt.wantStatusCode {

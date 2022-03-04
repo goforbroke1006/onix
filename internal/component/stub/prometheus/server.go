@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+
+	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
 )
 
 func NewServer() *server {
@@ -17,7 +19,7 @@ func NewServer() *server {
 }
 
 var (
-	_ ServerInterface = &server{}
+	_ apiSpec.ServerInterface = &server{}
 )
 
 type server struct {
@@ -27,12 +29,12 @@ func (s server) GetHealthz(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "ok")
 }
 
-func (s server) GetQuery(ctx echo.Context) error {
+func (s server) GetQuery(_ echo.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) error {
+func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangeParams) error {
 	// TODO: fix auto-gen validation
 	if len(params.Query) == 0 {
 		return ctx.NoContent(http.StatusBadRequest)
@@ -71,16 +73,16 @@ func (s server) GetQueryRange(ctx echo.Context, params GetQueryRangeParams) erro
 		stop = start.Add(24 * time.Hour)
 	}
 
-	resp := QueryRangeResponse{
-		Status: StatusSuccess,
-		Data: QueryRangeData{
-			ResultType: QueryRangeDataResultTypeMatrix,
+	resp := apiSpec.QueryRangeResponse{
+		Status: apiSpec.StatusSuccess,
+		Data: apiSpec.QueryRangeData{
+			ResultType: apiSpec.QueryRangeDataResultTypeMatrix,
 			Result:     nil,
 		},
 	}
 
-	queryRangeResult := QueryRangeResult{
-		Metric: QueryRangeResult_Metric{},
+	queryRangeResult := apiSpec.QueryRangeResult{
+		Metric: apiSpec.QueryRangeResult_Metric{},
 	}
 
 	ctx2, cancel2 := context.WithTimeout(ctx.Request().Context(), timeout)

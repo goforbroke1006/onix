@@ -36,7 +36,7 @@ test-all: test/unit test/functional test/integration
 test/unit: test/unit/backend test/unit/frontend
 
 test/unit/backend:
-	go test --tags=unit ./... -cover
+	go test --tags=unit `go list ./... | grep -v '/mocks'` -cover
 
 test/unit/frontend:
 	npm --prefix ./frontend/dashboard-admin/ test -- --watchAll=false
@@ -56,7 +56,7 @@ benchmark:
 	go test -gcflags="-N" ./... -bench=.
 
 coverage:
-	go test --coverprofile ./.coverage ./...
+	go test --coverprofile ./.coverage `go list ./... | grep -v '/mocks'`
 	go tool cover -html ./.coverage
 
 setup:

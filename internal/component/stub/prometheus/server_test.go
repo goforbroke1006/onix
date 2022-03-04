@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+
+	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
 )
 
 func Test_server_GetHealthz(t *testing.T) {
@@ -52,7 +54,7 @@ func Test_server_GetHealthz(t *testing.T) {
 func Test_server_GetQueryRange(t *testing.T) {
 	type args struct {
 		url    string
-		params GetQueryRangeParams
+		params apiSpec.GetQueryRangeParams
 	}
 	tests := []struct {
 		name         string
@@ -65,7 +67,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 			name: "negative 1 - empty query",
 			args: args{
 				url: "https://test.com/api/v1/query_range?query=&start=&end=&spte&",
-				params: GetQueryRangeParams{
+				params: apiSpec.GetQueryRangeParams{
 					Query:   "",
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
 					End:     time.Now().Format(time.RFC3339),
@@ -79,7 +81,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "negative 1 - invalid start",
 			args: args{
-				params: GetQueryRangeParams{
+				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   "2022-01-25",
 					End:     time.Now().Format(time.RFC3339),
@@ -93,7 +95,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "negative 1 - invalid end",
 			args: args{
-				params: GetQueryRangeParams{
+				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
 					End:     "2022-01-25",
@@ -107,7 +109,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "negative 1 - invalid range, end before start",
 			args: args{
-				params: GetQueryRangeParams{
+				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
 					End:     time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
@@ -121,7 +123,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "positive 1 - range = 1 hour, step = 5 minutes",
 			args: args{
-				params: GetQueryRangeParams{
+				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
 					End:     time.Now().Format(time.RFC3339),
@@ -136,7 +138,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "positive 2 - big range (1 year) should be cut to 24 hours",
 			args: args{
-				params: GetQueryRangeParams{
+				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Date(2020, time.June, 10, 12, 0, 0, 0, time.UTC).Format(time.RFC3339),
 					End:     time.Date(2021, time.June, 10, 12, 0, 0, 0, time.UTC).Format(time.RFC3339),
@@ -166,7 +168,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 
 			if tt.wantCount > 0 {
 				respBody, _ := ioutil.ReadAll(rec.Body)
-				respObj := QueryRangeResponse{}
+				respObj := apiSpec.QueryRangeResponse{}
 				if err := json.Unmarshal(respBody, &respObj); err != nil {
 					t.Error(err)
 				}

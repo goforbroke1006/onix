@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	apiSpec "github.com/goforbroke1006/onix/api/dashboard-main"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
@@ -30,7 +31,7 @@ func NewServer(
 }
 
 var (
-	_ ServerInterface = &server{}
+	_ apiSpec.ServerInterface = &server{}
 )
 
 type server struct {
@@ -48,9 +49,9 @@ func (s server) GetService(ctx echo.Context) error {
 		return err
 	}
 
-	response := make([]Service, 0, len(services))
+	response := make([]apiSpec.Service, 0, len(services))
 	for _, svc := range services {
-		response = append(response, Service{Title: svc.Title})
+		response = append(response, apiSpec.Service{Title: svc.Title})
 	}
 
 	return ctx.JSON(http.StatusOK, response)
@@ -62,13 +63,13 @@ func (s server) GetSource(ctx echo.Context) error {
 		return err
 	}
 
-	response := make([]Source, 0, len(sourcesList))
+	response := make([]apiSpec.Source, 0, len(sourcesList))
 
 	for _, src := range sourcesList {
-		response = append(response, Source{
+		response = append(response, apiSpec.Source{
 			Id:      src.ID,
 			Title:   src.Title,
-			Kind:    SourceKind(src.Kind),
+			Kind:    apiSpec.SourceKind(src.Kind),
 			Address: src.Address,
 		})
 	}
@@ -76,15 +77,15 @@ func (s server) GetSource(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-func (s server) GetRelease(ctx echo.Context, params GetReleaseParams) error {
+func (s server) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) error {
 	ranges, err := s.releaseSvc.GetAll(params.Service)
 	if err != nil {
 		return err
 	}
 
-	response := make([]Release, 0, len(ranges))
+	response := make([]apiSpec.Release, 0, len(ranges))
 	for _, r := range ranges {
-		response = append(response, Release{
+		response = append(response, apiSpec.Release{
 			Id:    r.ID,
 			Title: r.Name,
 			From:  r.StartAt.Unix(),
@@ -95,7 +96,7 @@ func (s server) GetRelease(ctx echo.Context, params GetReleaseParams) error {
 	return ctx.JSON(http.StatusOK, response)
 }
 
-func (s server) GetCompare(ctx echo.Context, params GetCompareParams) error {
+func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error {
 	const layout = "2006-01-02 15:04:05"
 
 	var (
@@ -129,7 +130,7 @@ func (s server) GetCompare(ctx echo.Context, params GetCompareParams) error {
 		return err
 	}
 
-	response := CompareResponse{
+	response := apiSpec.CompareResponse{
 		Service:    params.Service,
 		ReleaseOne: params.ReleaseOneTitle,
 		ReleaseTwo: params.ReleaseTwoTitle,
@@ -151,14 +152,14 @@ func (s server) GetCompare(ctx echo.Context, params GetCompareParams) error {
 			minLen = len(m2)
 		}
 
-		criteriaReport := CriteriaReport{
+		criteriaReport := apiSpec.CriteriaReport{
 			Title:    cr.Title,
 			Selector: cr.Selector,
-			Graph:    make([]GraphItem, 0, minLen),
+			Graph:    make([]apiSpec.GraphItem, 0, minLen),
 		}
 
 		for vi := 0; vi < minLen; vi++ {
-			criteriaReport.Graph = append(criteriaReport.Graph, GraphItem{
+			criteriaReport.Graph = append(criteriaReport.Graph, apiSpec.GraphItem{
 				T1: m1[vi].Moment.UTC().Format(layout),
 				V1: m1[vi].Value,
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	apiSpec "github.com/goforbroke1006/onix/api/dashboard-admin"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
@@ -28,7 +29,7 @@ func NewServer(
 }
 
 var (
-	_ ServerInterface = &server{}
+	_ apiSpec.ServerInterface = &server{}
 )
 
 type server struct {
@@ -49,9 +50,9 @@ func (s server) GetService(ctx echo.Context) error {
 		return err
 	}
 
-	resp := ServicesListResponse{}
+	resp := apiSpec.ServicesListResponse{}
 	for _, svc := range services {
-		service := Service{
+		service := apiSpec.Service{
 			Title:    svc.Title,
 			Releases: []string{},
 		}
@@ -75,12 +76,12 @@ func (s server) GetSource(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	resp := make(SourceListResponse, 0, len(sources))
+	resp := make(apiSpec.SourceListResponse, 0, len(sources))
 	for _, s := range sources {
-		resp = append(resp, Source{
+		resp = append(resp, apiSpec.Source{
 			Id:      s.ID,
 			Title:   s.Title,
-			Kind:    SourceKind(s.Kind),
+			Kind:    apiSpec.SourceKind(s.Kind),
 			Address: s.Address,
 		})
 	}
@@ -88,7 +89,7 @@ func (s server) GetSource(ctx echo.Context) error {
 }
 
 func (s server) PostCriteria(ctx echo.Context) error {
-	requestBody := CreateCriteriaRequest{}
+	requestBody := apiSpec.CreateCriteriaRequest{}
 	if err := json.NewDecoder(ctx.Request().Body).Decode(&requestBody); err != nil {
 		return err
 	}
@@ -102,9 +103,9 @@ func (s server) PostCriteria(ctx echo.Context) error {
 
 	s.logger.Info("create new criteria")
 
-	resp := CreateResourceResponse{
+	resp := apiSpec.CreateResourceResponse{
 		NewId:  fmt.Sprintf("%d", criteriaID),
-		Status: CreateResourceResponseStatusOk,
+		Status: apiSpec.CreateResourceResponseStatusOk,
 	}
 	return ctx.JSON(http.StatusOK, resp)
 }

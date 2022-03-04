@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	apiSpec "github.com/goforbroke1006/onix/api/dashboard-admin"
 	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/internal/component/api/dashboard_admin"
 	"github.com/goforbroke1006/onix/internal/repository"
@@ -47,7 +48,7 @@ func NewApiDashboardAdminCmd() *cobra.Command {
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
 			server := dashboard_admin.NewServer(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
 
-			dashboard_admin.RegisterHandlersWithBaseURL(router, server, baseURL)
+			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); err != http.ErrServerClosed {
 				logger.WithErr(err).Fatal("can't run server")
 			}

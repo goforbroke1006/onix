@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
 	"github.com/goforbroke1006/onix/internal/component/stub/prometheus"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
 	"github.com/goforbroke1006/onix/pkg/log"
@@ -32,7 +33,7 @@ func NewStubPrometheusCmd() *cobra.Command {
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
 			server := prometheus.NewServer()
 
-			prometheus.RegisterHandlersWithBaseURL(router, server, baseURL)
+			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); err != http.ErrServerClosed {
 				logger.WithErr(err).Fatal("can't run server")
 			}
