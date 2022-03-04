@@ -33,8 +33,12 @@ build:
 test: test/unit
 test-all: test/unit test/functional test/integration
 
-test/unit:
+test/unit: test/unit/backend test/unit/frontend
+
+test/unit/backend:
 	go test --tags=unit ./... -cover
+
+test/unit/frontend:
 	npm --prefix ./frontend/dashboard-admin/ test -- --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- --watchAll=false
 

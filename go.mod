@@ -6,6 +6,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.9.1
 	github.com/getkin/kin-openapi v0.90.0 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/labstack/echo/v4 v4.7.0
 	github.com/mailru/easyjson v0.7.7 // indirect

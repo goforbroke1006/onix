@@ -4,6 +4,7 @@ sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/rele
 sudo chmod +x /usr/local/bin/dbmate
 
 go get -u github.com/deepmap/oapi-codegen/cmd/oapi-codegen
+go install github.com/golang/mock/mockgen@v1.6.0
 
 sudo apt-get install -y gcc g++ make
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
