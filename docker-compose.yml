@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   frontend-dashboard-main-prod-builder:
-    restart: "on-failure"
+    restart: "always"
     build:
       dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
       context: ./
@@ -12,14 +12,14 @@ services:
       REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
 
   frontend-dashboard-main-prod:
-    restart: "always"
+    restart: "on-failure"
     image: nginx:1.21.6-alpine
     volumes:
       - ./frontend/dashboard-main/build:/usr/share/nginx/html
     ports: [ "3001:80" ]
 
   frontend-dashboard-admin-prod-builder:
-    restart: "on-failure"
+    restart: "always"
     build:
       dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
       context: ./
@@ -29,7 +29,7 @@ services:
       REACT_APP_API_DASHBOARD_ADMIN_BASE_ADDR: http://localhost:8083/api/dashboard-admin
 
   frontend-dashboard-admin-prod:
-    restart: "always"
+    restart: "on-failure"
     image: nginx:1.21.6-alpine
     volumes:
       - ./frontend/dashboard-admin/build:/usr/share/nginx/html
@@ -131,9 +131,9 @@ services:
         condition: service_healthy
 
   fixture-common:
-    restart: 'on-failure'
+    restart: "on-failure"
     image: amacneil/dbmate:v1.12
-    command: '-d /fixtures up'
+    command: "-d /fixtures up"
     environment:
       DATABASE_URL: postgres://onix:onix@postgres:5432/onix?sslmode=disable
     volumes:
