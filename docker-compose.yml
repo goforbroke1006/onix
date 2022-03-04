@@ -16,8 +16,7 @@ services:
     image: nginx:1.21.6-alpine
     volumes:
       - ./frontend/dashboard-main/build:/usr/share/nginx/html
-    ports:
-      - "3001:80"
+    ports: [ "3001:80" ]
 
   frontend-dashboard-admin-prod-builder:
     restart: "on-failure"
@@ -34,8 +33,7 @@ services:
     image: nginx:1.21.6-alpine
     volumes:
       - ./frontend/dashboard-admin/build:/usr/share/nginx/html
-    ports:
-      - "3002:80"
+    ports: [ "3002:80" ]
 
   api-system:
     restart: "on-failure"
@@ -49,6 +47,11 @@ services:
     ports: [ "8081:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/system/healthz" ]
+      timeout: 1s
+      interval: 1s
+      retries: 15
 
   api-dashboard-main:
     restart: "on-failure"
@@ -62,6 +65,11 @@ services:
     ports: [ "8082:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/dashboard-main/healthz" ]
+      timeout: 1s
+      interval: 1s
+      retries: 15
 
   api-dashboard-admin:
     restart: "on-failure"
@@ -75,6 +83,11 @@ services:
     ports: [ "8083:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/dashboard-admin/healthz" ]
+      timeout: 1s
+      interval: 1s
+      retries: 15
 
   daemon-metrics-extractor:
     restart: "on-failure"

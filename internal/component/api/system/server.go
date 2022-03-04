@@ -28,6 +28,10 @@ type server struct {
 	logger      log.Logger
 }
 
+func (s server) GetHealthz(ctx echo.Context) error {
+	return ctx.NoContent(http.StatusOK)
+}
+
 func (s server) GetRegister(ctx echo.Context, params GetRegisterParams) error {
 	startAt := time.Now().UTC()
 	if params.StartAt != nil {

@@ -40,6 +40,10 @@ type server struct {
 	logger       log.Logger
 }
 
+func (s server) GetHealthz(ctx echo.Context) error {
+	return ctx.NoContent(http.StatusOK)
+}
+
 func (s server) GetService(ctx echo.Context) error {
 	const (
 		defaultReleasesCount = 5

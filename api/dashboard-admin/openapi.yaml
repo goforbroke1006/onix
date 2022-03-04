@@ -6,6 +6,15 @@ info:
 servers:
   - url: 'http//localhost:8083/api/admin'
 paths:
+  /healthz:
+    get:
+      responses:
+        200:
+          description: health check for docker-compose
+          content:
+            application/json:
+              schema:
+                type: string
   /service:
     get:
       responses:

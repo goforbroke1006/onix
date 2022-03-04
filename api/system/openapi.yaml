@@ -6,6 +6,15 @@ info:
 servers:
   - url: 'http//127.0.0.1:8081/api/system'
 paths:
+  /healthz:
+    get:
+      responses:
+        200:
+          description: health check for docker-compose
+          content:
+            application/json:
+              schema:
+                type: string
   /register:
     get:
       parameters:
