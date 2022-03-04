@@ -1,8 +1,12 @@
 import React from "react";
-import DateTime from "react-datetime";
+// import DateTime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
-// import {Moment} from 'moment';
+// import moment from 'moment';
 import PropTypes from "prop-types";
+import {DatePicker} from "antd";
+import moment from 'moment-timezone';
+
+// import locale from 'antd/es/date-picker/locale/';
 
 class DateTimePickerWithLimits extends React.Component {
     static propTypes = {
@@ -14,25 +18,29 @@ class DateTimePickerWithLimits extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            value: new Date(parseInt(this.props.from) * 1000),
+            value: moment.tz(new Date(this.props.from * 1000), "UTC"),
         }
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.from !== this.props.from) {
-            this.setState({
-                value: new Date(parseInt(this.props.from) * 1000),
-            })
+            let m = moment.tz(new Date(this.props.from * 1000), "UTC");
+            this.setState({value: m});
+            if (this.props.onChange) {
+                this.props.onChange(m.unix());
+            }
         }
     }
 
     render() {
         return (
             <div>
-                <DateTime value={this.state.value}
-                          utc={true}
-                          onChange={this.onChange}
-                />
+                <DatePicker value={moment(this.state.value, 'YYYY-MM-DD')} showTime={true} onChange={this.onChange}/>
+                {/*<DateTime value={this.state.value}*/}
+                {/*          utc={true}*/}
+                {/*          onChange={this.onChange}*/}
+                {/*/>*/}
+                <br/>
                 <span>{new Date(this.props.from * 1000).toUTCString()} - {new Date(this.props.till * 1000).toUTCString()}</span>
             </div>
         )
@@ -40,13 +48,16 @@ class DateTimePickerWithLimits extends React.Component {
 
     /**
      *
-     * @param {Moment} moment
+     * @param {Moment} date
+     * @param {String} dateString
      */
-    onChange = (moment) => {
-        this.setState({value: moment.toDate()})
+    onChange = (date, dateString) => {
+        console.log(dateString);
+
+        this.setState({value: date});
 
         if (this.props.onChange) {
-            this.props.onChange(moment.unix());
+            this.props.onChange(date.unix());
         }
     }
 }

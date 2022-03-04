@@ -19,6 +19,8 @@ dep:
 gen:
 	@echo "Generate backend boilerplate code"
 	go generate ./...
+
+gen/frontend/snapshot:
 	@echo "Generate jest test snapshots"
 	npm --prefix ./frontend/dashboard-admin/ test -- -u --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false

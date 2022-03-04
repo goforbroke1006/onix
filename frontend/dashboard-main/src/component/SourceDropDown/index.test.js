@@ -1,20 +1,27 @@
 import React from "react";
-import {mount, shallow} from "enzyme";
 
+import {shallow} from "enzyme";
+
+import {Select} from "antd";
 import SourceDropDown from "./index";
 
-describe('<SourceDropDown /> rendering', () => {
-    it('renders correctly', () => {
-        const client = new MockDashboardMainApiClient();
-        const wrapper = mount(<SourceDropDown provider={client}/>);
+const {Option} = Select;
 
-        fakeSourcesListPromise.then(() => {
-            wrapper.update();
-            expect(wrapper).toMatchSnapshot();
-        });
+describe('<SourceDropDown /> rendering', () => {
+    it('renders correctly', async () => {
+        const client = new MockDashboardMainApiClient();
+        const wrapper = shallow(<SourceDropDown provider={client}/>);
+
+        expect(wrapper.find(Select).find(Option)).toHaveLength(1); // only "no data" option
+
+        await fakeSourcesListPromise;
+        wrapper.update();
+
+        expect(wrapper.find(Select).find(Option)).toHaveLength(4); // 4 option - "none" and 3 sources
+        expect(wrapper).toMatchSnapshot();
     });
 
-    it('onChange callback works', () => {
+    it('onChange callback works', async () => {
         const expectedValue = 101;
         let actualValue = 0;
         let onChangeSpy = function (sourceId) {
@@ -22,10 +29,16 @@ describe('<SourceDropDown /> rendering', () => {
         }
 
         const wrapper = shallow(<SourceDropDown provider={new MockDashboardMainApiClient()} onChange={onChangeSpy}/>);
-        wrapper.find('select').at(0).simulate('change', {
-            target: {value: '101', name: 'item1'}
-        });
+        expect(wrapper.find(Select)).toHaveLength(1);
+        expect(wrapper.find(Select).find(Option)).toHaveLength(1); // only "no data" option
 
+        await fakeSourcesListPromise;
+        wrapper.update();
+
+        expect(wrapper.find(Select)).toHaveLength(1);
+        expect(wrapper.find(Select).find(Option)).toHaveLength(4); // 4 option - "none" and 3 sources
+
+        wrapper.find(Select).simulate("change", "101");
         expect(actualValue).toEqual(expectedValue);
     });
 });

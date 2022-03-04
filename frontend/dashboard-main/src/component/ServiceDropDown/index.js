@@ -1,5 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
+import {Select} from "antd";
+
+const {Option} = Select;
 
 export default class ServiceDropDown extends React.Component {
     static propTypes = {
@@ -19,9 +22,7 @@ export default class ServiceDropDown extends React.Component {
         this.loadServices();
     }
 
-    onChange = (event) => {
-        let serviceName = event.target.value;
-
+    onChange = (serviceName) => {
         console.log(serviceName);
 
         this.setState({value: serviceName});
@@ -31,22 +32,28 @@ export default class ServiceDropDown extends React.Component {
     }
 
     render() {
+        let emptyOption;
+        if (this.state.items.length === 0) {
+            emptyOption = (<Option value={""}>-- no data --</Option>)
+        } else {
+            emptyOption = (<Option value={""}>-- none --</Option>)
+        }
+
         return (
-            <div>
-                <select onChange={this.onChange} value={this.state.value}>
-                    <option>----</option>
-                    {this.state.items.map((object, index) => {
-                        return (
-                            <option key={"service-select-option-" + index}
-                                    value={object.title}>{object.title}</option>
-                        )
-                    })}
-                </select>
-            </div>
+            <Select defaultValue={this.state.value} style={{width: 600}} onChange={this.onChange}>
+                {emptyOption}
+                {this.state.items.map((object, index) => {
+                    return (
+                        <Option key={"service-select-option-" + index}
+                                value={object.title}>{object.title}</Option>
+                    )
+                })}
+            </Select>
         )
     }
 
     loadServices = () => {
-        this.props.provider.loadServices().then(data => this.setState({items: data}))
+        this.props.provider.loadServices()
+            .then(data => this.setState({items: data}))
     }
 }

@@ -42,7 +42,7 @@ echo "Open admin dashboard http://localhost:3002/"
 ```
 
 <kbd>
-    <img src="docs/demo-screen.png" alt="Main dashboard screenshot"/>
+    <img src="docs/frontend-dashboard-main.png" alt="Main dashboard screenshot"/>
 </kbd>
 
 

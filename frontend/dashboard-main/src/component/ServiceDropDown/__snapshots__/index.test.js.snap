@@ -1,36 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<ServiceDropDown /> rendering renders correctly 1`] = `
-<ServiceDropDown
-  provider={MockDashboardMainApiClient {}}
+exports[`<ServiceDropDown /> component renders correctly 1`] = `
+<ForwardRef(InternalSelect)
+  defaultValue=""
+  onChange={[Function]}
+  style={
+    Object {
+      "width": 600,
+    }
+  }
 >
-  <div>
-    <select
-      onChange={[Function]}
-      value=""
-    >
-      <option>
-        ----
-      </option>
-      <option
-        key="service-select-option-0"
-        value="acme/backend"
-      >
-        acme/backend
-      </option>
-      <option
-        key="service-select-option-1"
-        value="foo/backend"
-      >
-        foo/backend
-      </option>
-      <option
-        key="service-select-option-2"
-        value="bar/backend"
-      >
-        bar/backend
-      </option>
-    </select>
-  </div>
-</ServiceDropDown>
+  <Option
+    value=""
+  >
+    -- none --
+  </Option>
+  <Option
+    key="service-select-option-0"
+    value="acme/backend"
+  >
+    acme/backend
+  </Option>
+  <Option
+    key="service-select-option-1"
+    value="foo/backend"
+  >
+    foo/backend
+  </Option>
+  <Option
+    key="service-select-option-2"
+    value="bar/backend"
+  >
+    bar/backend
+  </Option>
+</ForwardRef(InternalSelect)>
 `;

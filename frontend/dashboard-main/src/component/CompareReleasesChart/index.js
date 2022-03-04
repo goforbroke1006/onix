@@ -5,9 +5,7 @@ import {Chart} from "react-google-charts";
 class CompareReleasesChart extends React.Component {
     static propTypes = {
         title: PropTypes.any,
-        measurements: PropTypes.any,
-        releaseOneStartAt: PropTypes.any,
-        releaseTwoStartAt: PropTypes.any,
+        measurements: PropTypes.array,
     };
 
     constructor(props) {
@@ -15,8 +13,6 @@ class CompareReleasesChart extends React.Component {
         this.state = {
             title: props.title,
             measurements: props.measurements,
-            releaseOneStartAt: this.props.releaseOneStartAt,
-            releaseTwoStartAt: this.props.releaseTwoStartAt,
         }
     }
 
@@ -26,32 +22,22 @@ class CompareReleasesChart extends React.Component {
                 measurements: this.props.measurements,
             })
         }
-        if (prevProps.releaseOneStartAt !== this.props.releaseOneStartAt) {
-            this.setState({
-                releaseOneStartAt: this.props.releaseOneStartAt,
-            })
-        }
-        if (prevProps.releaseTwoStartAt !== this.props.releaseTwoStartAt) {
-            this.setState({
-                releaseTwoStartAt: this.props.releaseTwoStartAt,
-            })
-        }
     }
 
     render() {
-        if (null == this.state.measurements) {
+        if (!Array.isArray(this.props.measurements)) {
             return (
                 <div>--- no data ---</div>
             )
         }
 
-        const dateOne = new Date(this.state.releaseOneStartAt * 1000);
-        const dateTwo = new Date(this.state.releaseTwoStartAt * 1000);
+        // const dateOne = new Date(this.state.releaseOneStartAt * 1000);
+        // const dateTwo = new Date(this.state.releaseTwoStartAt * 1000);
 
         let options = {
-            title: `Releases performance by "${this.props.title}" criteria \n
-Release 1: ${dateOne.toUTCString()}
-Release 2: ${dateTwo.toUTCString()}`,
+//             title: `Releases performance by "${this.props.title}" criteria \n
+// Release 1: ${dateOne.toUTCString()}
+// Release 2: ${dateTwo.toUTCString()}`,
             curveType: 'function',
             legend: {position: 'bottom'},
             hAxis: {
@@ -65,7 +51,7 @@ Release 2: ${dateTwo.toUTCString()}`,
             <div>
                 <Chart
                     chartType="LineChart"
-                    data={this.state.measurements}
+                    data={this.props.measurements}
                     width="100%"
                     height="500px"
                     legendToggle

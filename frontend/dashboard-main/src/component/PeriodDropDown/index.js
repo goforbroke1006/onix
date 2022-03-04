@@ -1,5 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
+import {Select} from "antd";
+
+const {Option} = Select;
 
 const defaultValue = "1h";
 
@@ -21,24 +24,30 @@ export default class PeriodDropDown extends React.Component {
     }
 
     render() {
+        let emptyOption;
+        if (this.state.items.length === 0) {
+            emptyOption = (<Option value={""}>-- no data --</Option>)
+        } else {
+            emptyOption = (<Option value={""}>-- none --</Option>)
+        }
+
         return (
-            <select onChange={this.onChange} value={this.state.value}>
+            <Select defaultValue={this.state.value} style={{width: 600}} onChange={this.onChange}>
+                {emptyOption}
                 {this.state.items.map((period) => {
                     return (
-                        <option key={"period-" + period} value={"" + period}>{period}</option>
+                        <Option key={`period-${period}`} value={"" + period}>{period}</Option>
                     )
                 })}
-            </select>
+            </Select>
         )
     }
 
-    onChange = (event) => {
-        let selected = event.target.value;
-
-        this.setState({value: selected});
+    onChange = (period) => {
+        this.setState({value: period});
 
         if (this.props.onChange) {
-            this.props.onChange(selected);
+            this.props.onChange(period);
         }
     }
 }

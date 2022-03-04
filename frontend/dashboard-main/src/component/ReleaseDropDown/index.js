@@ -1,6 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+import {Select} from "antd";
+
+const {Option} = Select;
+
+const defaultValue = 0;
+
 class ReleaseDropDown extends React.Component {
     static propTypes = {
         serviceName: PropTypes.string,
@@ -11,6 +17,7 @@ class ReleaseDropDown extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            value: defaultValue,
             items: [],
         };
     }
@@ -26,24 +33,28 @@ class ReleaseDropDown extends React.Component {
     }
 
     render() {
+        let emptyOption;
+        if (this.state.items.length === 0) {
+            emptyOption = (<Option value={defaultValue}>-- no data --</Option>)
+        } else {
+            emptyOption = (<Option value={defaultValue}>-- none --</Option>)
+        }
+
         return (
-            <div>
-                <select onChange={this.onChange} value={this.state.value}>
-                    {this.state.items.map(function (object) {
-                        return (
-                            <option key={"service-select-option-" + object.id}
-                                    value={object.id}>
-                                {object.title}
-                            </option>
-                        )
-                    })}
-                </select>
-            </div>
+            <Select defaultValue={this.state.value} style={{width: 600}} onChange={this.onChange}>
+                {emptyOption}
+                {this.state.items.map(function (object) {
+                    return (
+                        <Option key={"service-select-option-" + object.id}
+                                value={object.id}>{object.title}</Option>
+                    )
+                })}
+            </Select>
         )
     }
 
-    onChange = (event) => {
-        let releaseId = event.target.value;
+    onChange = (releaseId) => {
+        releaseId = parseInt(releaseId);
 
         this.setState({value: releaseId});
 

@@ -1,5 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
+import {Select} from "antd";
+
+const {Option} = Select;
 
 export default class SourceDropDown extends React.Component {
     static propTypes = {
@@ -19,8 +22,8 @@ export default class SourceDropDown extends React.Component {
         this.loadSources();
     }
 
-    onChange = (event) => {
-        let sourceId = parseInt(event.target.value);
+    onChange = (sourceId) => {
+        sourceId = parseInt(sourceId);
 
         this.setState({value: sourceId});
 
@@ -29,24 +32,23 @@ export default class SourceDropDown extends React.Component {
     }
 
     render() {
+        let emptyOption;
         if (this.state.items.length === 0) {
-            return (
-                <select onChange={this.onChange} value={this.state.value}>
-                    <option>-- no data --</option>
-                </select>
-            )
+            emptyOption = (<Option value={""}>-- no data --</Option>)
+        } else {
+            emptyOption = (<Option value={""}>-- none --</Option>)
         }
 
         return (
-            <select onChange={this.onChange} value={this.state.value}>
-                <option>-- none --</option>
+            <Select defaultValue={this.state.value} style={{width: 600}} onChange={this.onChange}>
+                {emptyOption}
                 {this.state.items.map((object, index) => {
                     return (
-                        <option key={`source-${index}`}
-                                value={object.id}>{`${object.title} [${object.kind}] ${object.address}`}</option>
+                        <Option key={`source-${index}`}
+                                value={object.id}>{`${object.title} [${object.kind}] ${object.address}`}</Option>
                     )
                 })}
-            </select>
+            </Select>
         )
     }
 
