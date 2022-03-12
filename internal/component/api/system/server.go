@@ -6,11 +6,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	apiSpec "github.com/goforbroke1006/onix/api/system"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-func NewServer(serviceRepo domain.ServiceRepository, releaseRepo domain.ReleaseRepository, logger log.Logger) *server {
+// NewServer creates new server's handlers implementations instance
+func NewServer(
+	serviceRepo domain.ServiceRepository,
+	releaseRepo domain.ReleaseRepository,
+	logger log.Logger,
+) *server {
 	return &server{
 		serviceRepo: serviceRepo,
 		releaseRepo: releaseRepo,
@@ -19,7 +25,7 @@ func NewServer(serviceRepo domain.ServiceRepository, releaseRepo domain.ReleaseR
 }
 
 var (
-	_ ServerInterface = &server{}
+	_ apiSpec.ServerInterface = &server{}
 )
 
 type server struct {
@@ -32,7 +38,7 @@ func (s server) GetHealthz(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusOK)
 }
 
-func (s server) GetRegister(ctx echo.Context, params GetRegisterParams) error {
+func (s server) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams) error {
 	startAt := time.Now().UTC()
 	if params.StartAt != nil {
 		startAt = time.Unix(*params.StartAt, 0).UTC()
@@ -46,5 +52,8 @@ func (s server) GetRegister(ctx echo.Context, params GetRegisterParams) error {
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, RegisterResponse{Status: RegisterResponseStatusOk})
+	response := apiSpec.RegisterResponse{
+		Status: apiSpec.RegisterResponseStatusOk,
+	}
+	return ctx.JSON(http.StatusOK, response)
 }

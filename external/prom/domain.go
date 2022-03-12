@@ -43,7 +43,8 @@ type QueryRangeResponse struct {
 	} `json:"data"`
 }
 
-type ApiClient interface {
+// APIClient describe prom api V1 allowed method
+type APIClient interface {
 
 	// Query wraps call to https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries
 	Query(query string, timestamp time.Time, timeout time.Duration) (*QueryResponse, error)

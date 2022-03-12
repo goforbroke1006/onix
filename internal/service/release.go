@@ -6,6 +6,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewReleaseService creates service for manipulate with release data
 func NewReleaseService(repo domain.ReleaseRepository) *releaseService {
 	return &releaseService{
 		repo: repo,

@@ -1,4 +1,4 @@
-package dashboard_main
+package dashboardmain
 
-//go:generate oapi-codegen --package=dashboard_main --generate=types,skip-prune  -o ./types.generated.go  openapi.yaml
-//go:generate oapi-codegen --package=dashboard_main --generate=server,skip-prune -o ./server.generated.go openapi.yaml
+//go:generate oapi-codegen --package=dashboardmain --generate=types,skip-prune  -o ./types.generated.go  openapi.yaml
+//go:generate oapi-codegen --package=dashboardmain --generate=server,skip-prune -o ./server.generated.go openapi.yaml

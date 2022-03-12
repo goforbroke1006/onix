@@ -12,14 +12,15 @@ import (
 
 	apiSpec "github.com/goforbroke1006/onix/api/dashboard-main"
 	"github.com/goforbroke1006/onix/common"
-	"github.com/goforbroke1006/onix/internal/component/api/dashboard_main"
+	"github.com/goforbroke1006/onix/internal/component/api/dashboardmain"
 	"github.com/goforbroke1006/onix/internal/repository"
 	"github.com/goforbroke1006/onix/internal/service"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-func NewApiDashboardMainCmd() *cobra.Command {
+// NewAPIDashboardMainCmd creates dashboard-main backend cobra-command
+func NewAPIDashboardMainCmd() *cobra.Command {
 	const (
 		baseURL = "api/dashboard-main"
 	)
@@ -48,7 +49,7 @@ func NewApiDashboardMainCmd() *cobra.Command {
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := dashboard_main.NewServer(serviceRepo, releaseSvc, sourceRepo, criteriaRepo, measurementRepo, logger)
+			server := dashboardmain.NewServer(serviceRepo, releaseSvc, sourceRepo, criteriaRepo, measurementRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); err != http.ErrServerClosed {

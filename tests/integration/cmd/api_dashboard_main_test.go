@@ -7,7 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goforbroke1006/onix/internal/component/api/dashboard_main"
+	"github.com/goforbroke1006/onix/internal/component/api/dashboardmain"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -60,7 +60,7 @@ func TestExtractApiHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 	respBytes, _ := ioutil.ReadAll(resp.Body)
-	responseObj := dashboard_main.CompareResponse{}
+	responseObj := dashboardmain.CompareResponse{}
 	if err := json.Unmarshal(respBytes, &responseObj); err != nil {
 		t.Fatal(err)
 	}

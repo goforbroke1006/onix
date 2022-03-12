@@ -13,6 +13,7 @@ type seriesPoint struct {
 	value     float64
 }
 
+// FakeMetricsGenerator describe methods for metrics generator
 type FakeMetricsGenerator interface {
 	Load(query string, start, stop time.Time, step time.Duration) []seriesPoint
 }

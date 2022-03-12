@@ -6,6 +6,7 @@ sudo chmod +x /usr/local/bin/dbmate
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
 go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
 go install github.com/golang/mock/mockgen@v1.6.0
+go install golang.org/x/lint/golint
 
 sudo apt-get install -y gcc g++ make
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -

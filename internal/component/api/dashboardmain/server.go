@@ -1,4 +1,4 @@
-package dashboard_main
+package dashboardmain
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
+// NewServer creates new server's handlers implementations instance
 func NewServer(
 	serviceRepo domain.ServiceRepository,
 	releaseSvc domain.ReleaseService,

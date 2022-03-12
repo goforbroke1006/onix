@@ -55,6 +55,7 @@ test/integration:
 
 lint:
 	golangci-lint run
+	golint ./...
 	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd ./../../
 
 benchmark:

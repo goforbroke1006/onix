@@ -1,4 +1,4 @@
-package metrics_extractor
+package metricsextractor
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
+// NewApplication create metrics extractor app instance
 func NewApplication(
 	serviceRepo domain.ServiceRepository,
 	criteriaRepo domain.CriteriaRepository,

@@ -14,6 +14,7 @@ import (
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
 )
 
+// NewServer creates new server's handlers implementations instance
 func NewServer() *server {
 	return &server{}
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/goforbroke1006/onix/internal/service"
 )
 
+// NewUtilLoadHistoricalMetrics creates load history util cobra-command
 func NewUtilLoadHistoricalMetrics() *cobra.Command {
 	var (
 		serviceName string

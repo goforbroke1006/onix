@@ -10,6 +10,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewCriteriaRepository creates data exchange object with db
 func NewCriteriaRepository(conn *pgxpool.Pool) *criteriaRepository {
 	return &criteriaRepository{
 		conn: conn,

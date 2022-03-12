@@ -3,10 +3,13 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/goforbroke1006/onix/domain"
+
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewSourceRepository creates data exchange object with db
 func NewSourceRepository(conn *pgxpool.Pool) *sourceRepository {
 	return &sourceRepository{
 		conn: conn,

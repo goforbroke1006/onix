@@ -8,6 +8,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
+// ErrorHandler is middleware to create echo error handler
 func ErrorHandler(logger log.Logger) func(err error, ctx echo.Context) {
 	return func(err error, ctx echo.Context) {
 		type errResponse struct {

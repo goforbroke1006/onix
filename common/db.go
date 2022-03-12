@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// GetDbConnString returns db connection string from viper settings
 func GetDbConnString() string {
 	var (
 		user   = viper.GetString("db.user")

@@ -14,6 +14,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
+// NewStubPrometheusCmd create prometheus stub cobra-command
 func NewStubPrometheusCmd() *cobra.Command {
 	const (
 		baseURL = "api/v1"

@@ -12,13 +12,14 @@ import (
 
 	apiSpec "github.com/goforbroke1006/onix/api/dashboard-admin"
 	"github.com/goforbroke1006/onix/common"
-	"github.com/goforbroke1006/onix/internal/component/api/dashboard_admin"
+	"github.com/goforbroke1006/onix/internal/component/api/dashboardadmin"
 	"github.com/goforbroke1006/onix/internal/repository"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-func NewApiDashboardAdminCmd() *cobra.Command {
+// NewAPIDashboardAdminCmd creates dashboard-admin backend cobra-command
+func NewAPIDashboardAdminCmd() *cobra.Command {
 	const (
 		baseURL = "api/dashboard-admin"
 	)
@@ -46,7 +47,7 @@ func NewApiDashboardAdminCmd() *cobra.Command {
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := dashboard_admin.NewServer(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
+			server := dashboardadmin.NewServer(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); err != http.ErrServerClosed {

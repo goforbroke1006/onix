@@ -11,6 +11,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewMeasurementRepository creates data exchange object with db
 func NewMeasurementRepository(conn *pgxpool.Pool) *measurementRepository {
 	return &measurementRepository{
 		conn: conn,

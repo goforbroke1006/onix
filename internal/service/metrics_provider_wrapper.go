@@ -4,15 +4,16 @@ import (
 	"fmt"
 
 	"github.com/goforbroke1006/onix/domain"
-	"github.com/goforbroke1006/onix/internal/service/metrics_provider"
+	"github.com/goforbroke1006/onix/internal/service/metricsprovider"
 )
 
+// NewMetricsProvider inits metrics provider from domain.Source
 func NewMetricsProvider(source domain.Source) domain.MetricsProvider {
 	switch source.Kind {
 	case domain.SourceTypePrometheus:
-		return metrics_provider.NewPrometheusMetricsProvider(source.Address)
+		return metricsprovider.NewPrometheusMetricsProvider(source.Address)
 	case domain.SourceTypeInfluxDB:
-		return metrics_provider.NewInfluxDBMetricsProvider()
+		return metricsprovider.NewInfluxDBMetricsProvider()
 	default:
 		panic(fmt.Errorf("unexpected metrics provider type: %s", source.Kind))
 	}

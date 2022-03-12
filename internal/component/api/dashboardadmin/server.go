@@ -1,4 +1,4 @@
-package dashboard_admin
+package dashboardadmin
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
+// NewServer creates new server's handlers implementations instance
 func NewServer(
 	serviceRepo domain.ServiceRepository,
 	releaseRepo domain.ReleaseRepository,

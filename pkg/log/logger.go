@@ -6,6 +6,7 @@ const (
 	errLabel = "_err"
 )
 
+// NewLogger create project-level logger instance
 func NewLogger() *baseLogger {
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logrus.JSONFormatter{})

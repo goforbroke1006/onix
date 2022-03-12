@@ -9,6 +9,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewServiceRepository creates data exchange object with db
 func NewServiceRepository(conn *pgxpool.Pool) *serviceRepository {
 	return &serviceRepository{
 		conn: conn,

@@ -1,4 +1,4 @@
-package metrics_provider
+package metricsprovider
 
 import (
 	"strconv"
@@ -8,6 +8,7 @@ import (
 	"github.com/goforbroke1006/onix/external/prom"
 )
 
+// NewPrometheusMetricsProvider inits new prom data provider
 func NewPrometheusMetricsProvider(address string) *promMetricsProvider {
 	return &promMetricsProvider{
 		client: prom.NewClient(address),
@@ -19,7 +20,7 @@ var (
 )
 
 type promMetricsProvider struct {
-	client prom.ApiClient
+	client prom.APIClient
 }
 
 func (p promMetricsProvider) LoadSeries(

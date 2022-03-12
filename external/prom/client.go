@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// NewClient creates prom API client instance
 func NewClient(addr string) *client {
 	httpClient := http.Client{
 		Timeout: 5 * time.Second,
@@ -20,7 +21,7 @@ func NewClient(addr string) *client {
 }
 
 var (
-	_ ApiClient = &client{}
+	_ APIClient = &client{}
 )
 
 type client struct {

@@ -1,4 +1,4 @@
-package metrics_provider
+package metricsprovider
 
 import (
 	"time"
@@ -6,6 +6,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewInfluxDBMetricsProvider inits new influx data provider
 func NewInfluxDBMetricsProvider() *influxDbMetricsProvider {
 	return &influxDbMetricsProvider{}
 }

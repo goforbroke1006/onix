@@ -10,6 +10,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
+// NewReleaseRepository creates data exchange object with db
 func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository {
 	return &releaseRepository{
 		conn: conn,

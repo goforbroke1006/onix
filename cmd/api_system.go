@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	apiSpec "github.com/goforbroke1006/onix/api/system"
 	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/internal/component/api/system"
 	"github.com/goforbroke1006/onix/internal/repository"
@@ -17,7 +18,8 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-func NewApiSystemCmd() *cobra.Command {
+// NewAPISystemCmd create new system backend cobra-command
+func NewAPISystemCmd() *cobra.Command {
 	const (
 		baseURL = "api/system"
 	)
@@ -45,7 +47,7 @@ func NewApiSystemCmd() *cobra.Command {
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
 			server := system.NewServer(serviceRepo, releaseRepo, logger)
 
-			system.RegisterHandlersWithBaseURL(router, server, baseURL)
+			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); err != http.ErrServerClosed {
 				logger.WithErr(err).Fatal("can't run server")
 			}

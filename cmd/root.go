@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ExecuteCmdTree enables default settings for viper and initialize cobra commands tree
 func ExecuteCmdTree() error {
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 5432)
@@ -24,7 +25,7 @@ func ExecuteCmdTree() error {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return fmt.Errorf("Fatal error config file: %w \n", err)
+		return fmt.Errorf("fatal error config file: %w", err)
 	}
 
 	var (
@@ -55,9 +56,9 @@ func ExecuteCmdTree() error {
 	rootCmd.AddCommand(apiCmd, daemonCmd, stubCmd, utilCmd)
 
 	apiCmd.AddCommand(
-		NewApiSystemCmd(),
-		NewApiDashboardMainCmd(),
-		NewApiDashboardAdminCmd(),
+		NewAPISystemCmd(),
+		NewAPIDashboardMainCmd(),
+		NewAPIDashboardAdminCmd(),
 	)
 	daemonCmd.AddCommand(
 		NewDaemonMetricsExtractorCmd(),
