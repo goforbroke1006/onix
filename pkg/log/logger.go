@@ -2,6 +2,10 @@ package log
 
 import "github.com/sirupsen/logrus"
 
+const (
+	errLabel = "_err"
+)
+
 func NewLogger() *baseLogger {
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
@@ -11,16 +15,14 @@ func NewLogger() *baseLogger {
 	}
 }
 
-var (
-	_ Logger = &baseLogger{}
-)
+var _ Logger = &baseLogger{}
 
 type baseLogger struct {
 	label map[string]interface{}
 }
 
 func (l baseLogger) WithErr(err error) Logger {
-	l.label["err"] = err.Error()
+	l.label[errLabel] = err.Error()
 	return l
 }
 
