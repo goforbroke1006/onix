@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/goforbroke1006/onix/domain"
-	"github.com/goforbroke1006/onix/internal/repository/mocks"
+	mockRepository "github.com/goforbroke1006/onix/mocks/repository"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
@@ -75,7 +75,7 @@ func Test_server_GetService(t *testing.T) {
 			name: "negative 1 - DB fail on load services",
 			fields: fields{
 				serviceRepo: func(ctrl *gomock.Controller) domain.ServiceRepository {
-					repo := mocks.NewMockServiceRepository(ctrl)
+					repo := mockRepository.NewMockServiceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Service{}, errors.New("tcp lost connection"))
 					return repo
 				},
@@ -88,14 +88,14 @@ func Test_server_GetService(t *testing.T) {
 			name: "negative 2 - DB fail on load releases",
 			fields: fields{
 				serviceRepo: func(ctrl *gomock.Controller) domain.ServiceRepository {
-					repo := mocks.NewMockServiceRepository(ctrl)
+					repo := mockRepository.NewMockServiceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Service{
 						{Title: "service 1"},
 					}, nil)
 					return repo
 				},
 				releaseRepo: func(ctrl *gomock.Controller) domain.ReleaseRepository {
-					repo := mocks.NewMockReleaseRepository(ctrl)
+					repo := mockRepository.NewMockReleaseRepository(ctrl)
 					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return([]domain.Release{}, errors.New("tcp lost connection"))
 					return repo
 				},
@@ -108,7 +108,7 @@ func Test_server_GetService(t *testing.T) {
 			name: "positive 1 - no services in DB",
 			fields: fields{
 				serviceRepo: func(ctrl *gomock.Controller) domain.ServiceRepository {
-					repository := mocks.NewMockServiceRepository(ctrl)
+					repository := mockRepository.NewMockServiceRepository(ctrl)
 					repository.EXPECT().GetAll().Return([]domain.Service{}, nil)
 					return repository
 				},
@@ -121,7 +121,7 @@ func Test_server_GetService(t *testing.T) {
 			name: "positive 1 - has services in DB",
 			fields: fields{
 				serviceRepo: func(ctrl *gomock.Controller) domain.ServiceRepository {
-					repo := mocks.NewMockServiceRepository(ctrl)
+					repo := mockRepository.NewMockServiceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Service{
 						{Title: "service 1"},
 						{Title: "service 2"},
@@ -130,15 +130,13 @@ func Test_server_GetService(t *testing.T) {
 					return repo
 				},
 				releaseRepo: func(ctrl *gomock.Controller) domain.ReleaseRepository {
-					repo := mocks.NewMockReleaseRepository(ctrl)
+					repo := mockRepository.NewMockReleaseRepository(ctrl)
 					releases := []domain.Release{
 						{ID: 1, Service: "service", Name: "1.111.0", StartAt: time.Time{}},
 						{ID: 2, Service: "service", Name: "1.112.0", StartAt: time.Time{}},
 						{ID: 3, Service: "service", Name: "1.113.0", StartAt: time.Time{}},
 					}
-					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return(releases, nil)
-					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return(releases, nil)
-					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return(releases, nil)
+					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return(releases, nil).Times(3)
 					return repo
 				},
 			},
@@ -201,7 +199,7 @@ func Test_server_GetSource(t *testing.T) {
 			name: "negative 1 - DB failed",
 			fields: fields{
 				sourceRepo: func(ctrl *gomock.Controller) domain.SourceRepository {
-					repo := mocks.NewMockSourceRepository(ctrl)
+					repo := mockRepository.NewMockSourceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Source{}, errors.New("tcp lost connection"))
 					return repo
 				},
@@ -214,7 +212,7 @@ func Test_server_GetSource(t *testing.T) {
 			name: "positive 1 - no source in DB",
 			fields: fields{
 				sourceRepo: func(ctrl *gomock.Controller) domain.SourceRepository {
-					repo := mocks.NewMockSourceRepository(ctrl)
+					repo := mockRepository.NewMockSourceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Source{
 						{ID: 1, Title: "source 1", Kind: "", Address: ""},
 						{ID: 2, Title: "source 2", Kind: "", Address: ""},
@@ -231,7 +229,7 @@ func Test_server_GetSource(t *testing.T) {
 			name: "positive 2 - several sources",
 			fields: fields{
 				sourceRepo: func(ctrl *gomock.Controller) domain.SourceRepository {
-					repo := mocks.NewMockSourceRepository(ctrl)
+					repo := mockRepository.NewMockSourceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Source{
 						{ID: 1, Title: "source 1", Kind: "", Address: ""},
 						{ID: 2, Title: "source 2", Kind: "", Address: ""},
@@ -295,7 +293,7 @@ func Test_server_PostCriteria(t *testing.T) {
 			name: "negative 1 - DB fail",
 			fields: fields{
 				criteriaRepo: func(ctrl *gomock.Controller) domain.CriteriaRepository {
-					repo := mocks.NewMockCriteriaRepository(ctrl)
+					repo := mockRepository.NewMockCriteriaRepository(ctrl)
 					repo.EXPECT().
 						Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 						Return(int64(0), errors.New("tcp fake error"))
@@ -332,7 +330,7 @@ func Test_server_PostCriteria(t *testing.T) {
 			name: "positive 1 - stored OK",
 			fields: fields{
 				criteriaRepo: func(ctrl *gomock.Controller) domain.CriteriaRepository {
-					repo := mocks.NewMockCriteriaRepository(ctrl)
+					repo := mockRepository.NewMockCriteriaRepository(ctrl)
 					repo.EXPECT().
 						Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 						Return(int64(1), nil)

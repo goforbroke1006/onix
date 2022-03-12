@@ -12,7 +12,10 @@ clean:
 	rm -f ./.coverage
 
 dep:
+	@echo "Install backend dependencies"
 	go mod download
+	go mod tidy
+	@echo "Install frontend dependencies"
 	npm --prefix ./frontend/dashboard-admin/ install
 	npm --prefix ./frontend/dashboard-main/ install
 
@@ -26,7 +29,9 @@ gen/frontend/snapshot:
 	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false
 
 build:
+	@echo "Build backend"
 	go build ./
+	@echo "Build frontend"
 	npm --prefix ./frontend/dashboard-admin/ run build
 	npm --prefix ./frontend/dashboard-main/ run build
 

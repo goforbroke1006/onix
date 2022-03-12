@@ -1,6 +1,6 @@
 package repository
 
-//go:generate mockgen -source=./../../domain/service.go -destination=./mocks/service.generated.go -package=mocks
-//go:generate mockgen -source=./../../domain/release.go -destination=./mocks/release.generated.go -package=mocks
-//go:generate mockgen -source=./../../domain/source.go  -destination=./mocks/source.generated.go -package=mocks
-//go:generate mockgen -source=./../../domain/criteria.go  -destination=./mocks/criteria.generated.go -package=mocks
+//go:generate mockgen -source=./../../domain/service.go  -destination=./../../mocks/repository/service.generated.go  -package=repository
+//go:generate mockgen -source=./../../domain/release.go  -destination=./../../mocks/repository/release.generated.go  -package=repository
+//go:generate mockgen -source=./../../domain/source.go   -destination=./../../mocks/repository/source.generated.go   -package=repository
+//go:generate mockgen -source=./../../domain/criteria.go -destination=./../../mocks/repository/criteria.generated.go -package=repository
