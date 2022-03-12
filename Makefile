@@ -9,7 +9,7 @@ clean:
 	rm -rf ./frontend/dashboard-admin/node_modules/ || true
 	rm -rf ./frontend/dashboard-main/build/ || true
 	rm -rf ./frontend/dashboard-main/node_modules/ || true
-	rm -f ./.coverage
+	rm -f ./coverage.out
 
 dep:
 	@echo "Install backend dependencies"
@@ -61,8 +61,8 @@ benchmark:
 	go test -gcflags="-N" ./... -bench=.
 
 coverage:
-	go test --coverprofile ./.coverage `go list ./... | grep -v '/mocks'`
-	go tool cover -html ./.coverage
+	go test --coverprofile ./coverage.out ./...
+	go tool cover -html ./coverage.out
 
 setup:
 	bash ./setup.sh
