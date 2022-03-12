@@ -1,6 +1,6 @@
 # onix
 
-[![CIDD](https://github.com/goforbroke1006/onix/actions/workflows/main.yml/badge.svg)](https://github.com/goforbroke1006/onix/actions/workflows/main.yml)
+[![CICD](https://github.com/goforbroke1006/onix/actions/workflows/main.yml/badge.svg)](https://github.com/goforbroke1006/onix/actions/workflows/main.yml)
 [![Coverage Status](https://coveralls.io/repos/github/goforbroke1006/onix/badge.svg?branch=master)](https://coveralls.io/github/goforbroke1006/onix?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goforbroke1006/onix)](https://goreportcard.com/report/github.com/goforbroke1006/onix)
 

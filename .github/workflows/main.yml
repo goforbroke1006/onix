@@ -1,4 +1,4 @@
-name: CIDD
+name: CICD
 on:
   push:
     branches:
