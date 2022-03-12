@@ -5,6 +5,11 @@ on:
       - master
       - staging
       - develop
+  pull_request:
+    branches:
+      - master
+      - staging
+      - develop
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,15 +36,21 @@ jobs:
       - name: Run testing
         run: go test -v
       - name: Calc coverage
-        run: |
-          go test -v -covermode=count -coverprofile=coverage.out
-      - name: Convert coverage.out to coverage.lcov
-        uses: jandelgado/gcov2lcov-action@v1.0.6
-      - name: Coveralls
-        uses: coverallsapp/github-action@v1.1.2
-        with:
-          github-token: ${{ secrets.github_token }}
-          path-to-lcov: coverage.lcov
+        run: go test -race -coverprofile=coverage.out ./...
+#      - name: Convert coverage.out to coverage.lcov
+#        uses: jandelgado/gcov2lcov-action@v1.0.6
+#      - uses: shogo82148/actions-goveralls@v1
+#        with:
+#          path-to-profile: coverage.out
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=coverage.out -service=github
+#      - name: Coveralls
+#        uses: coverallsapp/github-action@master
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          path-to-lcov: coverage.lcov
 #      - name: Send slack notification
 #        uses: 8398a7/action-slack@v3
 #        with:

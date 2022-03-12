@@ -1,7 +1,7 @@
 # onix
 
 [![CICD](https://github.com/goforbroke1006/onix/actions/workflows/main.yml/badge.svg)](https://github.com/goforbroke1006/onix/actions/workflows/main.yml)
-[![Coverage Status](https://coveralls.io/repos/github/goforbroke1006/onix/badge.svg?branch=master)](https://coveralls.io/github/goforbroke1006/onix?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/goforbroke1006/onix/badge.svg)](https://coveralls.io/github/goforbroke1006/onix)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goforbroke1006/onix)](https://goreportcard.com/report/github.com/goforbroke1006/onix)
 
 Releases comparison tool. Use same metrics for 2 different releases and visualize it.
