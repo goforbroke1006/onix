@@ -21,7 +21,9 @@ jobs:
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
           go install github.com/golang/mock/mockgen@v1.6.0
       - name: Run build
-        run: go build .
+        run: |
+          go generate ./...
+          go build .
       - name: Run vet & lint
         run: |
           go vet .
