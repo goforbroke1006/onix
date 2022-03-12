@@ -34,7 +34,7 @@ jobs:
           go vet .
           golangci-lint run
       - name: Run testing
-        run: go test -v
+        run: go test -v ./...
       - name: Calc coverage
         run: go test -race -coverprofile=coverage.out ./...
 #      - name: Convert coverage.out to coverage.lcov
