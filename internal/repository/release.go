@@ -11,7 +11,7 @@ import (
 )
 
 // NewReleaseRepository creates data exchange object with db
-func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository {
+func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository { // nolint:golint
 	return &releaseRepository{
 		conn: conn,
 	}
@@ -131,17 +131,17 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 	defer rows.Close()
 
 	var (
-		id      int64
-		startAt time.Time
+		identifier int64
+		startAt    time.Time
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
 			return nil, err
 		}
 
 		release := domain.Release{
-			ID:      id,
+			ID:      identifier,
 			Service: serviceName,
 			Name:    releaseName,
 			StartAt: startAt,

@@ -15,10 +15,9 @@ import (
 
 // NewDaemonMetricsExtractorCmd create metrics extractor cobra-command
 func NewDaemonMetricsExtractorCmd() *cobra.Command {
-	return &cobra.Command{
+	return &cobra.Command{ // nolint:exhaustivestruct
 		Use: "metrics-extractor",
 		Run: func(cmd *cobra.Command, args []string) {
-
 			conn, err := pgxpool.Connect(context.Background(), common.GetDbConnString())
 			if err != nil {
 				panic(err)

@@ -12,7 +12,7 @@ import (
 )
 
 // NewMeasurementRepository creates data exchange object with db
-func NewMeasurementRepository(conn *pgxpool.Pool) *measurementRepository {
+func NewMeasurementRepository(conn *pgxpool.Pool) *measurementRepository { // nolint:golint
 	return &measurementRepository{
 		conn: conn,
 	}

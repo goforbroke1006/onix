@@ -9,10 +9,12 @@ import (
 	"time"
 )
 
+const defaultTimeout = 5 * time.Second
+
 // NewClient creates prom API client instance
 func NewClient(addr string) *client {
-	httpClient := http.Client{
-		Timeout: 5 * time.Second,
+	httpClient := http.Client{ // nolint:exhaustivestruct
+		Timeout: defaultTimeout,
 	}
 	return &client{
 		httpClient: httpClient,
@@ -42,7 +44,7 @@ func (c client) Query(query string, timestamp time.Time, timeout time.Duration) 
 
 	respBytes, _ := ioutil.ReadAll(response.Body)
 
-	respObj := QueryResponse{}
+	var respObj QueryResponse
 	err = json.Unmarshal(respBytes, &respObj)
 	return &respObj, err
 }
@@ -59,6 +61,7 @@ func (c client) QueryRange(query string, start, end time.Time, step, timeout tim
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
@@ -66,7 +69,7 @@ func (c client) QueryRange(query string, start, end time.Time, step, timeout tim
 
 	respBytes, _ := ioutil.ReadAll(response.Body)
 
-	respObj := QueryRangeResponse{}
+	var respObj QueryRangeResponse
 	err = json.Unmarshal(respBytes, &respObj)
 	return &respObj, err
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewApplication create metrics extractor app instance
+// NewApplication create metrics extractor app instance.
 func NewApplication(
 	serviceRepo domain.ServiceRepository,
 	criteriaRepo domain.CriteriaRepository,
@@ -18,7 +18,7 @@ func NewApplication(
 	measurementRepo domain.MeasurementRepository,
 
 	logger log.Logger,
-) *application {
+) *application { //nolint:golint,revive
 	return &application{
 		serviceRepo:     serviceRepo,
 		criteriaRepo:    criteriaRepo,
@@ -85,15 +85,16 @@ func (app application) extractMetrics(period time.Duration) {
 			criteriaList, err := app.criteriaRepo.GetAll(svc.Title)
 			if err != nil {
 				app.logger.WithErr(err).Warn("can't find criteria list for service", svc.Title)
+
 				continue
 			}
 
 			criteriaWg := sync.WaitGroup{}
 
-			for _, cr := range criteriaList {
+			for _, criteria := range criteriaList {
 				criteriaWg.Add(1)
 
-				go func(cr domain.Criteria) {
+				go func(criteria domain.Criteria) {
 					defer func() {
 						criteriaWg.Done()
 					}()
@@ -105,14 +106,14 @@ func (app application) extractMetrics(period time.Duration) {
 						stopAt  = time.Now()
 					)
 
-					resp, err := provider.LoadSeries(cr.Selector, startAt, stopAt, time.Duration(cr.GroupingInterval))
+					resp, err := provider.LoadSeries(criteria.Selector, startAt, stopAt, time.Duration(criteria.GroupingInterval))
 					if err != nil {
-						app.logger.WithErr(err).Warn("can't extract metric", cr.Title, "from", source.Address)
+						app.logger.WithErr(err).Warn("can't extract metric", criteria.Title, "from", source.Address)
 						return
 					}
 
 					if len(resp) == 0 {
-						fmt.Printf("no '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
+						fmt.Printf("no '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
 						return
 					}
 
@@ -123,13 +124,12 @@ func (app application) extractMetrics(period time.Duration) {
 							Value:  item.Value,
 						})
 					}
-					if err := app.measurementRepo.StoreBatch(source.ID, cr.ID, batch); err != nil {
-						app.logger.WithErr(err).Warn("can't extract metric", cr.Title, "from", source.Address)
+					if err := app.measurementRepo.StoreBatch(source.ID, criteria.ID, batch); err != nil {
+						app.logger.WithErr(err).Warn("can't extract metric", criteria.Title, "from", source.Address)
 					}
 
-					app.logger.Infof("extract %s '%s' %d metrics", svc.Title, cr.Title, len(batch))
-				}(cr)
-
+					app.logger.Infof("extract %s '%s' %d metrics", svc.Title, criteria.Title, len(batch))
+				}(criteria)
 			}
 
 			criteriaWg.Wait()

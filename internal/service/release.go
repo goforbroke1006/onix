@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"time"
 
 	"github.com/goforbroke1006/onix/domain"
@@ -33,13 +34,13 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 
 	ranges := make([]domain.ReleaseTimeRange, 0, len(releases))
 
-	for i := 0; i <= len(releases)-2; i++ {
+	for releaseIndex := 0; releaseIndex <= len(releases)-2; releaseIndex++ {
 		ranges = append(ranges, domain.ReleaseTimeRange{
-			ID:      releases[i].ID,
-			Service: releases[i].Service,
-			Name:    releases[i].Name,
-			StartAt: releases[i].StartAt,
-			StopAt:  releases[i+1].StartAt.Add(-1 * time.Second),
+			ID:      releases[releaseIndex].ID,
+			Service: releases[releaseIndex].Service,
+			Name:    releases[releaseIndex].Name,
+			StartAt: releases[releaseIndex].StartAt,
+			StopAt:  releases[releaseIndex+1].StartAt.Add(-1 * time.Second),
 		})
 	}
 
@@ -53,7 +54,7 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 	})
 
 	afterLast, err := svc.repo.GetNextAfter(serviceName, releases[lastIndex].Name)
-	if err != nil && err != domain.ErrNotFound {
+	if err != nil && errors.Is(err, domain.ErrNotFound) {
 		return nil, err
 	}
 	if afterLast != nil {

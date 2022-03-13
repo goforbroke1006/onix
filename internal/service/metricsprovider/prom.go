@@ -9,7 +9,7 @@ import (
 )
 
 // NewPrometheusMetricsProvider inits new prom data provider
-func NewPrometheusMetricsProvider(address string) *promMetricsProvider {
+func NewPrometheusMetricsProvider(address string) *promMetricsProvider { //nolint:golint
 	return &promMetricsProvider{
 		client: prom.NewClient(address),
 	}
@@ -34,7 +34,11 @@ func (p promMetricsProvider) LoadSeries(
 	}
 	series := make([]domain.SeriesItem, 0, len(resp.Data.Result[0].Values))
 	for _, gv := range resp.Data.Result[0].Values {
-		unix := int64(gv[0].(float64))
+		f, ok := gv[0].(float64)
+		if !ok {
+			continue
+		}
+		unix := int64(f)
 		moment := time.Unix(unix, 0)
 		value, _ := strconv.ParseFloat(gv[1].(string), 64)
 

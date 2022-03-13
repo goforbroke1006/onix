@@ -13,27 +13,24 @@ type seriesPoint struct {
 	value     float64
 }
 
-// FakeMetricsGenerator describe methods for metrics generator
+// FakeMetricsGenerator describe methods for metrics generator.
 type FakeMetricsGenerator interface {
 	Load(query string, start, stop time.Time, step time.Duration) []seriesPoint
 }
 
-var (
-	_ FakeMetricsGenerator = &fakeMetricsRandGenerator{}
-)
+var _ FakeMetricsGenerator = &fakeMetricsRandGenerator{}
 
-type fakeMetricsRandGenerator struct {
-}
+type fakeMetricsRandGenerator struct{}
 
-// Load returns totally random data for each invocation
+// Load returns totally random data for each invocation.
 func (g fakeMetricsRandGenerator) Load(query string, start, stop time.Time, step time.Duration) []seriesPoint {
 	rand.Seed(time.Now().UnixNano())
 
 	if step == 0 {
-		panic(fmt.Errorf("step should not be zero"))
+		panic(ErrZeroStep)
 	}
 	if step < 0 {
-		panic(fmt.Errorf("step should not be negative"))
+		panic(ErrNegativeStep)
 	}
 
 	result := make([]seriesPoint, 0, stop.Sub(start)/step+1)
@@ -48,21 +45,18 @@ func (g fakeMetricsRandGenerator) Load(query string, start, stop time.Time, step
 	return result
 }
 
-var (
-	_ FakeMetricsGenerator = &fakeMetricsIdempotentGenerator{}
-)
+var _ FakeMetricsGenerator = &fakeMetricsIdempotentGenerator{}
 
-type fakeMetricsIdempotentGenerator struct {
-}
+type fakeMetricsIdempotentGenerator struct{}
 
 func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time, step time.Duration) []seriesPoint {
 	hash := g.hash(query)
 
 	if step == 0 {
-		panic(fmt.Errorf("step should not be zero"))
+		panic(ErrZeroStep)
 	}
 	if step < 0 {
-		panic(fmt.Errorf("step should not be negative"))
+		panic(ErrNegativeStep)
 	}
 
 	var result []seriesPoint
@@ -81,7 +75,7 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 const defaultIdempotentSeed = 123
 const defaultIdempotentBoost = 12
 
-// hash generates int64 16-digit number for provided query
+// hash generates int64 16-digit number for provided query.
 func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
 	result := int64(defaultIdempotentSeed)
 	const expectedLen = 16
@@ -94,11 +88,6 @@ func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
 	// raise digits count in result
 	bound := int64(math.Pow(10, expectedLen))
 	for result < bound {
-		//next := result * result
-		//if next == result {
-		//	break
-		//}
-		//result = next
 		result *= defaultIdempotentBoost
 	}
 

@@ -15,7 +15,7 @@ import (
 )
 
 // NewServer creates new server's handlers implementations instance
-func NewServer() *server {
+func NewServer() *server { // nolint:golint
 	return &server{}
 }
 
@@ -31,7 +31,7 @@ func (s server) GetHealthz(ctx echo.Context) error {
 }
 
 func (s server) GetQuery(_ echo.Context) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -82,8 +82,8 @@ func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangePara
 		},
 	}
 
-	queryRangeResult := apiSpec.QueryRangeResult{
-		Metric: apiSpec.QueryRangeResult_Metric{},
+	queryRangeResult := apiSpec.QueryRangeResult{ // nolint:exhaustivestruct
+		Metric: apiSpec.QueryRangeResult_Metric{}, // nolint:exhaustivestruct
 	}
 
 	ctx2, cancel2 := context.WithTimeout(ctx.Request().Context(), timeout)
@@ -109,19 +109,17 @@ func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangePara
 func (s server) canParseTime(str string) (time.Time, error) {
 	var (
 		onlyNumbersRegex = regexp.MustCompile(`^[\d]+$`)
-		res              time.Time
-		err              error
 	)
 	if onlyNumbersRegex.Match([]byte(str)) {
 		unix, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			panic(err)
 		}
-		res = time.Unix(unix, 0).UTC()
+		res := time.Unix(unix, 0).UTC()
 		return res, nil
 	}
 
-	res, err = time.Parse(time.RFC3339, str)
+	res, err := time.Parse(time.RFC3339, str)
 	if err != nil {
 		return time.Time{}, err
 	}

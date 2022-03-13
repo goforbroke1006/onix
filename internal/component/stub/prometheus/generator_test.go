@@ -8,6 +8,8 @@ import (
 )
 
 func Test_fakeMetricsRandGenerator_Load(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		query string
 		start time.Time
@@ -28,6 +30,8 @@ func Test_fakeMetricsRandGenerator_Load(t *testing.T) {
 }
 
 func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		query string
 		start time.Time
@@ -41,12 +45,22 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 	}{
 		{
 			name: "positive - closed range = 1 item in result",
-			args: args{query: "hello world", start: time.Time{}, stop: time.Time{}, step: time.Minute},
+			args: args{
+				query: "hello world",
+				start: time.Time{},
+				stop:  time.Time{},
+				step:  time.Minute,
+			},
 			want: []seriesPoint{{-62135596800, 0.5007022298180581}},
 		},
 		{
 			name: "negative - invalid range = no result",
-			args: args{query: "hello kitty", start: time.Now().Add(time.Minute), stop: time.Now().Add(-1 * time.Second), step: 5 * time.Second},
+			args: args{
+				query: "hello kitty",
+				start: time.Now().Add(time.Minute),
+				stop:  time.Now().Add(-1 * time.Second),
+				step:  5 * time.Second,
+			},
 			want: nil,
 		},
 		{
@@ -67,6 +81,8 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			g := fakeMetricsIdempotentGenerator{}
 			if got := g.Load(tt.args.query, tt.args.start, tt.args.stop, tt.args.step); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Load() = %v, want %v", got, tt.want)
@@ -76,6 +92,8 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 }
 
 func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) {
+	//t.Parallel()
+
 	type args struct {
 		query string
 	}
@@ -96,12 +114,24 @@ func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) {
 		},
 		{
 			name: "positive 2 - more real sample",
-			args: args{query: `histogram_quantile(0.95, sum(increase(api_request_count{environment="prod",instrument="one"}[15m])) by (le))`},
-			want: 3845172339482296,
+			args: args{
+				query: `
+histogram_quantile(
+  0.95, 
+  sum(
+    increase(api_request_count{
+      environment="prod",instrument="one"
+    }[15m])
+  ) by (le)
+)`,
+			},
+			want: 5217508800143032,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			//t.Parallel()
+
 			g := fakeMetricsIdempotentGenerator{}
 
 			got := g.hash(tt.args.query)

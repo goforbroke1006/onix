@@ -24,7 +24,7 @@ func NewAPISystemCmd() *cobra.Command {
 		baseURL = "api/system"
 	)
 
-	return &cobra.Command{
+	return &cobra.Command{ // nolint:exhaustivestruct
 		Use: "system",
 		Run: func(cmd *cobra.Command, args []string) {
 			httpAddr := viper.GetString("server.http.api.system")

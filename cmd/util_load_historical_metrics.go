@@ -22,7 +22,10 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 		dateFrom    string
 		dateTill    string
 	)
-	cmd := &cobra.Command{
+
+	const oneDay = 24 * time.Hour
+
+	cmd := &cobra.Command{ // nolint:exhaustivestruct
 		Use: "load-historical-metrics",
 		Run: func(cmd *cobra.Command, args []string) {
 			conn, err := pgxpool.Connect(context.Background(), common.GetDbConnString())
@@ -55,11 +58,12 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 			if err != nil {
 				panic(err)
 			}
-			till = till.Add(24 * time.Hour)
+
+			till = till.Add(oneDay)
 
 			var (
 				startAt = from
-				stopAt  = from.Add(24 * time.Hour).Add(-1 * time.Second)
+				stopAt  = from.Add(oneDay).Add(-1 * time.Second)
 			)
 
 			for {
@@ -70,26 +74,27 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 				fmt.Printf("loading %s (%d criteria)\n",
 					startAt.Format("2006 Jan 02"), len(criteriaList))
 
-				for _, cr := range criteriaList {
+				for _, criteria := range criteriaList {
 					source, err := sourceRepo.Get(sourceID)
 					if err != nil {
 						panic(err)
 					}
 					provider := service.NewMetricsProvider(*source)
 
-					series, err := provider.LoadSeries(cr.Selector, startAt, stopAt, time.Duration(cr.GroupingInterval))
+					series, err := provider.LoadSeries(criteria.Selector, startAt, stopAt, time.Duration(criteria.GroupingInterval))
 					if err != nil {
 						panic(err)
 					}
 
 					fmt.Printf("for criteria '%s' loaded series len=%d\n",
-						cr.Title, len(criteriaList))
+						criteria.Title, len(criteriaList))
 					if len(series) == 0 {
-						fmt.Printf("no '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
+						fmt.Printf("no '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
+
 						continue
 					}
 
-					fmt.Printf("load '%s' metric for day %s\n", cr.Title, startAt.Format("2006 Jan 02"))
+					fmt.Printf("load '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
 
 					batch := make([]domain.MeasurementRow, 0, len(series))
 					for _, item := range series {
@@ -98,13 +103,13 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 							Value:  item.Value,
 						})
 					}
-					if err := measurementRepo.StoreBatch(source.ID, cr.ID, batch); err != nil {
+					if err := measurementRepo.StoreBatch(source.ID, criteria.ID, batch); err != nil {
 						panic(err)
 					}
 				}
 
-				startAt = startAt.Add(24 * time.Hour)
-				stopAt = stopAt.Add(24 * time.Hour)
+				startAt = startAt.Add(oneDay)
+				stopAt = stopAt.Add(oneDay)
 			}
 		},
 	}

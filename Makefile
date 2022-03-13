@@ -56,6 +56,8 @@ test/integration:
 lint:
 	golangci-lint run
 	golint ./...
+	ineffassign ./...
+	find . -type f -name '*.go' | xargs misspell
 	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd ./../../
 
 benchmark:

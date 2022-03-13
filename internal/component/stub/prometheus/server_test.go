@@ -16,6 +16,8 @@ import (
 )
 
 func Test_server_GetHealthz(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		url string
 	}
@@ -27,13 +29,15 @@ func Test_server_GetHealthz(t *testing.T) {
 	}{
 		{
 			name:         "ok for any request",
-			args:         args{},
+			args:         args{url: ""},
 			wantRespCode: 200,
 			wantErr:      false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			req, _ := http.NewRequest(http.MethodGet, tt.args.url, nil)
 			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
 			ctx := echo.New().NewContext(req, rec)
@@ -81,6 +85,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "negative 1 - invalid start",
 			args: args{
+				url: "",
 				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   "2022-01-25",
@@ -95,6 +100,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "negative 1 - invalid end",
 			args: args{
+				url: "",
 				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
@@ -109,6 +115,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "negative 1 - invalid range, end before start",
 			args: args{
+				url: "",
 				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
@@ -123,6 +130,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "positive 1 - range = 1 hour, step = 5 minutes",
 			args: args{
+				url: "",
 				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
@@ -138,6 +146,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 		{
 			name: "positive 2 - big range (1 year) should be cut to 24 hours",
 			args: args{
+				url: "",
 				params: apiSpec.GetQueryRangeParams{
 					Query:   `rate(some_metrics{env="prod"})`,
 					Start:   time.Date(2020, time.June, 10, 12, 0, 0, 0, time.UTC).Format(time.RFC3339),
@@ -168,7 +177,7 @@ func Test_server_GetQueryRange(t *testing.T) {
 
 			if tt.wantCount > 0 {
 				respBody, _ := ioutil.ReadAll(rec.Body)
-				respObj := apiSpec.QueryRangeResponse{}
+				var respObj apiSpec.QueryRangeResponse
 				if err := json.Unmarshal(respBody, &respObj); err != nil {
 					t.Error(err)
 				}
@@ -182,6 +191,8 @@ func Test_server_GetQueryRange(t *testing.T) {
 }
 
 func Test_server_canParseTime(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		str string
 	}
@@ -218,6 +229,8 @@ func Test_server_canParseTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			s := server{}
 			got, err := s.canParseTime(tt.args.str)
 			if (err != nil) != tt.wantErr {
@@ -232,6 +245,8 @@ func Test_server_canParseTime(t *testing.T) {
 }
 
 func Test_server_canParseDuration(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		str string
 	}
@@ -262,6 +277,8 @@ func Test_server_canParseDuration(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			s := server{}
 			got, err := s.canParseDuration(tt.args.str)
 			if (err != nil) != tt.wantErr {

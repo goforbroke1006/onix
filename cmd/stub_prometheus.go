@@ -20,7 +20,7 @@ func NewStubPrometheusCmd() *cobra.Command {
 		baseURL = "api/v1"
 	)
 
-	return &cobra.Command{
+	return &cobra.Command{ // nolint:exhaustivestruct
 		Use: "prometheus",
 		Run: func(cmd *cobra.Command, args []string) {
 			httpAddr := viper.GetString("server.http.stub.prometheus")

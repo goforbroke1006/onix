@@ -11,15 +11,13 @@ import (
 )
 
 // NewCriteriaRepository creates data exchange object with db
-func NewCriteriaRepository(conn *pgxpool.Pool) *criteriaRepository {
+func NewCriteriaRepository(conn *pgxpool.Pool) *criteriaRepository { // nolint:golint
 	return &criteriaRepository{
 		conn: conn,
 	}
 }
 
-var (
-	_ domain.CriteriaRepository = &criteriaRepository{}
-)
+var _ domain.CriteriaRepository = &criteriaRepository{}
 
 type criteriaRepository struct {
 	conn *pgxpool.Pool

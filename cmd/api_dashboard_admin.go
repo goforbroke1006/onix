@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -24,7 +25,7 @@ func NewAPIDashboardAdminCmd() *cobra.Command {
 		baseURL = "api/dashboard-admin"
 	)
 
-	return &cobra.Command{
+	return &cobra.Command{ // nolint:exhaustivestruct
 		Use: "dashboard-admin",
 		Run: func(cmd *cobra.Command, args []string) {
 			httpAddr := viper.GetString("server.http.api.dashboard_admin")
@@ -50,7 +51,7 @@ func NewAPIDashboardAdminCmd() *cobra.Command {
 			server := dashboardadmin.NewServer(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
-			if err := router.Start(httpAddr); err != http.ErrServerClosed {
+			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {
 				logger.WithErr(err).Fatal("can't run server")
 			}
 		},
