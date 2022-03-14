@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// GetDbConnString returns db connection string from viper settings
-func GetDbConnString() string {
+// GetDBConnString returns db connection string from viper settings.
+func GetDBConnString() string {
 	var (
 		user   = viper.GetString("db.user")
 		pass   = viper.GetString("db.pass")

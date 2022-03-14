@@ -1,7 +1,7 @@
 package metricsextractor
 
 import (
-	"fmt"
+	"context"
 	"sync"
 	"time"
 
@@ -43,10 +43,11 @@ type application struct {
 	stopDone chan struct{}
 }
 
+const defaultInterval = 15 * time.Minute
+
 func (app application) Run() {
 	app.extractMetrics(-12 * time.Hour)
-
-	ticker := time.NewTicker(15 * time.Minute)
+	ticker := time.NewTicker(defaultInterval)
 
 Loop:
 	for {
@@ -67,16 +68,18 @@ func (app application) Stop() {
 	<-app.stopDone
 }
 
-func (app application) extractMetrics(period time.Duration) {
+func (app application) extractMetrics(period time.Duration) { // nolint:funlen,gocognit,cyclop
 	sources, err := app.sourceRepo.GetAll()
 	if err != nil {
 		app.logger.WithErr(err).Warn("can't find sources")
+
 		return
 	}
 
 	services, err := app.serviceRepo.GetAll()
 	if err != nil {
 		app.logger.WithErr(err).Warn("can't find services")
+
 		return
 	}
 
@@ -106,14 +109,19 @@ func (app application) extractMetrics(period time.Duration) {
 						stopAt  = time.Now()
 					)
 
-					resp, err := provider.LoadSeries(criteria.Selector, startAt, stopAt, time.Duration(criteria.GroupingInterval))
+					resp, err := provider.LoadSeries(context.TODO(),
+						criteria.Selector, startAt, stopAt, time.Duration(criteria.GroupingInterval))
 					if err != nil {
-						app.logger.WithErr(err).Warn("can't extract metric", criteria.Title, "from", source.Address)
+						app.logger.WithErr(err).Warn("can't extract metric",
+							criteria.Title, "from", source.Address)
+
 						return
 					}
 
 					if len(resp) == 0 {
-						fmt.Printf("no '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
+						app.logger.Infof("no '%s' metric for day %s\n",
+							criteria.Title, startAt.Format("2006 Jan 02"))
+
 						return
 					}
 
@@ -124,6 +132,7 @@ func (app application) extractMetrics(period time.Duration) {
 							Value:  item.Value,
 						})
 					}
+
 					if err := app.measurementRepo.StoreBatch(source.ID, criteria.ID, batch); err != nil {
 						app.logger.WithErr(err).Warn("can't extract metric", criteria.Title, "from", source.Address)
 					}

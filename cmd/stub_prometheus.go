@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +15,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewStubPrometheusCmd create prometheus stub cobra-command
+// NewStubPrometheusCmd create prometheus stub cobra-command.
 func NewStubPrometheusCmd() *cobra.Command {
 	const (
 		baseURL = "api/v1"
@@ -25,17 +26,15 @@ func NewStubPrometheusCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			httpAddr := viper.GetString("server.http.stub.prometheus")
 
-			var (
-				logger = log.NewLogger()
-			)
+			logger := log.NewLogger()
 
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := prometheus.NewServer()
+			server := prometheus.NewServer(logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
-			if err := router.Start(httpAddr); err != http.ErrServerClosed {
+			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {
 				logger.WithErr(err).Fatal("can't run server")
 			}
 		},

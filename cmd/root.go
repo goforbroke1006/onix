@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// ExecuteCmdTree enables default settings for viper and initialize cobra commands tree
+// ExecuteCmdTree enables default settings for viper and initialize cobra commands tree.
 func ExecuteCmdTree() error {
 	if err := setupViper(); err != nil {
 		return err
@@ -56,12 +57,16 @@ func ExecuteCmdTree() error {
 		NewUtilLoadHistoricalMetrics(),
 	)
 
-	return rootCmd.Execute()
+	err := rootCmd.Execute()
+
+	return errors.Wrap(err, "can't run root cmd")
 }
 
 func setupViper() error {
+	const postgresDefaultPort = 5432
+
 	viper.SetDefault("db.host", "127.0.0.1")
-	viper.SetDefault("db.port", 5432)
+	viper.SetDefault("db.port", postgresDefaultPort)
 	viper.SetDefault("db.user", "onix")
 	viper.SetDefault("db.pass", "onix")
 	viper.SetDefault("db.dbname", "onix")

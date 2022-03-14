@@ -1,27 +1,30 @@
 package domain
 
 import (
-	"fmt"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
-// DynamicDirType define expected progress/regress of metric
+// DynamicDirType define expected progress/regress of metric.
 type DynamicDirType string
 
 const (
-	// DynamicDirTypeIncrease means metric should rise
+	// DynamicDirTypeIncrease means metric should rise.
 	DynamicDirTypeIncrease = DynamicDirType("increase")
 
-	// DynamicDirTypeDecrease means metric should fall
+	// DynamicDirTypeDecrease means metric should fall.
 	DynamicDirTypeDecrease = DynamicDirType("decrease")
 
-	// DynamicDirTypeEqual means metric should not change
+	// DynamicDirTypeEqual means metric should not change.
 	DynamicDirTypeEqual = DynamicDirType("equal")
 )
 
-// MustParseGroupingIntervalType converts string to interval
-func MustParseGroupingIntervalType(s string) GroupingIntervalType {
-	switch s {
+var ErrParseGroupIntervalFailed = errors.New("parse group interval failed")
+
+// MustParseGroupingIntervalType converts string to interval.
+func MustParseGroupingIntervalType(str string) GroupingIntervalType {
+	switch str {
 	case "30s":
 		return GroupingIntervalType30s
 	case "1m":
@@ -34,26 +37,26 @@ func MustParseGroupingIntervalType(s string) GroupingIntervalType {
 		return GroupingIntervalType15m
 	}
 
-	panic(fmt.Errorf("unexpected interval %s", s))
+	panic(errors.Wrap(ErrParseGroupIntervalFailed, str))
 }
 
-// GroupingIntervalType define how often onix should pull data from external providers (prom or influx)
+// GroupingIntervalType define how often onix should pull data from external providers (prom or influx).
 type GroupingIntervalType time.Duration
 
 const (
-	// GroupingIntervalType30s means pull every 30 seconds
+	// GroupingIntervalType30s means pull every 30 seconds.
 	GroupingIntervalType30s = GroupingIntervalType(30 * time.Second)
 
-	// GroupingIntervalType1m means pull every minute
+	// GroupingIntervalType1m means pull every minute.
 	GroupingIntervalType1m = GroupingIntervalType(1 * time.Minute)
 
-	// GroupingIntervalType2m means pull every 2 minutes
+	// GroupingIntervalType2m means pull every 2 minutes.
 	GroupingIntervalType2m = GroupingIntervalType(2 * time.Minute)
 
-	// GroupingIntervalType5m means pull every 5 minutes
+	// GroupingIntervalType5m means pull every 5 minutes.
 	GroupingIntervalType5m = GroupingIntervalType(5 * time.Minute)
 
-	// GroupingIntervalType15m means pull every 15 minutes
+	// GroupingIntervalType15m means pull every 15 minutes.
 	GroupingIntervalType15m = GroupingIntervalType(15 * time.Minute)
 )
 
@@ -70,10 +73,11 @@ func (ppt GroupingIntervalType) String() string {
 	case GroupingIntervalType15m:
 		return "15m"
 	}
+
 	return ""
 }
 
-// Criteria keep data how to evaluate and extract metric from external provider
+// Criteria keep data how to evaluate and extract metric from external provider.
 type Criteria struct {
 	ID               int64
 	Service          string
@@ -83,7 +87,7 @@ type Criteria struct {
 	GroupingInterval GroupingIntervalType
 }
 
-// CriteriaRepository describe methods for managing Criteria in db
+// CriteriaRepository describe methods for managing Criteria in db.
 type CriteriaRepository interface {
 	Create(
 		serviceName, title string,
@@ -91,6 +95,5 @@ type CriteriaRepository interface {
 		expectedDir DynamicDirType,
 		interval GroupingIntervalType,
 	) (int64, error)
-
 	GetAll(serviceName string) ([]Criteria, error)
 }

@@ -16,6 +16,6 @@ type Source struct {
 
 type SourceRepository interface {
 	Create(title string, kind SourceType, address string) (int64, error)
-	Get(id int64) (*Source, error)
+	Get(identifier int64) (*Source, error)
 	GetAll() ([]Source, error)
 }

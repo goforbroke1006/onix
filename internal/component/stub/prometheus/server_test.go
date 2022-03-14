@@ -1,18 +1,19 @@
-package prometheus
+package prometheus // nolint:testpackage
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/labstack/echo/v4"
 
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
+	"github.com/goforbroke1006/onix/pkg/log"
 )
 
 func Test_server_GetHealthz(t *testing.T) {
@@ -21,6 +22,7 @@ func Test_server_GetHealthz(t *testing.T) {
 	type args struct {
 		url string
 	}
+
 	tests := []struct {
 		name         string
 		args         args
@@ -34,32 +36,37 @@ func Test_server_GetHealthz(t *testing.T) {
 			wantErr:      false,
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		ttCase := tt
+		t.Run(ttCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			req, _ := http.NewRequest(http.MethodGet, tt.args.url, nil)
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
+			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, ttCase.args.url, nil)
+			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			s := server{}
+			s := server{} // nolint:exhaustivestruct
 			err := s.GetHealthz(ctx)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetHealthz() error = %v, wantErr %v", err, tt.wantErr)
+			if (err != nil) != ttCase.wantErr {
+				t.Errorf("GetHealthz() error = %v, wantErr %v", err, ttCase.wantErr)
 			}
-			if rec.Code != tt.wantRespCode {
-				t.Errorf("GetHealthz() status code, got = %v, want %v", rec.Code, tt.wantRespCode)
+			if rec.Code != ttCase.wantRespCode {
+				t.Errorf("GetHealthz() status code, got = %v, want %v", rec.Code, ttCase.wantRespCode)
 			}
 		})
 	}
 }
 
-func Test_server_GetQueryRange(t *testing.T) {
+func Test_server_GetQueryRange(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
 	type args struct {
 		url    string
 		params apiSpec.GetQueryRangeParams
 	}
+
 	tests := []struct {
 		name         string
 		args         args
@@ -160,133 +167,37 @@ func Test_server_GetQueryRange(t *testing.T) {
 			wantCount:    5,
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest(http.MethodGet, tt.args.url, nil)
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
+		ttCase := tt
+		t.Run(ttCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, ttCase.args.url, nil)
+			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			s := server{}
-			if err := s.GetQueryRange(ctx, tt.args.params); (err != nil) != tt.wantErr {
-				t.Errorf("GetQueryRange() error = %v, wantErr %v", err, tt.wantErr)
+			s := server{ // nolint:exhaustivestruct
+				logger: log.NewNullLogger(),
+			}
+			if err := s.GetQueryRange(ctx, ttCase.args.params); (err != nil) != ttCase.wantErr {
+				t.Errorf("GetQueryRange() error = %v, wantErr %v", err, ttCase.wantErr)
 			}
 
-			if rec.Code != tt.wantRespCode {
-				t.Errorf("GetQueryRange() code = %v, want %v", rec.Code, tt.wantRespCode)
+			if rec.Code != ttCase.wantRespCode {
+				t.Errorf("GetQueryRange() code = %v, want %v", rec.Code, ttCase.wantRespCode)
 			}
 
-			if tt.wantCount > 0 {
+			if ttCase.wantCount > 0 {
 				respBody, _ := ioutil.ReadAll(rec.Body)
 				var respObj apiSpec.QueryRangeResponse
 				if err := json.Unmarshal(respBody, &respObj); err != nil {
 					t.Error(err)
 				}
 
-				if len(respObj.Data.Result[0].Values) != tt.wantCount {
-					t.Errorf("GetQueryRange() items len = %v, want %v", len(respObj.Data.Result[0].Values), tt.wantCount)
+				if len(respObj.Data.Result[0].Values) != ttCase.wantCount {
+					t.Errorf("GetQueryRange() items len = %v, want %v", len(respObj.Data.Result[0].Values), ttCase.wantCount)
 				}
-			}
-		})
-	}
-}
-
-func Test_server_canParseTime(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		str string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    time.Time
-		wantErr bool
-	}{
-		{
-			name:    "negative - empty",
-			args:    args{str: ""},
-			want:    time.Time{},
-			wantErr: true,
-		},
-		{
-			name:    "negative - date only",
-			args:    args{str: "2022-02-01"},
-			want:    time.Time{},
-			wantErr: true,
-		},
-		{
-			name:    "positive - RFC 3339",
-			args:    args{str: "2022-02-01T12:34:56Z"},
-			want:    time.Date(2022, time.February, 1, 12, 34, 56, 0, time.UTC),
-			wantErr: false,
-		},
-		{
-			name:    "positive - unix timestamp",
-			args:    args{str: "1643718896"},
-			want:    time.Date(2022, time.February, 1, 12, 34, 56, 0, time.UTC),
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			s := server{}
-			got, err := s.canParseTime(tt.args.str)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("canParseTime() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("canParseTime() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_server_canParseDuration(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		str string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    time.Duration
-		wantErr bool
-	}{
-		{
-			name:    "negative - invalid",
-			args:    args{str: "hello world"},
-			want:    0,
-			wantErr: true,
-		},
-		{
-			name:    "positive - float",
-			args:    args{str: "3.14"},
-			want:    3140 * time.Millisecond,
-			wantErr: false,
-		},
-		{
-			name:    "positive - duration in go style",
-			args:    args{str: "5m"},
-			want:    5 * time.Minute,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			s := server{}
-			got, err := s.canParseDuration(tt.args.str)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("canParseDuration() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("canParseDuration() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

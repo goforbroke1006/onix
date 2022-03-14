@@ -1,4 +1,4 @@
-package prometheus
+package prometheus // nolint:testpackage
 
 import (
 	"fmt"
@@ -23,13 +23,14 @@ func Test_fakeMetricsRandGenerator_Load(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		got1 := g.Load(a.query, a.start, a.stop, a.step)
 		got2 := g.Load(a.query, a.start, a.stop, a.step)
+
 		if reflect.DeepEqual(got1, got2) {
 			t.Errorf("Load() has no diff %v and %v", got1, got2)
 		}
 	}
 }
 
-func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
+func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	type args struct {
@@ -38,11 +39,14 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 		stop  time.Time
 		step  time.Duration
 	}
-	tests := []struct {
+
+	type testCase struct {
 		name string
 		args args
 		want []seriesPoint
-	}{
+	}
+
+	tests := []testCase{
 		{
 			name: "positive - closed range = 1 item in result",
 			args: args{
@@ -67,7 +71,7 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 			name: "positive - some range 15 min",
 			args: args{
 				query: "hello wildfowl",
-				start: time.Date(1990, time.June, 10, 8, 45, 00, 0, time.UTC),
+				start: time.Date(1990, time.June, 10, 8, 45, 00, 0, time.UTC), // nolint:gofumpt
 				stop:  time.Date(1990, time.June, 10, 9, 0, 00, 0, time.UTC),
 				step:  5 * time.Minute,
 			},
@@ -79,24 +83,30 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 
-			g := fakeMetricsIdempotentGenerator{}
-			if got := g.Load(tt.args.query, tt.args.start, tt.args.stop, tt.args.step); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Load() = %v, want %v", got, tt.want)
-			}
-		})
+	for _, tt := range tests {
+		ttCase := tt
+		func(ttCase testCase) {
+			t.Run(ttCase.name, func(t *testing.T) {
+				t.Parallel()
+
+				g := fakeMetricsIdempotentGenerator{}
+				got := g.Load(ttCase.args.query, ttCase.args.start, ttCase.args.stop, ttCase.args.step)
+				if !reflect.DeepEqual(got, ttCase.want) {
+					t.Errorf("Load() = %v, want %v", got, ttCase.want)
+				}
+			})
+		}(ttCase)
 	}
 }
 
-func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) {
-	//t.Parallel()
+func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) { // nolint:tparallel
+	t.Parallel()
 
 	type args struct {
 		query string
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -128,16 +138,16 @@ histogram_quantile(
 			want: 5217508800143032,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			//t.Parallel()
 
+	for _, tt := range tests { // nolint:paralleltest
+		ttCase := tt
+		t.Run(ttCase.name, func(t *testing.T) {
 			g := fakeMetricsIdempotentGenerator{}
 
-			got := g.hash(tt.args.query)
+			got := g.hash(ttCase.args.query)
 
-			if got != tt.want {
-				t.Errorf("hash() = %v, want %v", got, tt.want)
+			if got != ttCase.want {
+				t.Errorf("hash() = %v, want %v", got, ttCase.want)
 			}
 
 			gotToStr := fmt.Sprintf("%d", got)

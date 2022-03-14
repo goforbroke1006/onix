@@ -1,20 +1,23 @@
 package service
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/internal/service/metricsprovider"
 )
 
-// NewMetricsProvider inits metrics provider from domain.Source
-func NewMetricsProvider(source domain.Source) domain.MetricsProvider {
+var ErrUnexpectedProviderType = errors.New("unexpected metrics provider type")
+
+// NewMetricsProvider inits metrics provider from domain.Source instance.
+func NewMetricsProvider(source domain.Source) domain.MetricsProvider { // nolint:ireturn
 	switch source.Kind {
 	case domain.SourceTypePrometheus:
 		return metricsprovider.NewPrometheusMetricsProvider(source.Address)
 	case domain.SourceTypeInfluxDB:
 		return metricsprovider.NewInfluxDBMetricsProvider()
 	default:
-		panic(fmt.Errorf("unexpected metrics provider type: %s", source.Kind))
+		wrErr := errors.Wrap(ErrUnexpectedProviderType, string(source.Kind))
+		panic(wrErr)
 	}
 }

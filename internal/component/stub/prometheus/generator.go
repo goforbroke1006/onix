@@ -29,19 +29,24 @@ func (g fakeMetricsRandGenerator) Load(query string, start, stop time.Time, step
 	if step == 0 {
 		panic(ErrZeroStep)
 	}
+
 	if step < 0 {
 		panic(ErrNegativeStep)
 	}
 
 	result := make([]seriesPoint, 0, stop.Sub(start)/step+1)
 	current := start
+
 	for current.Before(stop) || current.Equal(stop) {
+		f := rand.Float64() // nolint:gosec
+
 		result = append(result, seriesPoint{
 			timestamp: current.Unix(),
-			value:     rand.Float64(),
+			value:     f,
 		})
 		current = current.Add(step)
 	}
+
 	return result
 }
 
@@ -55,29 +60,38 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 	if step == 0 {
 		panic(ErrZeroStep)
 	}
+
 	if step < 0 {
 		panic(ErrNegativeStep)
 	}
 
 	var result []seriesPoint
+
 	current := start
+
 	for current.Before(stop) || current.Equal(stop) {
 		rand.Seed(hash * current.UnixNano())
+		f := rand.Float64() // nolint:gosec
+
 		result = append(result, seriesPoint{
 			timestamp: current.Unix(),
-			value:     rand.Float64(),
+			value:     f,
 		})
 		current = current.Add(step)
 	}
+
 	return result
 }
 
-const defaultIdempotentSeed = 123
-const defaultIdempotentBoost = 12
+const (
+	defaultIdempotentSeed  = 123
+	defaultIdempotentBoost = 12
+)
 
 // hash generates int64 16-digit number for provided query.
 func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
 	result := int64(defaultIdempotentSeed)
+
 	const expectedLen = 16
 
 	// mix up with string content
@@ -86,7 +100,9 @@ func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
 	}
 
 	// raise digits count in result
-	bound := int64(math.Pow(10, expectedLen))
+	const tenBase = 10
+	bound := int64(math.Pow(tenBase, expectedLen))
+
 	for result < bound {
 		result *= defaultIdempotentBoost
 	}
@@ -95,7 +111,13 @@ func (g fakeMetricsIdempotentGenerator) hash(query string) int64 {
 
 	// cut extra digits
 	str := fmt.Sprintf("%d", result)[:expectedLen]
-	result, _ = strconv.ParseInt(str, 10, 64)
+
+	const (
+		base    = 10
+		bitSize = 64
+	)
+
+	result, _ = strconv.ParseInt(str, base, bitSize)
 
 	return result
 }

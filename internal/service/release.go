@@ -1,22 +1,22 @@
 package service
 
 import (
-	"errors"
+	errors2 "errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewReleaseService creates service for manipulate with release data
+// NewReleaseService creates service for manipulate with release data.
 func NewReleaseService(repo domain.ReleaseRepository) *releaseService { // nolint:revive,golint
 	return &releaseService{
 		repo: repo,
 	}
 }
 
-var (
-	_ domain.ReleaseService = &releaseService{}
-)
+var _ domain.ReleaseService = &releaseService{} // nolint:exhaustivestruct
 
 type releaseService struct {
 	repo domain.ReleaseRepository
@@ -25,7 +25,7 @@ type releaseService struct {
 func (svc releaseService) GetReleases(serviceName string, from, till time.Time) ([]domain.ReleaseTimeRange, error) {
 	releases, err := svc.repo.GetReleases(serviceName, from, till)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "can't get releases")
 	}
 
 	if len(releases) == 0 {
@@ -45,6 +45,7 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 	}
 
 	lastIndex := len(releases) - 1
+
 	ranges = append(ranges, domain.ReleaseTimeRange{
 		ID:      releases[lastIndex].ID,
 		Service: releases[lastIndex].Service,
@@ -55,8 +56,9 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 
 	afterLast, err := svc.repo.GetNextAfter(serviceName, releases[lastIndex].Name)
 	if err != nil && errors.Is(err, domain.ErrNotFound) {
-		return nil, err
+		return nil, errors.Wrap(err, "can't get next release")
 	}
+
 	if afterLast != nil {
 		ranges[len(ranges)-1].StopAt = afterLast.StartAt.Add(-1 * time.Second)
 	}
@@ -67,7 +69,7 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange, error) {
 	releases, err := svc.repo.GetAll(serviceName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "can't get releases")
 	}
 
 	if len(releases) == 0 {
@@ -76,17 +78,18 @@ func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange,
 
 	ranges := make([]domain.ReleaseTimeRange, 0, len(releases))
 
-	for i := 0; i <= len(releases)-2; i++ {
+	for releaseIndex := 0; releaseIndex <= len(releases)-2; releaseIndex++ {
 		ranges = append(ranges, domain.ReleaseTimeRange{
-			ID:      releases[i].ID,
-			Service: releases[i].Service,
-			Name:    releases[i].Name,
-			StartAt: releases[i].StartAt,
-			StopAt:  releases[i+1].StartAt.Add(-1 * time.Second),
+			ID:      releases[releaseIndex].ID,
+			Service: releases[releaseIndex].Service,
+			Name:    releases[releaseIndex].Name,
+			StartAt: releases[releaseIndex].StartAt,
+			StopAt:  releases[releaseIndex+1].StartAt.Add(-1 * time.Second),
 		})
 	}
 
 	lastIndex := len(releases) - 1
+
 	ranges = append(ranges, domain.ReleaseTimeRange{
 		ID:      releases[lastIndex].ID,
 		Service: releases[lastIndex].Service,
@@ -101,12 +104,19 @@ func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange,
 func (svc releaseService) GetByName(serviceName, releaseName string) (*domain.ReleaseTimeRange, error) {
 	current, err := svc.repo.GetByName(serviceName, releaseName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "can't get release")
 	}
 
 	next, err := svc.repo.GetNextAfter(serviceName, releaseName)
-	if err != nil && err != domain.ErrNotFound {
-		return nil, err
+	if err != nil && errors2.Is(err, domain.ErrNotFound) {
+		return nil, errors.Wrap(err, "can't get next release")
+	}
+
+	var stopAt time.Time
+	if next != nil {
+		stopAt = next.StartAt.Add(-1 * time.Second)
+	} else {
+		stopAt = time.Now().UTC()
 	}
 
 	timeRange := domain.ReleaseTimeRange{
@@ -114,12 +124,7 @@ func (svc releaseService) GetByName(serviceName, releaseName string) (*domain.Re
 		Service: serviceName,
 		Name:    releaseName,
 		StartAt: current.StartAt,
-	}
-
-	if next != nil {
-		timeRange.StopAt = next.StartAt.Add(-1 * time.Second)
-	} else {
-		timeRange.StopAt = time.Now().UTC()
+		StopAt:  stopAt,
 	}
 
 	return &timeRange, nil

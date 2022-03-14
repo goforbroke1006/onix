@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -12,10 +11,11 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/internal/repository"
 	"github.com/goforbroke1006/onix/internal/service"
+	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewUtilLoadHistoricalMetrics creates load history util cobra-command
-func NewUtilLoadHistoricalMetrics() *cobra.Command {
+// NewUtilLoadHistoricalMetrics creates load history util cobra-command.
+func NewUtilLoadHistoricalMetrics() *cobra.Command { // nolint:funlen,gocognit,cyclop
 	var (
 		serviceName string
 		sourceID    int64
@@ -28,7 +28,7 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 	cmd := &cobra.Command{ // nolint:exhaustivestruct
 		Use: "load-historical-metrics",
 		Run: func(cmd *cobra.Command, args []string) {
-			conn, err := pgxpool.Connect(context.Background(), common.GetDbConnString())
+			conn, err := pgxpool.Connect(context.Background(), common.GetDBConnString())
 			if err != nil {
 				panic(err)
 			}
@@ -38,6 +38,7 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 				sourceRepo      = repository.NewSourceRepository(conn)
 				criteriaRepo    = repository.NewCriteriaRepository(conn)
 				measurementRepo = repository.NewMeasurementRepository(conn)
+				logger          = log.NewLogger()
 			)
 
 			criteriaList, err := criteriaRepo.GetAll(serviceName)
@@ -71,7 +72,7 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 					break
 				}
 
-				fmt.Printf("loading %s (%d criteria)\n",
+				logger.Infof("loading %s (%d criteria)\n",
 					startAt.Format("2006 Jan 02"), len(criteriaList))
 
 				for _, criteria := range criteriaList {
@@ -81,20 +82,21 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 					}
 					provider := service.NewMetricsProvider(*source)
 
-					series, err := provider.LoadSeries(criteria.Selector, startAt, stopAt, time.Duration(criteria.GroupingInterval))
+					series, err := provider.LoadSeries(context.TODO(),
+						criteria.Selector, startAt, stopAt, time.Duration(criteria.GroupingInterval))
 					if err != nil {
 						panic(err)
 					}
 
-					fmt.Printf("for criteria '%s' loaded series len=%d\n",
+					logger.Infof("for criteria '%s' loaded series len=%d\n",
 						criteria.Title, len(criteriaList))
 					if len(series) == 0 {
-						fmt.Printf("no '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
+						logger.Infof("no '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
 
 						continue
 					}
 
-					fmt.Printf("load '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
+					logger.Infof("load '%s' metric for day %s\n", criteria.Title, startAt.Format("2006 Jan 02"))
 
 					batch := make([]domain.MeasurementRow, 0, len(series))
 					for _, item := range series {
@@ -117,5 +119,6 @@ func NewUtilLoadHistoricalMetrics() *cobra.Command {
 	cmd.PersistentFlags().Int64Var(&sourceID, "source", 0, "Source ID from what need to pull data")
 	cmd.PersistentFlags().StringVar(&dateFrom, "from", "", "Time range start")
 	cmd.PersistentFlags().StringVar(&dateTill, "till", "", "Time range stop")
+
 	return cmd
 }

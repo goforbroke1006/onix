@@ -6,13 +6,14 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 
 	apiSpec "github.com/goforbroke1006/onix/api/dashboard-admin"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance
+// NewServer creates new server's handlers implementations instance.
 func NewServer(
 	serviceRepo domain.ServiceRepository,
 	releaseRepo domain.ReleaseRepository,
@@ -29,9 +30,7 @@ func NewServer(
 	}
 }
 
-var (
-	_ apiSpec.ServerInterface = &server{}
-)
+var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
 
 type server struct {
 	serviceRepo  domain.ServiceRepository
@@ -42,7 +41,9 @@ type server struct {
 }
 
 func (s server) GetHealthz(ctx echo.Context) error {
-	return ctx.NoContent(http.StatusOK)
+	err := ctx.NoContent(http.StatusOK)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetService(ctx echo.Context) error {
@@ -52,10 +53,11 @@ func (s server) GetService(ctx echo.Context) error {
 
 	services, err := s.serviceRepo.GetAll()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get services from repository")
 	}
 
 	resp := apiSpec.ServicesListResponse{}
+
 	for _, svc := range services {
 		service := apiSpec.Service{
 			Title:    svc.Title,
@@ -64,7 +66,7 @@ func (s server) GetService(ctx echo.Context) error {
 
 		releases, err := s.releaseRepo.GetNLasts(svc.Title, defaultReleasesCount)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "can't get N last releases")
 		}
 
 		for _, r := range releases {
@@ -73,14 +75,22 @@ func (s server) GetService(ctx echo.Context) error {
 
 		resp = append(resp, service)
 	}
-	return ctx.JSON(http.StatusOK, resp)
+
+	err = ctx.JSON(http.StatusOK, resp)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetSource(ctx echo.Context) error {
-	sources, err := s.sourceRepo.GetAll()
-	if err != nil {
-		return err
+	var (
+		sources []domain.Source
+		err     error
+	)
+
+	if sources, err = s.sourceRepo.GetAll(); err != nil {
+		return errors.Wrap(err, "can't get sources")
 	}
+
 	resp := make(apiSpec.SourceListResponse, 0, len(sources))
 	for _, s := range sources {
 		resp = append(resp, apiSpec.Source{
@@ -90,20 +100,24 @@ func (s server) GetSource(ctx echo.Context) error {
 			Address: s.Address,
 		})
 	}
-	return ctx.JSON(http.StatusOK, resp)
+
+	err = ctx.JSON(http.StatusOK, resp)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) PostCriteria(ctx echo.Context) error {
-	requestBody := apiSpec.CreateCriteriaRequest{}
+	var requestBody apiSpec.CreateCriteriaRequest
 	if err := json.NewDecoder(ctx.Request().Body).Decode(&requestBody); err != nil {
-		return err
+		return errors.Wrap(err, "incorrect post body")
 	}
+
 	criteriaID, err := s.criteriaRepo.Create(
 		requestBody.ServiceName, requestBody.Title, requestBody.Selector,
 		domain.DynamicDirType(requestBody.ExpectedDir),
 		domain.MustParseGroupingIntervalType(string(requestBody.Interval)))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't store criteria in db")
 	}
 
 	s.logger.Info("create new criteria")
@@ -112,5 +126,7 @@ func (s server) PostCriteria(ctx echo.Context) error {
 		NewId:  fmt.Sprintf("%d", criteriaID),
 		Status: apiSpec.CreateResourceResponseStatusOk,
 	}
-	return ctx.JSON(http.StatusOK, resp)
+	err = ctx.JSON(http.StatusOK, resp)
+
+	return errors.Wrap(err, "write to echo context failed")
 }

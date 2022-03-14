@@ -1,6 +1,13 @@
 package prom
 
-import "time"
+import (
+	"context"
+	"time"
+
+	"github.com/pkg/errors"
+)
+
+var ErrUnexpectedStatusCode = errors.New("unexpected status code")
 
 type ResultType string
 
@@ -43,12 +50,14 @@ type QueryRangeResponse struct {
 	} `json:"data"`
 }
 
-// APIClient describe prom api V1 allowed method
+// APIClient describe prom api V1 allowed method.
 type APIClient interface {
-
 	// Query wraps call to https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries
-	Query(query string, timestamp time.Time, timeout time.Duration) (*QueryResponse, error)
+	Query(ctx context.Context, query string, timestamp time.Time, timeout time.Duration) (*QueryResponse, error)
 
 	// QueryRange wraps call to https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
-	QueryRange(query string, start, end time.Time, step, timeout time.Duration) (*QueryRangeResponse, error)
+	QueryRange(
+		ctx context.Context,
+		query string, start, end time.Time, step, timeout time.Duration,
+	) (*QueryRangeResponse, error)
 }

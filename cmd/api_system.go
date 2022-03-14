@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -18,7 +19,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewAPISystemCmd create new system backend cobra-command
+// NewAPISystemCmd create new system backend cobra-command.
 func NewAPISystemCmd() *cobra.Command {
 	const (
 		baseURL = "api/system"
@@ -29,7 +30,7 @@ func NewAPISystemCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			httpAddr := viper.GetString("server.http.api.system")
 
-			connString := common.GetDbConnString()
+			connString := common.GetDBConnString()
 			conn, err := pgxpool.Connect(context.Background(), connString)
 			if err != nil {
 				panic(err)
@@ -48,7 +49,7 @@ func NewAPISystemCmd() *cobra.Command {
 			server := system.NewServer(serviceRepo, releaseRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
-			if err := router.Start(httpAddr); err != http.ErrServerClosed {
+			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {
 				logger.WithErr(err).Fatal("can't run server")
 			}
 		},

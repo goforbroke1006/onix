@@ -5,13 +5,14 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 
 	apiSpec "github.com/goforbroke1006/onix/api/system"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance
+// NewServer creates new server's handlers implementations instance.
 func NewServer(
 	serviceRepo domain.ServiceRepository,
 	releaseRepo domain.ReleaseRepository,
@@ -24,9 +25,7 @@ func NewServer(
 	}
 }
 
-var (
-	_ apiSpec.ServerInterface = &server{}
-)
+var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
 
 type server struct {
 	serviceRepo domain.ServiceRepository
@@ -35,7 +34,9 @@ type server struct {
 }
 
 func (s server) GetHealthz(ctx echo.Context) error {
-	return ctx.NoContent(http.StatusOK)
+	err := ctx.NoContent(http.StatusOK)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams) error {
@@ -44,16 +45,18 @@ func (s server) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams) 
 		startAt = time.Unix(*params.StartAt, 0).UTC()
 	}
 
-	if err := s.serviceRepo.Story(params.ServiceName); err != nil {
-		return err
+	if err := s.serviceRepo.Store(params.ServiceName); err != nil {
+		return errors.Wrap(err, "can't store service in repository")
 	}
 
 	if err := s.releaseRepo.Store(params.ServiceName, params.ReleaseName, startAt); err != nil {
-		return err
+		return errors.Wrap(err, "can't get release")
 	}
 
 	response := apiSpec.RegisterResponse{
 		Status: apiSpec.RegisterResponseStatusOk,
 	}
-	return ctx.JSON(http.StatusOK, response)
+	err := ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
 }

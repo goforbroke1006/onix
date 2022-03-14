@@ -5,19 +5,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewCriteriaRepository creates data exchange object with db
+// NewCriteriaRepository creates data exchange object with db.
 func NewCriteriaRepository(conn *pgxpool.Pool) *criteriaRepository { // nolint:revive,golint
 	return &criteriaRepository{
 		conn: conn,
 	}
 }
 
-var _ domain.CriteriaRepository = &criteriaRepository{}
+var _ domain.CriteriaRepository = &criteriaRepository{} // nolint:exhaustivestruct
 
 type criteriaRepository struct {
 	conn *pgxpool.Pool
@@ -36,19 +38,24 @@ func (repo criteriaRepository) Create(
 		RETURNING id;`,
 		serviceName, title, selector, expectedDir, interval,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return 0, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return 0, errors.Wrap(err, "can't store criteria in db")
 	}
 	defer rows.Close()
 
-	var id int64
+	var identifier int64
 	if rows.Next() {
-		if err := rows.Scan(&id); err != nil {
-			return 0, err
+		if err := rows.Scan(&identifier); err != nil {
+			return 0, errors.Wrap(err, "can't scan criteria row")
 		}
 
-		return id, nil
+		return identifier, nil
 	}
 
 	return 0, domain.ErrNotFound
@@ -69,14 +76,19 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 		;`,
 		serviceName,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't extract criteria from db")
 	}
 	defer rows.Close()
 
 	var (
-		id          int64
+		identifier  int64
 		title       string
 		selector    string
 		expectedDir domain.DynamicDirType
@@ -86,14 +98,14 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 	result := make([]domain.Criteria, 0, len(rows.RawValues()))
 
 	for rows.Next() {
-		if err := rows.Scan(&id, &title, &selector, &expectedDir, &interval); err != nil {
-			return nil, err
+		if err := rows.Scan(&identifier, &title, &selector, &expectedDir, &interval); err != nil {
+			return nil, errors.Wrap(err, "can't scan criteria row")
 		}
 
 		duration, _ := time.ParseDuration(interval)
 
 		result = append(result, domain.Criteria{
-			ID:               id,
+			ID:               identifier,
 			Service:          serviceName,
 			Title:            title,
 			Selector:         selector,

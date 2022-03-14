@@ -7,20 +7,19 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewMeasurementRepository creates data exchange object with db
+// NewMeasurementRepository creates data exchange object with db.
 func NewMeasurementRepository(conn *pgxpool.Pool) *measurementRepository { // nolint:revive,golint
 	return &measurementRepository{
 		conn: conn,
 	}
 }
 
-var (
-	_ domain.MeasurementRepository = &measurementRepository{}
-)
+var _ domain.MeasurementRepository = &measurementRepository{} // nolint:exhaustivestruct
 
 type measurementRepository struct {
 	conn *pgxpool.Pool
@@ -40,17 +39,20 @@ func (repo measurementRepository) Store(sourceID, criteriaID int64, moment time.
 		sourceID, criteriaID, moment.UTC().Format(time.RFC3339), value,
 	)
 	_, err := repo.conn.Exec(context.TODO(), query)
-	return err
+
+	return errors.Wrap(err, "can't exec query")
 }
 
 func (repo measurementRepository) StoreBatch(sourceID, criteriaID int64, measurements []domain.MeasurementRow) error {
 	valuesStrs := make([]string, 0, len(measurements))
+
 	for _, m := range measurements {
 		valuesStrs = append(
 			valuesStrs,
 			fmt.Sprintf("(%d, %d, '%s', %f, NOW())", sourceID, criteriaID, m.Moment.UTC().Format(time.RFC3339), m.Value),
 		)
 	}
+
 	query := fmt.Sprintf(
 		`
 		INSERT INTO measurement (source_id, criteria_id, moment, value, updated_at) 
@@ -64,10 +66,13 @@ func (repo measurementRepository) StoreBatch(sourceID, criteriaID int64, measure
 		strings.Join(valuesStrs, ", "),
 	)
 	_, err := repo.conn.Exec(context.TODO(), query)
-	return err
+
+	return errors.Wrap(err, "can't exec query")
 }
 
-func (repo measurementRepository) GetBy(sourceID, criteriaID int64, from, till time.Time) ([]domain.MeasurementShortRow, error) {
+func (repo measurementRepository) GetBy(
+	sourceID, criteriaID int64, from, till time.Time,
+) ([]domain.MeasurementShortRow, error) {
 	query := fmt.Sprintf(`
 		SELECT moment, value
 		FROM measurement
@@ -80,7 +85,7 @@ func (repo measurementRepository) GetBy(sourceID, criteriaID int64, from, till t
 
 	rows, err := repo.conn.Query(context.Background(), query)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "can't get measurement from db")
 	}
 	defer rows.Close()
 
@@ -93,7 +98,7 @@ func (repo measurementRepository) GetBy(sourceID, criteriaID int64, from, till t
 
 	for rows.Next() {
 		if err := rows.Scan(&moment, &value); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "can't scan measurement row")
 		}
 
 		result = append(result, domain.MeasurementShortRow{
@@ -116,14 +121,17 @@ func (repo measurementRepository) Count(sourceID, criteriaID int64, from, till t
 
 	rows, err := repo.conn.Query(context.Background(), query)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "can't get measurements count from db")
 	}
 	defer rows.Close()
 
 	if rows.Next() {
-		var id int64
-		err := rows.Scan(&id)
-		return id, err
+		var identifier int64
+		if err := rows.Scan(&identifier); err != nil {
+			return 0, errors.Wrap(err, "can't scan measurement row")
+		}
+
+		return identifier, nil
 	}
 
 	return 0, domain.ErrNotFound

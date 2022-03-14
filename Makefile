@@ -10,11 +10,11 @@ clean:
 	rm -rf ./frontend/dashboard-main/build/ || true
 	rm -rf ./frontend/dashboard-main/node_modules/ || true
 	rm -f ./coverage.out
+	rm -rf ./mock/
 
 dep:
 	@echo "Install backend dependencies"
 	go mod download
-	go mod tidy
 	@echo "Install frontend dependencies"
 	npm --prefix ./frontend/dashboard-admin/ install
 	npm --prefix ./frontend/dashboard-main/ install
@@ -28,9 +28,13 @@ gen/frontend/snapshot:
 	npm --prefix ./frontend/dashboard-admin/ test -- -u --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false
 
-build:
+build: build/backend build/frontend
+
+build/backend:
 	@echo "Build backend"
 	go build ./
+
+build/frontend:
 	@echo "Build frontend"
 	npm --prefix ./frontend/dashboard-admin/ run build
 	npm --prefix ./frontend/dashboard-main/ run build
@@ -55,7 +59,6 @@ test/integration:
 
 lint:
 	golangci-lint run
-	golint ./...
 	ineffassign ./...
 	find . -type f -name '*.go' | xargs misspell
 	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd ./../../

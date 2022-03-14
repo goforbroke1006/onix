@@ -19,7 +19,7 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewAPIDashboardAdminCmd creates dashboard-admin backend cobra-command
+// NewAPIDashboardAdminCmd creates dashboard-admin backend cobra-command.
 func NewAPIDashboardAdminCmd() *cobra.Command {
 	const (
 		baseURL = "api/dashboard-admin"
@@ -30,7 +30,7 @@ func NewAPIDashboardAdminCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			httpAddr := viper.GetString("server.http.api.dashboard_admin")
 
-			connString := common.GetDbConnString()
+			connString := common.GetDBConnString()
 			conn, err := pgxpool.Connect(context.Background(), connString)
 			if err != nil {
 				panic(err)

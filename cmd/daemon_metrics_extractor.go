@@ -13,12 +13,12 @@ import (
 	"github.com/goforbroke1006/onix/pkg/shutdowner"
 )
 
-// NewDaemonMetricsExtractorCmd create metrics extractor cobra-command
+// NewDaemonMetricsExtractorCmd create metrics extractor cobra-command.
 func NewDaemonMetricsExtractorCmd() *cobra.Command {
 	return &cobra.Command{ // nolint:exhaustivestruct
 		Use: "metrics-extractor",
 		Run: func(cmd *cobra.Command, args []string) {
-			conn, err := pgxpool.Connect(context.Background(), common.GetDbConnString())
+			conn, err := pgxpool.Connect(context.Background(), common.GetDBConnString())
 			if err != nil {
 				panic(err)
 			}

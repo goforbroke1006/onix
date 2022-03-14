@@ -1,28 +1,26 @@
 package metricsprovider
 
 import (
+	"context"
 	"time"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewInfluxDBMetricsProvider inits new influx data provider
-func NewInfluxDBMetricsProvider() *influxDbMetricsProvider { // nolint:revive,golint
-	return &influxDbMetricsProvider{}
+// NewInfluxDBMetricsProvider inits new influx data provider.
+func NewInfluxDBMetricsProvider() *influxDBMetricsProvider { // nolint:revive,golint
+	return &influxDBMetricsProvider{}
 }
 
-var (
-	_ domain.MetricsProvider = &influxDbMetricsProvider{}
-)
+var _ domain.MetricsProvider = &influxDBMetricsProvider{}
 
-type influxDbMetricsProvider struct {
-}
+type influxDBMetricsProvider struct{}
 
-func (p influxDbMetricsProvider) LoadSeries(
+func (p influxDBMetricsProvider) LoadSeries(
+	ctx context.Context,
 	selector string,
 	from, till time.Time,
 	step time.Duration,
 ) ([]domain.SeriesItem, error) {
-	//TODO implement me
 	panic("implement me")
 }

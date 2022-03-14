@@ -1,7 +1,8 @@
-package dashboardadmin
+package dashboardadmin // nolint:testpackage
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -19,6 +20,8 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		serviceRepo  domain.ServiceRepository
 		releaseRepo  domain.ReleaseRepository
@@ -26,6 +29,7 @@ func TestNewServer(t *testing.T) {
 		criteriaRepo domain.CriteriaRepository
 		logger       log.Logger
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -50,24 +54,34 @@ func TestNewServer(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewServer(tt.args.serviceRepo, tt.args.releaseRepo, tt.args.sourceRepo, tt.args.criteriaRepo, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewServer() = %v, want %v", got, tt.want)
+		ttCase := tt
+		t.Run(ttCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := NewServer(
+				ttCase.args.serviceRepo,
+				ttCase.args.releaseRepo,
+				ttCase.args.sourceRepo,
+				ttCase.args.criteriaRepo,
+				ttCase.args.logger,
+			); !reflect.DeepEqual(got, ttCase.want) {
+				t.Errorf("NewServer() = %v, want %v", got, ttCase.want)
 			}
 		})
 	}
 }
 
-func Test_server_GetService(t *testing.T) {
+func Test_server_GetService(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
 	type fields struct {
 		serviceRepo func(ctrl *gomock.Controller) domain.ServiceRepository
 		releaseRepo func(ctrl *gomock.Controller) domain.ReleaseRepository
 	}
-	type args struct{}
+
 	tests := []struct {
 		name           string
 		fields         fields
-		args           args
 		wantErr        bool
 		wantStatusCode int
 	}{
@@ -76,11 +90,12 @@ func Test_server_GetService(t *testing.T) {
 			fields: fields{
 				serviceRepo: func(ctrl *gomock.Controller) domain.ServiceRepository {
 					repo := mockRepository.NewMockServiceRepository(ctrl)
-					repo.EXPECT().GetAll().Return([]domain.Service{}, errors.New("tcp lost connection"))
+					repo.EXPECT().GetAll().Return([]domain.Service{}, errors.New("tcp lost connection")) // nolint:goerr113
+
 					return repo
 				},
+				releaseRepo: nil,
 			},
-			args:           args{},
 			wantErr:        true,
 			wantStatusCode: 0,
 		},
@@ -92,15 +107,19 @@ func Test_server_GetService(t *testing.T) {
 					repo.EXPECT().GetAll().Return([]domain.Service{
 						{Title: "service 1"},
 					}, nil)
+
 					return repo
 				},
 				releaseRepo: func(ctrl *gomock.Controller) domain.ReleaseRepository {
 					repo := mockRepository.NewMockReleaseRepository(ctrl)
-					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return([]domain.Release{}, errors.New("tcp lost connection"))
+					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return(
+						[]domain.Release{},
+						errors.New("tcp lost connection"), // nolint:goerr113
+					)
+
 					return repo
 				},
 			},
-			args:           args{},
 			wantErr:        true,
 			wantStatusCode: 0,
 		},
@@ -108,12 +127,13 @@ func Test_server_GetService(t *testing.T) {
 			name: "positive 1 - no services in DB",
 			fields: fields{
 				serviceRepo: func(ctrl *gomock.Controller) domain.ServiceRepository {
-					repository := mockRepository.NewMockServiceRepository(ctrl)
-					repository.EXPECT().GetAll().Return([]domain.Service{}, nil)
-					return repository
+					repo := mockRepository.NewMockServiceRepository(ctrl)
+					repo.EXPECT().GetAll().Return([]domain.Service{}, nil)
+
+					return repo
 				},
+				releaseRepo: nil,
 			},
-			args:           args{},
 			wantErr:        false,
 			wantStatusCode: http.StatusOK,
 		},
@@ -127,6 +147,7 @@ func Test_server_GetService(t *testing.T) {
 						{Title: "service 2"},
 						{Title: "service 3"},
 					}, nil)
+
 					return repo
 				},
 				releaseRepo: func(ctrl *gomock.Controller) domain.ReleaseRepository {
@@ -137,17 +158,20 @@ func Test_server_GetService(t *testing.T) {
 						{ID: 3, Service: "service", Name: "1.113.0", StartAt: time.Time{}},
 					}
 					repo.EXPECT().GetNLasts(gomock.Any(), gomock.Any()).Return(releases, nil).Times(3)
+
 					return repo
 				},
 			},
-			args:           args{},
 			wantErr:        false,
 			wantStatusCode: http.StatusOK,
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		ttCase := tt
+		t.Run(ttCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
@@ -156,55 +180,61 @@ func Test_server_GetService(t *testing.T) {
 				releaseRepo domain.ReleaseRepository
 			)
 
-			if tt.fields.serviceRepo != nil {
-				serviceRepo = tt.fields.serviceRepo(mockCtrl)
+			if ttCase.fields.serviceRepo != nil {
+				serviceRepo = ttCase.fields.serviceRepo(mockCtrl)
 			}
-			if tt.fields.releaseRepo != nil {
-				releaseRepo = tt.fields.releaseRepo(mockCtrl)
-			}
-
-			s := server{
-				serviceRepo: serviceRepo,
-				releaseRepo: releaseRepo,
+			if ttCase.fields.releaseRepo != nil {
+				releaseRepo = ttCase.fields.releaseRepo(mockCtrl)
 			}
 
-			req, _ := http.NewRequest(http.MethodGet, "", nil)
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
+			instance := server{
+				serviceRepo:  serviceRepo,
+				releaseRepo:  releaseRepo,
+				sourceRepo:   nil,
+				criteriaRepo: nil,
+				logger:       nil,
+			}
+
+			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			if err := s.GetService(ctx); (err != nil) != tt.wantErr {
-				t.Errorf("GetService() error = %v, wantErr %v", err, tt.wantErr)
+			if err := instance.GetService(ctx); (err != nil) != ttCase.wantErr {
+				t.Errorf("GetService() error = %v, wantErr %v", err, ttCase.wantErr)
 			}
 
-			if rec.Code != tt.wantStatusCode {
-				t.Errorf("GetService() code = %v, want %v", rec.Code, tt.wantStatusCode)
+			if rec.Code != ttCase.wantStatusCode {
+				t.Errorf("GetService() code = %v, want %v", rec.Code, ttCase.wantStatusCode)
 			}
 		})
 	}
 }
 
-func Test_server_GetSource(t *testing.T) {
+func Test_server_GetSource(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
 	type fields struct {
 		sourceRepo func(ctrl *gomock.Controller) domain.SourceRepository
 	}
-	type args struct{}
-	tests := []struct {
+
+	type testCase struct {
 		name           string
 		fields         fields
-		args           args
 		wantErr        bool
 		wantStatusCode int
-	}{
+	}
+
+	tests := []testCase{
 		{
 			name: "negative 1 - DB failed",
 			fields: fields{
 				sourceRepo: func(ctrl *gomock.Controller) domain.SourceRepository {
 					repo := mockRepository.NewMockSourceRepository(ctrl)
-					repo.EXPECT().GetAll().Return([]domain.Source{}, errors.New("tcp lost connection"))
+					repo.EXPECT().GetAll().Return([]domain.Source{}, errors.New("tcp lost connection")) // nolint:goerr113
+
 					return repo
 				},
 			},
-			args:           args{},
 			wantErr:        true,
 			wantStatusCode: 0,
 		},
@@ -218,10 +248,10 @@ func Test_server_GetSource(t *testing.T) {
 						{ID: 2, Title: "source 2", Kind: "", Address: ""},
 						{ID: 3, Title: "source 3", Kind: "", Address: ""},
 					}, nil)
+
 					return repo
 				},
 			},
-			args:           args{},
 			wantErr:        false,
 			wantStatusCode: http.StatusOK,
 		},
@@ -235,53 +265,65 @@ func Test_server_GetSource(t *testing.T) {
 						{ID: 2, Title: "source 2", Kind: "", Address: ""},
 						{ID: 3, Title: "source 3", Kind: "", Address: ""},
 					}, nil)
+
 					return repo
 				},
 			},
-			args:           args{},
 			wantErr:        false,
 			wantStatusCode: 200,
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
+		ttCase := tt
+		func(ttCase testCase) {
+			t.Run(ttCase.name, func(t *testing.T) {
+				t.Parallel()
 
-			var (
-				sourceRepo domain.SourceRepository
-			)
+				mockCtrl := gomock.NewController(t)
+				defer mockCtrl.Finish()
 
-			if tt.fields.sourceRepo != nil {
-				sourceRepo = tt.fields.sourceRepo(mockCtrl)
-			}
+				var sourceRepo domain.SourceRepository
 
-			s := server{
-				sourceRepo: sourceRepo,
-			}
+				if ttCase.fields.sourceRepo != nil {
+					sourceRepo = ttCase.fields.sourceRepo(mockCtrl)
+				}
 
-			req, _ := http.NewRequest(http.MethodGet, "", nil)
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
-			ctx := echo.New().NewContext(req, rec)
+				instance := server{
+					serviceRepo:  nil,
+					releaseRepo:  nil,
+					sourceRepo:   sourceRepo,
+					criteriaRepo: nil,
+					logger:       nil,
+				}
 
-			if err := s.GetSource(ctx); (err != nil) != tt.wantErr {
-				t.Errorf("GetSource() error = %v, wantErr %v", err, tt.wantErr)
-			}
+				req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+				rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
+				ctx := echo.New().NewContext(req, rec)
 
-			if rec.Code != tt.wantStatusCode {
-				t.Errorf("GetService() code = %v, want %v", rec.Code, tt.wantStatusCode)
-			}
-		})
+				if err := instance.GetSource(ctx); (err != nil) != ttCase.wantErr {
+					t.Errorf("GetSource() error = %v, wantErr %v", err, ttCase.wantErr)
+				}
+
+				if rec.Code != ttCase.wantStatusCode {
+					t.Errorf("GetService() code = %v, want %v", rec.Code, ttCase.wantStatusCode)
+				}
+			})
+		}(ttCase)
 	}
 }
 
-func Test_server_PostCriteria(t *testing.T) {
+func Test_server_PostCriteria(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
 	type fields struct {
 		criteriaRepo func(ctrl *gomock.Controller) domain.CriteriaRepository
 	}
+
 	type args struct {
 		postBody string
 	}
+
 	tests := []struct {
 		name           string
 		fields         fields
@@ -296,7 +338,8 @@ func Test_server_PostCriteria(t *testing.T) {
 					repo := mockRepository.NewMockCriteriaRepository(ctrl)
 					repo.EXPECT().
 						Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-						Return(int64(0), errors.New("tcp fake error"))
+						Return(int64(0), errors.New("tcp fake error")) // nolint:goerr113
+
 					return repo
 				},
 			},
@@ -313,8 +356,10 @@ func Test_server_PostCriteria(t *testing.T) {
 			wantStatusCode: 0,
 		},
 		{
-			name:   "negative 1 - broken post data",
-			fields: fields{},
+			name: "negative 1 - broken post data",
+			fields: fields{
+				criteriaRepo: nil,
+			},
 			args: args{
 				postBody: `{
 	"service_name": "foo/backend", 
@@ -334,6 +379,7 @@ func Test_server_PostCriteria(t *testing.T) {
 					repo.EXPECT().
 						Create(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 						Return(int64(1), nil)
+
 					return repo
 				},
 			},
@@ -350,34 +396,39 @@ func Test_server_PostCriteria(t *testing.T) {
 			wantStatusCode: http.StatusOK,
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		ttCase := tt
+		t.Run(ttCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
-			var (
-				criteriaRepo domain.CriteriaRepository
-			)
+			var criteriaRepo domain.CriteriaRepository
 
-			if tt.fields.criteriaRepo != nil {
-				criteriaRepo = tt.fields.criteriaRepo(mockCtrl)
+			if ttCase.fields.criteriaRepo != nil {
+				criteriaRepo = ttCase.fields.criteriaRepo(mockCtrl)
 			}
 
-			s := server{
+			instance := server{
+				serviceRepo:  nil,
+				releaseRepo:  nil,
+				sourceRepo:   nil,
 				criteriaRepo: criteriaRepo,
 				logger:       log.NewLogger(),
 			}
 
-			req, _ := http.NewRequest(http.MethodGet, "", strings.NewReader(tt.args.postBody))
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})}
+			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", strings.NewReader(ttCase.args.postBody))
+			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			if err := s.PostCriteria(ctx); (err != nil) != tt.wantErr {
-				t.Errorf("PostCriteria() error = %v, wantErr %v", err, tt.wantErr)
+			if err := instance.PostCriteria(ctx); (err != nil) != ttCase.wantErr {
+				t.Errorf("PostCriteria() error = %v, wantErr %v", err, ttCase.wantErr)
 			}
 
-			if rec.Code != tt.wantStatusCode {
-				t.Errorf("GetService() code = %v, want %v", rec.Code, tt.wantStatusCode)
+			if rec.Code != ttCase.wantStatusCode {
+				t.Errorf("GetService() code = %v, want %v", rec.Code, ttCase.wantStatusCode)
 			}
 		})
 	}

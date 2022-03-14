@@ -6,24 +6,27 @@ const (
 	errLabel = "_err"
 )
 
-// NewLogger create project-level logger instance
+// NewLogger create project-level logger instance.
 func NewLogger() *baseLogger { // nolint:revive,golint
 	logrus.SetReportCaller(true)
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	formatter := &logrus.JSONFormatter{} // nolint:exhaustivestruct
+	logrus.SetFormatter(formatter)
 
 	return &baseLogger{
 		label: map[string]interface{}{},
 	}
 }
 
-var _ Logger = &baseLogger{}
+var _ Logger = &baseLogger{} // nolint:exhaustivestruct
 
 type baseLogger struct {
 	label map[string]interface{}
 }
 
-func (l baseLogger) WithErr(err error) Logger {
+func (l baseLogger) WithErr(err error) Logger { // nolint:ireturn
 	l.label[errLabel] = err.Error()
+
 	return l
 }
 

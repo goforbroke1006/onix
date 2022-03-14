@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 
 	apiSpec "github.com/goforbroke1006/onix/api/dashboard-main"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance
+// NewServer creates new server's handlers implementations instance.
 func NewServer(
 	serviceRepo domain.ServiceRepository,
 	releaseSvc domain.ReleaseService,
@@ -31,9 +32,7 @@ func NewServer(
 	}
 }
 
-var (
-	_ apiSpec.ServerInterface = &server{}
-)
+var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
 
 type server struct {
 	serviceRepo     domain.ServiceRepository
@@ -45,13 +44,15 @@ type server struct {
 }
 
 func (s server) GetHealthz(ctx echo.Context) error {
-	return ctx.NoContent(http.StatusOK)
+	err := ctx.NoContent(http.StatusOK)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetService(ctx echo.Context) error {
 	services, err := s.serviceRepo.GetAll()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get services list")
 	}
 
 	response := make([]apiSpec.Service, 0, len(services))
@@ -59,13 +60,15 @@ func (s server) GetService(ctx echo.Context) error {
 		response = append(response, apiSpec.Service{Title: svc.Title})
 	}
 
-	return ctx.JSON(http.StatusOK, response)
+	err = ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetSource(ctx echo.Context) error {
 	sourcesList, err := s.sourceRepo.GetAll()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get sources list")
 	}
 
 	response := make([]apiSpec.Source, 0, len(sourcesList))
@@ -79,13 +82,15 @@ func (s server) GetSource(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, response)
+	err = ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) error {
 	ranges, err := s.releaseSvc.GetAll(params.Service)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get releases list")
 	}
 
 	response := make([]apiSpec.Release, 0, len(ranges))
@@ -98,10 +103,12 @@ func (s server) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) er
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, response)
+	err = ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error {
+func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error { // nolint:funlen,cyclop
 	const layout = "2006-01-02 15:04:05"
 
 	var (
@@ -109,6 +116,7 @@ func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) er
 		releaseTwoStart = time.Unix(params.ReleaseTwoStart, 0)
 		period, _       = time.ParseDuration(string(params.Period))
 	)
+
 	var (
 		releaseOneStop = releaseOneStart.Add(period)
 		releaseTwoStop = releaseTwoStart.Add(period)
@@ -116,65 +124,81 @@ func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) er
 
 	releaseOne, err := s.releaseSvc.GetByName(params.Service, params.ReleaseOneTitle)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get release one by name")
 	}
+
 	if releaseOneStart.Before(releaseOne.StartAt) {
-		return fmt.Errorf("%d before %d", params.ReleaseOneStart, releaseOne.StartAt.Unix())
+		message := fmt.Sprintf("%d before %d", params.ReleaseOneStart, releaseOne.StartAt.Unix())
+
+		return errors.Wrap(ErrWrongTimeRange, message)
 	}
 
 	releaseTwo, err := s.releaseSvc.GetByName(params.Service, params.ReleaseTwoTitle)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get release two by name")
 	}
+
 	if releaseTwoStart.Before(releaseTwo.StartAt) {
-		return err
+		message := fmt.Sprintf("%d before %d", params.ReleaseTwoStart, releaseTwo.StartAt.Unix())
+
+		return errors.Wrap(ErrWrongTimeRange, message)
 	}
 
 	criteriaList, err := s.criteriaRepo.GetAll(params.Service)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get service list")
 	}
 
-	response := apiSpec.CompareResponse{
+	response := apiSpec.CompareResponse{ // nolint:exhaustivestruct
 		Service:    params.Service,
 		ReleaseOne: params.ReleaseOneTitle,
 		ReleaseTwo: params.ReleaseTwoTitle,
 	}
 
-	for _, cr := range criteriaList {
+	for _, criteria := range criteriaList {
+		var (
+			series1 []domain.MeasurementShortRow
+			series2 []domain.MeasurementShortRow
+			err     error
+		)
 
-		m1, err := s.measurementRepo.GetBy(params.ReleaseOneSourceId, cr.ID, releaseOneStart, releaseOneStop)
-		if err != nil {
-			return err
-		}
-		m2, err := s.measurementRepo.GetBy(params.ReleaseTwoSourceId, cr.ID, releaseTwoStart, releaseTwoStop)
-		if err != nil {
-			return err
+		if series1, err = s.measurementRepo.GetBy(
+			params.ReleaseOneSourceId, criteria.ID, releaseOneStart, releaseOneStop,
+		); err != nil {
+			return errors.Wrap(err, "can't get series for release one")
 		}
 
-		minLen := len(m1)
-		if len(m2) < minLen {
-			minLen = len(m2)
+		if series2, err = s.measurementRepo.GetBy(
+			params.ReleaseTwoSourceId, criteria.ID, releaseTwoStart, releaseTwoStop,
+		); err != nil {
+			return errors.Wrap(err, "can't get series for release two")
+		}
+
+		minLen := len(series1)
+		if len(series2) < minLen {
+			minLen = len(series2)
 		}
 
 		criteriaReport := apiSpec.CriteriaReport{
-			Title:    cr.Title,
-			Selector: cr.Selector,
+			Title:    criteria.Title,
+			Selector: criteria.Selector,
 			Graph:    make([]apiSpec.GraphItem, 0, minLen),
 		}
 
-		for vi := 0; vi < minLen; vi++ {
+		for seriesItemIndex := 0; seriesItemIndex < minLen; seriesItemIndex++ {
 			criteriaReport.Graph = append(criteriaReport.Graph, apiSpec.GraphItem{
-				T1: m1[vi].Moment.UTC().Format(layout),
-				V1: m1[vi].Value,
+				T1: series1[seriesItemIndex].Moment.UTC().Format(layout),
+				V1: series1[seriesItemIndex].Value,
 
-				T2: m2[vi].Moment.UTC().Format(layout),
-				V2: m2[vi].Value,
+				T2: series2[seriesItemIndex].Moment.UTC().Format(layout),
+				V2: series2[seriesItemIndex].Value,
 			})
 		}
 
 		response.Reports = append(response.Reports, criteriaReport)
 	}
 
-	return ctx.JSON(http.StatusOK, response)
+	err = ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
 }

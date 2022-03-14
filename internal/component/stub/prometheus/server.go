@@ -3,42 +3,49 @@ package prometheus
 import (
 	"context"
 	"fmt"
-	"math"
 	"net/http"
-	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
+	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance
-func NewServer() *server { // nolint:revive,golint
-	return &server{}
+// NewServer creates new server's handlers implementations instance.
+func NewServer(logger log.Logger) *server { // nolint:revive,golint
+	return &server{
+		validator: validator{},
+		logger:    logger,
+	}
 }
 
-var (
-	_ apiSpec.ServerInterface = &server{}
-)
+var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
 
 type server struct {
+	validator validator
+	logger    log.Logger
 }
 
 func (s server) GetHealthz(ctx echo.Context) error {
-	return ctx.String(http.StatusOK, "ok")
+	err := ctx.String(http.StatusOK, "ok")
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetQuery(_ echo.Context) error {
-	// TODO implement me
-	panic("implement me")
+func (s server) GetQuery(ctx echo.Context) error {
+	err := ctx.String(http.StatusOK, "implement me")
+
+	return errors.Wrap(err, "write to echo context failed")
 }
 
 func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangeParams) error {
-	// TODO: fix auto-gen validation
-	if len(params.Query) == 0 {
-		return ctx.NoContent(http.StatusBadRequest)
+	if err := s.validator.GetQueryRange(params); err != nil {
+		s.logger.WithErr(err).Warn("invalid request")
+		err := ctx.NoContent(http.StatusBadRequest)
+
+		return errors.Wrap(err, "write to echo context failed")
 	}
 
 	var (
@@ -49,29 +56,14 @@ func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangePara
 		err     error
 	)
 
-	// TODO: fix auto-gen validation
-	if start, err = s.canParseTime(params.Start); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
-	// TODO: fix auto-gen validation
-	if stop, err = s.canParseTime(params.End); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
-	// TODO: fix auto-gen validation
-	if step, _ = s.canParseDuration(params.Step); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
-	// TODO: fix auto-gen validation
-	if timeout, _ = s.canParseDuration(string(params.Timeout)); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
+	start, _ = canParseTime(params.Start)
+	stop, _ = canParseTime(params.End)
+	step, _ = canParseDuration(params.Step)
+	timeout, _ = canParseDuration(string(params.Timeout))
 
-	if stop.Before(start) {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
-
-	if stop.Sub(start) > 24*time.Hour {
-		stop = start.Add(24 * time.Hour)
+	const oneDay = 24 * time.Hour
+	if stop.Sub(start) > oneDay {
+		stop = start.Add(oneDay)
 	}
 
 	resp := apiSpec.QueryRangeResponse{
@@ -97,46 +89,16 @@ func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangePara
 				timestamp = float64(si.timestamp)
 				val       = fmt.Sprintf("%f", si.value)
 			)
+
 			queryRangeResult.Values = append(queryRangeResult.Values, []interface{}{timestamp, val})
 		}
+
 		resp.Data.Result = append(resp.Data.Result, queryRangeResult)
 	}()
 
 	<-ctx2.Done()
-	return ctx.JSON(http.StatusOK, resp)
-}
 
-func (s server) canParseTime(str string) (time.Time, error) {
-	var (
-		onlyNumbersRegex = regexp.MustCompile(`^[\d]+$`)
-	)
-	if onlyNumbersRegex.Match([]byte(str)) {
-		unix, err := strconv.ParseInt(str, 10, 64)
-		if err != nil {
-			panic(err)
-		}
-		res := time.Unix(unix, 0).UTC()
-		return res, nil
-	}
+	err = ctx.JSON(http.StatusOK, resp)
 
-	res, err := time.Parse(time.RFC3339, str)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	return res, nil
-}
-
-func (s server) canParseDuration(str string) (time.Duration, error) {
-	float, err := strconv.ParseFloat(str, 64)
-	if err == nil {
-		return time.Duration(int(float*math.Pow(10, 9))) * time.Nanosecond, nil
-	}
-
-	duration, err := time.ParseDuration(str)
-	if err == nil {
-		return duration, nil
-	}
-
-	return 0, fmt.Errorf("can't parse duration: %s", str)
+	return errors.Wrap(err, "write to echo context failed")
 }

@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewReleaseRepository creates data exchange object with db
+// NewReleaseRepository creates data exchange object with db.
 func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository { // nolint:revive,golint
 	return &releaseRepository{
 		conn: conn,
 	}
 }
 
-var (
-	_ domain.ReleaseRepository = &releaseRepository{}
-)
+var _ domain.ReleaseRepository = &releaseRepository{} // nolint:exhaustivestruct
 
 type releaseRepository struct {
 	conn *pgxpool.Pool
@@ -35,25 +35,32 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 		;`,
 		serviceName,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't extract releases from db")
 	}
 	defer rows.Close()
 
 	var (
-		id          int64
+		identifier  int64
 		releaseName string
 		startAt     time.Time
 	)
 
 	result := make([]domain.Release, 0, len(rows.RawValues()))
+
 	for rows.Next() {
-		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
-			return nil, err
+		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+			return nil, errors.Wrap(err, "can't scan release row")
 		}
+
 		result = append(result, domain.Release{
-			ID:      id,
+			ID:      identifier,
 			Service: serviceName,
 			Name:    releaseName,
 			StartAt: startAt,
@@ -69,7 +76,8 @@ func (repo releaseRepository) Store(serviceName string, releaseName string, star
 		serviceName, releaseName, startAt.Format(time.RFC3339),
 	)
 	_, err := repo.conn.Exec(context.TODO(), query)
-	return err
+
+	return errors.Wrap(err, "can't exec query")
 }
 
 func (repo releaseRepository) GetByName(serviceName, releaseName string) (*domain.Release, error) {
@@ -82,24 +90,29 @@ func (repo releaseRepository) GetByName(serviceName, releaseName string) (*domai
 		;`,
 		serviceName, releaseName,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't get release by name from db")
 	}
 	defer rows.Close()
 
 	var (
-		id      int64
-		startAt time.Time
+		identifier int64
+		startAt    time.Time
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
-			return nil, err
+		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		release := domain.Release{
-			ID:      id,
+			ID:      identifier,
 			Service: serviceName,
 			Name:    releaseName,
 			StartAt: startAt,
@@ -124,9 +137,14 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 		serviceName,
 		serviceName, releaseName,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't get next release from db")
 	}
 	defer rows.Close()
 
@@ -137,7 +155,7 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 
 	if rows.Next() {
 		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		release := domain.Release{
@@ -164,25 +182,30 @@ LIMIT 1
 ;`,
 		serviceName,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't get least release from db")
 	}
 	defer rows.Close()
 
 	var (
-		id          int64
+		identifier  int64
 		releaseName string
 		startAt     time.Time
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
-			return nil, err
+		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		release := domain.Release{
-			ID:      id,
+			ID:      identifier,
 			Service: serviceName,
 			Name:    releaseName,
 			StartAt: startAt,
@@ -205,25 +228,32 @@ func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domai
 		;`,
 		serviceName, count,
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't get N last releases from db")
 	}
 	defer rows.Close()
 
 	var (
-		id          int64
+		identifier  int64
 		releaseName string
 		startAt     time.Time
 	)
 
 	result := make([]domain.Release, 0, len(rows.RawValues()))
+
 	for rows.Next() {
-		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
-			return nil, err
+		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+			return nil, errors.Wrap(err, "can't scan release row")
 		}
+
 		result = append(result, domain.Release{
-			ID:      id,
+			ID:      identifier,
 			Service: serviceName,
 			Name:    releaseName,
 			StartAt: startAt,
@@ -244,25 +274,32 @@ ORDER BY start_at ASC
 ;`,
 		serviceName, from.Format(time.RFC3339), till.Format(time.RFC3339),
 	)
-	rows, err := repo.conn.Query(context.TODO(), query)
-	if err != nil {
-		return nil, err
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return nil, errors.Wrap(err, "can't exec query")
 	}
 	defer rows.Close()
 
 	var (
-		id          int64
+		identifier  int64
 		releaseName string
 		startAt     time.Time
 	)
 
 	result := make([]domain.Release, 0, len(rows.RawValues()))
+
 	for rows.Next() {
-		if err := rows.Scan(&id, &releaseName, &startAt); err != nil {
-			return nil, err
+		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+			return nil, errors.Wrap(err, "can't scan release row")
 		}
+
 		result = append(result, domain.Release{
-			ID:      id,
+			ID:      identifier,
 			Service: serviceName,
 			Name:    releaseName,
 			StartAt: startAt,
