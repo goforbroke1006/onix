@@ -7,7 +7,7 @@ import (
 )
 
 // NewInfluxDBMetricsProvider inits new influx data provider
-func NewInfluxDBMetricsProvider() *influxDbMetricsProvider {
+func NewInfluxDBMetricsProvider() *influxDbMetricsProvider { // nolint:revive,golint
 	return &influxDbMetricsProvider{}
 }
 

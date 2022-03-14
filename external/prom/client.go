@@ -12,7 +12,7 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // NewClient creates prom API client instance
-func NewClient(addr string) *client {
+func NewClient(addr string) *client { // nolint:revive,golint
 	httpClient := http.Client{ // nolint:exhaustivestruct
 		Timeout: defaultTimeout,
 	}

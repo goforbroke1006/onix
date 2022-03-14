@@ -11,7 +11,7 @@ import (
 )
 
 // NewReleaseRepository creates data exchange object with db
-func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository { // nolint:golint
+func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository { // nolint:revive,golint
 	return &releaseRepository{
 		conn: conn,
 	}

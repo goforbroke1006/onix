@@ -16,7 +16,7 @@ func NewServer(
 	serviceRepo domain.ServiceRepository,
 	releaseRepo domain.ReleaseRepository,
 	logger log.Logger,
-) *server { // nolint:golint
+) *server { // nolint:revive,golint
 	return &server{
 		serviceRepo: serviceRepo,
 		releaseRepo: releaseRepo,

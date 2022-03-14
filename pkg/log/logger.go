@@ -7,7 +7,7 @@ const (
 )
 
 // NewLogger create project-level logger instance
-func NewLogger() *baseLogger {
+func NewLogger() *baseLogger { // nolint:revive,golint
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 

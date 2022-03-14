@@ -9,7 +9,7 @@ import (
 )
 
 // NewPrometheusMetricsProvider inits new prom data provider
-func NewPrometheusMetricsProvider(address string) *promMetricsProvider { //nolint:golint
+func NewPrometheusMetricsProvider(address string) *promMetricsProvider { // nolint:revive,golint
 	return &promMetricsProvider{
 		client: prom.NewClient(address),
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 // NewServiceRepository creates data exchange object with db
-func NewServiceRepository(conn *pgxpool.Pool) *serviceRepository { // nolint:golint
+func NewServiceRepository(conn *pgxpool.Pool) *serviceRepository { // nolint:revive,golint
 	return &serviceRepository{
 		conn: conn,
 	}

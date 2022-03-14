@@ -11,7 +11,7 @@ import (
 )
 
 // NewCriteriaRepository creates data exchange object with db
-func NewCriteriaRepository(conn *pgxpool.Pool) *criteriaRepository { // nolint:golint
+func NewCriteriaRepository(conn *pgxpool.Pool) *criteriaRepository { // nolint:revive,golint
 	return &criteriaRepository{
 		conn: conn,
 	}

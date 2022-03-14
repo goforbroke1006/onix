@@ -20,7 +20,7 @@ func NewServer(
 	criteriaRepo domain.CriteriaRepository,
 	measurementRepo domain.MeasurementRepository,
 	logger log.Logger,
-) *server {
+) *server { // nolint:revive,golint
 	return &server{
 		serviceRepo:     serviceRepo,
 		releaseSvc:      releaseSvc,

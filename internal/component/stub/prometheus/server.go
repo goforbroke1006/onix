@@ -15,7 +15,7 @@ import (
 )
 
 // NewServer creates new server's handlers implementations instance
-func NewServer() *server { // nolint:golint
+func NewServer() *server { // nolint:revive,golint
 	return &server{}
 }
 
