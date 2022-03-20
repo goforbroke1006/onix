@@ -1,5 +1,6 @@
 package log
 
+// NewNullLogger creates logger instance that do nothing (suitable for tests).
 func NewNullLogger() *nullLogger { // nolint:golint,revive
 	return &nullLogger{}
 }
