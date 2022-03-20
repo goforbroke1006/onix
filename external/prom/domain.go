@@ -10,7 +10,7 @@ import (
 // ErrUnexpectedStatusCode is specific error.
 var ErrUnexpectedStatusCode = errors.New("unexpected status code")
 
-// ResultType shows kind of prom data
+// ResultType shows kind of prom data.
 type ResultType string
 
 const (
