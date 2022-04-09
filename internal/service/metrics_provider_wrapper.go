@@ -7,6 +7,7 @@ import (
 	"github.com/goforbroke1006/onix/internal/service/metricsprovider"
 )
 
+// ErrUnexpectedProviderType is specific error.
 var ErrUnexpectedProviderType = errors.New("unexpected metrics provider type")
 
 // NewMetricsProvider inits metrics provider from domain.Source instance.

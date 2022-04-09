@@ -7,8 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ErrUnexpectedStatusCode is specific error.
 var ErrUnexpectedStatusCode = errors.New("unexpected status code")
 
+// ResultType shows kind of prom data.
 type ResultType string
 
 const (
@@ -18,6 +20,7 @@ const (
 	ResultTypeString = ResultType("string")
 )
 
+// ResponseStatus shows is request successfully proceed or not.
 type ResponseStatus string
 
 const (
