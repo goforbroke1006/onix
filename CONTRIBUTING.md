@@ -6,6 +6,27 @@
 bash ./setup.sh
 ```
 
+### Build and test
+
+```shell
+make all
+```
+
+or 
+
+```shell
+make clean
+make dep
+make gen
+make build
+make build
+make test/unit
+make test/functional
+make test/integration
+make lint
+make coverage
+```
+
 ### Setup local environment
 
 ```shell

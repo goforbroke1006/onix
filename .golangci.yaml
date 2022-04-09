@@ -1,4 +1,8 @@
 linters:
   enable-all: true
   disable:
-    - gci
+    - maligned    # deprecated
+    - golint      # deprecated
+    - interfacer  # deprecated
+    - scopelint   # deprecated
+    - gci         # annoying
