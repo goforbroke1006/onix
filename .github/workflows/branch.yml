@@ -11,6 +11,7 @@ on:
       - staging
       - develop
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +45,10 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=coverage.out -service=github
+
   images:
+    needs:
+      - build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
