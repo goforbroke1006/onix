@@ -10,10 +10,11 @@ import (
 func LoadFixture(conn *pgxpool.Pool, filename string) error {
 	fixtureData, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return err
+		return err // nolint:wrapcheck
 	}
-	if _, err = conn.Exec(context.TODO(), string(fixtureData)); err != nil {
-		return err
+
+	if _, err := conn.Exec(context.TODO(), string(fixtureData)); err != nil {
+		return err // nolint:wrapcheck
 	}
 
 	return nil

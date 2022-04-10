@@ -1,10 +1,8 @@
-package dashboardmain
+package dashboardmain // nolint:testpackage
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/goforbroke1006/onix/tests"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,16 +10,19 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	apiSpec "github.com/goforbroke1006/onix/api/dashboard-main"
 	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/internal/repository"
 	"github.com/goforbroke1006/onix/internal/service"
+	"github.com/goforbroke1006/onix/tests"
 )
 
-func Test_handlers_GetCompare(t *testing.T) {
+func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,paralleltest
 	connString := common.GetTestConnectionStrings()
+
 	conn, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		t.Skip(err)
@@ -34,13 +35,15 @@ func Test_handlers_GetCompare(t *testing.T) {
 	)
 
 	handlersInstance := handlers{
+		serviceRepo:        nil,
 		releaseSvc:         service.NewReleaseService(releaseRepository),
 		sourceRepo:         repository.NewSourceRepository(conn),
 		criteriaRepo:       repository.NewCriteriaRepository(conn),
 		measurementService: service.NewMeasurementService(measurementRepository),
+		logger:             nil,
 	}
 
-	t.Run("release 1 not found", func(t *testing.T) {
+	t.Run("release 1 not found", func(t *testing.T) { // nolint:paralleltest
 		const (
 			fakeServiceName = "foo/bar/backend"
 			sourceID        = 1
@@ -51,7 +54,7 @@ func Test_handlers_GetCompare(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		req, _ := http.NewRequest(http.MethodGet, "", nil)
+		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
 		rr := httptest.NewRecorder()
 		echoContext := echo.New().NewContext(req, rr)
 		err = handlersInstance.GetCompare(echoContext, apiSpec.GetCompareParams{
@@ -69,7 +72,7 @@ func Test_handlers_GetCompare(t *testing.T) {
 		assert.ErrorAs(t, err, &actualErr)
 	})
 
-	t.Run("release 2 not found", func(t *testing.T) {
+	t.Run("release 2 not found", func(t *testing.T) { // nolint:paralleltest
 		const (
 			fakeServiceName = "foo/bar/backend"
 			sourceID        = 1
@@ -80,7 +83,7 @@ func Test_handlers_GetCompare(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		req, _ := http.NewRequest(http.MethodGet, "", nil)
+		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
 		rr := httptest.NewRecorder()
 		echoContext := echo.New().NewContext(req, rr)
 		err = handlersInstance.GetCompare(echoContext, apiSpec.GetCompareParams{
@@ -98,7 +101,7 @@ func Test_handlers_GetCompare(t *testing.T) {
 		assert.ErrorAs(t, err, &actualErr)
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("basic", func(t *testing.T) { // nolint:paralleltest
 		const (
 			fakeServiceName = "foo/bar/backend"
 			sourceID        = 1
@@ -109,9 +112,9 @@ func Test_handlers_GetCompare(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		req, _ := http.NewRequest(http.MethodGet, "", nil)
-		rr := httptest.NewRecorder()
-		echoContext := echo.New().NewContext(req, rr)
+		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+		recorder := httptest.NewRecorder()
+		echoContext := echo.New().NewContext(req, recorder)
 		err = handlersInstance.GetCompare(echoContext, apiSpec.GetCompareParams{
 			Service:            fakeServiceName,
 			ReleaseOneTitle:    "2.0.0",
@@ -124,8 +127,8 @@ func Test_handlers_GetCompare(t *testing.T) {
 		})
 		assert.Nil(t, err)
 
-		respBytes, _ := ioutil.ReadAll(rr.Body)
-		responseObj := apiSpec.CompareResponse{}
+		respBytes, _ := ioutil.ReadAll(recorder.Body)
+		var responseObj apiSpec.CompareResponse
 		if err := json.Unmarshal(respBytes, &responseObj); err != nil {
 			t.Fatal(err)
 		}

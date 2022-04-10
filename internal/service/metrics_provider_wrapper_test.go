@@ -1,4 +1,4 @@
-package service
+package service // nolint:testpackage
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ func TestNewMetricsProvider(t *testing.T) {
 	t.Run("get prometheus provider", func(t *testing.T) {
 		t.Parallel()
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypePrometheus,
 		}
 		provider := NewMetricsProvider(source)
@@ -24,7 +24,7 @@ func TestNewMetricsProvider(t *testing.T) {
 	t.Run("get influx-db provider", func(t *testing.T) {
 		t.Parallel()
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypeInfluxDB,
 		}
 		provider := NewMetricsProvider(source)
@@ -40,7 +40,7 @@ func TestNewMetricsProvider(t *testing.T) {
 			}
 		}()
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceType("unknown"),
 		}
 		_ = NewMetricsProvider(source)

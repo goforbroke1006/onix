@@ -1,32 +1,38 @@
-package service
+package service // nolint:testpackage
 
 import (
 	"context"
-	"github.com/goforbroke1006/onix/common"
-	"github.com/goforbroke1006/onix/internal/repository"
-	"github.com/goforbroke1006/onix/tests"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/domain"
+	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/tests"
 )
 
 func TestNewReleaseService(t *testing.T) {
+	t.Parallel()
+
 	service := NewReleaseService(nil)
 	assert.NotNil(t, service)
 }
 
-func Test_releaseService_GetAll(t *testing.T) {
+func Test_releaseService_GetAll(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
 	type fields struct {
 		repo domain.ReleaseRepository
 	}
+
 	type args struct {
 		serviceName string
 	}
-	tests := []struct {
+
+	testsCases := []struct {
 		name    string
 		fields  fields
 		args    args
@@ -56,36 +62,39 @@ func Test_releaseService_GetAll(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+
+	for _, tt := range testsCases {
+		testCase := tt
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			svc := releaseService{
-				repo: tt.fields.repo,
+				repo: testCase.fields.repo,
 			}
-			got, err := svc.GetAll(tt.args.serviceName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetAll() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if len(got) != len(tt.want) {
-				t.Errorf("GetAll() got = %v, want %v", len(got), len(tt.want))
+			got, err := svc.GetAll(testCase.args.serviceName)
+			if (err != nil) != testCase.wantErr {
+				t.Fatalf("GetAll() error = %v, wantErr %v", err, testCase.wantErr)
 			}
 
-			for i := range got {
-				if got[i].ID != tt.want[i].ID {
-					t.Errorf("GetAll() got = %v, want %v", got[i].ID, tt.want[i].ID)
+			if len(got) != len(testCase.want) {
+				t.Errorf("GetAll() got = %v, want %v", len(got), len(testCase.want))
+			}
+
+			for releaseIndex := range got {
+				if got[releaseIndex].ID != testCase.want[releaseIndex].ID {
+					t.Errorf("GetAll() got = %v, want %v", got[releaseIndex].ID, testCase.want[releaseIndex].ID)
 				}
-				if got[i].Service != tt.want[i].Service {
-					t.Errorf("GetAll() got = %v, want %v", got[i].Service, tt.want[i].Service)
+				if got[releaseIndex].Service != testCase.want[releaseIndex].Service {
+					t.Errorf("GetAll() got = %v, want %v", got[releaseIndex].Service, testCase.want[releaseIndex].Service)
 				}
-				if got[i].Name != tt.want[i].Name {
-					t.Errorf("GetAll() got = %v, want %v", got[i].Name, tt.want[i].Name)
+				if got[releaseIndex].Name != testCase.want[releaseIndex].Name {
+					t.Errorf("GetAll() got = %v, want %v", got[releaseIndex].Name, testCase.want[releaseIndex].Name)
 				}
-				if got[i].StartAt != tt.want[i].StartAt {
-					t.Errorf("GetAll() got = %v, want %v", got[i].StartAt, tt.want[i].StartAt)
+				if got[releaseIndex].StartAt != testCase.want[releaseIndex].StartAt {
+					t.Errorf("GetAll() got = %v, want %v", got[releaseIndex].StartAt, testCase.want[releaseIndex].StartAt)
 				}
-				if got[i].StopAt.Sub(tt.want[i].StopAt) > 5*time.Second {
-					t.Errorf("GetAll() got = %v, want %v", got[i].StopAt, tt.want[i].StopAt)
+				if got[releaseIndex].StopAt.Sub(testCase.want[releaseIndex].StopAt) > 5*time.Second {
+					t.Errorf("GetAll() got = %v, want %v", got[releaseIndex].StopAt, testCase.want[releaseIndex].StopAt)
 				}
 			}
 		})
@@ -97,32 +106,26 @@ var _ domain.ReleaseRepository = &stubReleaseRepository{}
 type stubReleaseRepository struct{}
 
 func (repo stubReleaseRepository) Store(serviceName string, releaseName string, startAt time.Time) error {
-	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetReleases(serviceName string, from, till time.Time) ([]domain.Release, error) {
-	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetByName(serviceName, releaseName string) (*domain.Release, error) {
-	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetNextAfter(serviceName, releaseName string) (*domain.Release, error) {
-	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetLast(serviceName string) (*domain.Release, error) {
-	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetNLasts(serviceName string, count uint) ([]domain.Release, error) {
-	// TODO implement me
 	panic("implement me")
 }
 
@@ -149,8 +152,9 @@ func (repo stubReleaseRepository) GetAll(serviceName string) ([]domain.Release, 
 	return releases, nil
 }
 
-func TestGetReleases(t *testing.T) {
+func TestGetReleases(t *testing.T) { // nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
+
 	conn, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		t.Skip(err)
@@ -160,7 +164,7 @@ func TestGetReleases(t *testing.T) {
 	releaseRepository := repository.NewReleaseRepository(conn)
 	releaseService := NewReleaseService(releaseRepository)
 
-	t.Run("inside range", func(t *testing.T) {
+	t.Run("inside range", func(t *testing.T) { // nolint:paralleltest
 		if err := tests.LoadFixture(conn, "./testdata/release_test.fixture.sql"); err != nil {
 			t.Fatal(err)
 		}
@@ -180,7 +184,7 @@ func TestGetReleases(t *testing.T) {
 		assert.Equal(t, time.Date(2020, time.November, 13, 23, 59, 59, 0, time.UTC), ranges[2].StopAt)
 	})
 
-	t.Run("in the end of range", func(t *testing.T) {
+	t.Run("in the end of range", func(t *testing.T) { // nolint:paralleltest
 		if err := tests.LoadFixture(conn, "./testdata/release_test.fixture.sql"); err != nil {
 			t.Fatal(err)
 		}
@@ -197,5 +201,4 @@ func TestGetReleases(t *testing.T) {
 		assert.Equal(t, time.Date(2020, time.December, 26, 0, 0, 0, 0, time.UTC), ranges[2].StartAt)
 		assert.Less(t, time.Now().UTC().Sub(ranges[2].StopAt), 2*time.Second)
 	})
-
 }

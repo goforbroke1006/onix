@@ -1,8 +1,7 @@
-package repository
+package repository // nolint:testpackage
 
 import (
 	"context"
-	"io/ioutil"
 	"testing"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -10,21 +9,19 @@ import (
 
 	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/tests"
 )
 
-func TestGetAll(t *testing.T) {
+func TestGetAll(t *testing.T) { // nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
+
 	conn, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		t.Skip(err)
 	}
 	defer conn.Close()
 
-	fixtureData, err := ioutil.ReadFile("./criteria_test.fixture.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err = conn.Exec(context.TODO(), string(fixtureData)); err != nil {
+	if err := tests.LoadFixture(conn, "./criteria_test.fixture.sql"); err != nil {
 		t.Fatal(err)
 	}
 
