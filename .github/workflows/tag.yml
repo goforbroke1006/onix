@@ -28,7 +28,7 @@ jobs:
       - name: Build and push onix-backend
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./
           file: .build/backend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-backend:${{ env.GITHUB_REF_SLUG }}
@@ -36,7 +36,7 @@ jobs:
       - name: Build and push onix-dashboard-admin
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./frontend/dashboard-admin
           file: .build/frontend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-dashboard-admin:${{ env.GITHUB_REF_SLUG }}
@@ -44,7 +44,7 @@ jobs:
       - name: Build and push onix-backend
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./frontend/dashboard-main
           file: .build/frontend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-dashboard-main:${{ env.GITHUB_REF_SLUG }}
