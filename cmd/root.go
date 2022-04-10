@@ -82,9 +82,6 @@ func setupViper() error {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	_ = viper.ReadInConfig()
-	//if err := viper.ReadInConfig(); err != nil {
-	//	return errors.Wrap(err, "can't find config file")
-	//}
 
 	return nil
 }

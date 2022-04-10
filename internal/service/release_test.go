@@ -83,40 +83,37 @@ func Test_releaseService_GetAll(t *testing.T) {
 	}
 }
 
-var (
-	_ domain.ReleaseRepository = &stubReleaseRepository{}
-)
+var _ domain.ReleaseRepository = &stubReleaseRepository{}
 
-type stubReleaseRepository struct {
-}
+type stubReleaseRepository struct{}
 
 func (repo stubReleaseRepository) Store(serviceName string, releaseName string, startAt time.Time) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetReleases(serviceName string, from, till time.Time) ([]domain.Release, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetByName(serviceName, releaseName string) (*domain.Release, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetNextAfter(serviceName, releaseName string) (*domain.Release, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetLast(serviceName string) (*domain.Release, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (repo stubReleaseRepository) GetNLasts(serviceName string, count uint) ([]domain.Release, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

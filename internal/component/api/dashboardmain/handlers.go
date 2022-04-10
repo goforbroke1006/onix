@@ -158,12 +158,15 @@ func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) 
 
 	sourceOne, err := s.sourceRepo.Get(params.ReleaseOneSourceId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get source #1")
 	}
+
 	sourceTwo, err := s.sourceRepo.Get(params.ReleaseTwoSourceId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "can't get source #2")
 	}
+
+	const defaultSeriesStep = 5 * time.Minute
 
 	for _, criteria := range criteriaList {
 		var (
@@ -173,13 +176,13 @@ func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) 
 		)
 
 		if series1, err = s.measurementService.GetOrPull(context.TODO(),
-			*sourceOne, criteria, releaseOneStart, releaseOneStop, 5*time.Minute,
+			*sourceOne, criteria, releaseOneStart, releaseOneStop, defaultSeriesStep,
 		); err != nil {
 			return errors.Wrap(err, "can't get series for release one")
 		}
 
 		if series2, err = s.measurementService.GetOrPull(context.TODO(),
-			*sourceTwo, criteria, releaseTwoStart, releaseTwoStop, 5*time.Minute,
+			*sourceTwo, criteria, releaseTwoStart, releaseTwoStop, defaultSeriesStep,
 		); err != nil {
 			return errors.Wrap(err, "can't get series for release two")
 		}

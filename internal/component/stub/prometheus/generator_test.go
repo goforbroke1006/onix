@@ -71,8 +71,8 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 			name: "positive - some range 15 min",
 			args: args{
 				query: "hello wildfowl",
-				start: time.Date(1990, time.June, 10, 8, 45, 00, 0, time.UTC), // nolint:gofumpt
-				stop:  time.Date(1990, time.June, 10, 9, 0, 00, 0, time.UTC),
+				start: time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC),
+				stop:  time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC),
 				step:  5 * time.Minute,
 			},
 			want: []seriesPoint{

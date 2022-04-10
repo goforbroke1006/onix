@@ -36,7 +36,7 @@ func TestGetReleases(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var releaseRepository = repository.NewReleaseRepository(conn)
+	releaseRepository := repository.NewReleaseRepository(conn)
 	releaseService := service.NewReleaseService(releaseRepository)
 
 	from, _ := time.Parse("2006-01-02 15:04:05", "2020-10-25 00:00:00")
@@ -72,7 +72,7 @@ func TestGetReleasesInTheEndOfList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var releaseRepository = repository.NewReleaseRepository(conn)
+	releaseRepository := repository.NewReleaseRepository(conn)
 	releaseService := service.NewReleaseService(releaseRepository)
 
 	from, _ := time.Parse("2006-01-02 15:04:05", "2020-11-28 00:00:00")

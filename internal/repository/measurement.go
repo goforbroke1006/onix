@@ -142,10 +142,12 @@ func (repo measurementRepository) GetForPoints(
 	points []time.Time,
 ) ([]domain.MeasurementRow, error) {
 	pointsInClause := make([]string, 0, len(points))
+
 	for _, point := range points {
 		timeStr := point.UTC().Format(time.RFC3339)
 		pointsInClause = append(pointsInClause, fmt.Sprintf(`'%s'`, timeStr))
 	}
+
 	pointsInClauseStr := strings.Join(pointsInClause, ",")
 
 	query := fmt.Sprintf(`

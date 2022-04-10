@@ -1,4 +1,4 @@
-package service
+package service // nolint:testpackage
 
 import (
 	"context"
@@ -16,6 +16,8 @@ import (
 )
 
 func TestNewMeasurementService(t *testing.T) {
+	t.Parallel()
+
 	actual := NewMeasurementService(nil)
 	assert.NotNil(t, actual)
 }
@@ -24,11 +26,13 @@ func Test_measurementService_getTimePoints(t *testing.T) {
 	t.Parallel()
 
 	type fields struct{}
+
 	type args struct {
 		from time.Time
 		till time.Time
 		step time.Duration
 	}
+
 	tests := []struct {
 		name   string
 		fields fields
@@ -60,23 +64,26 @@ func Test_measurementService_getTimePoints(t *testing.T) {
 				time.Date(2022, time.March, 8, 13, 15, 0, 0, time.UTC),
 				time.Date(2022, time.March, 8, 13, 30, 0, 0, time.UTC),
 				time.Date(2022, time.March, 8, 13, 45, 0, 0, time.UTC),
-				time.Date(2022, time.March, 8, 14, 00, 0, 0, time.UTC),
+				time.Date(2022, time.March, 8, 14, 0o0, 0, 0, time.UTC),
 			},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		testCase := tt
+		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			m := measurementService{}
-			if got := m.getTimePoints(tt.args.from, tt.args.till, tt.args.step); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getTimePoints() = %v, want %v", got, tt.want)
+			m := measurementService{} // nolint:exhaustivestruct
+			got := m.getTimePoints(testCase.args.from, testCase.args.till, testCase.args.step)
+			if !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("getTimePoints() = %v, want %v", got, testCase.want)
 			}
 		})
 	}
 }
 
-func TestMeasurementService_GetOrPull(t *testing.T) {
+func TestMeasurementService_GetOrPull(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	t.Run("on DB failure", func(t *testing.T) {
@@ -87,7 +94,8 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 
 		measurementRepository := mockRepo.NewMockMeasurementRepository(mockCtrl)
 		svc := measurementService{
-			measurementRepo: measurementRepository,
+			measurementRepo:  measurementRepository,
+			createProviderFn: nil,
 		}
 
 		measurementRepository.EXPECT().GetForPoints(gomock.Any(), gomock.Any(), gomock.Any()).Return(
@@ -95,10 +103,10 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 			errors.New("some fake error"),
 		)
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypePrometheus,
 		}
-		criteria := domain.Criteria{}
+		criteria := domain.Criteria{} // nolint:exhaustivestruct
 
 		from := time.Date(2022, time.March, 8, 13, 0, 0, 0, time.UTC)
 		till := time.Date(2022, time.March, 8, 14, 0, 0, 0, time.UTC)
@@ -115,7 +123,8 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 
 		measurementRepository := mockRepo.NewMockMeasurementRepository(mockCtrl)
 		svc := measurementService{
-			measurementRepo: measurementRepository,
+			measurementRepo:  measurementRepository,
+			createProviderFn: nil,
 		}
 
 		measurementRepository.EXPECT().GetForPoints(gomock.Any(), gomock.Any(), gomock.Any()).Return(
@@ -129,10 +138,10 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 			nil,
 		)
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypePrometheus,
 		}
-		criteria := domain.Criteria{}
+		criteria := domain.Criteria{} // nolint:exhaustivestruct
 
 		from := time.Date(2022, time.March, 8, 13, 0, 0, 0, time.UTC)
 		till := time.Date(2022, time.March, 8, 14, 0, 0, 0, time.UTC)
@@ -171,6 +180,7 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 						nil,
 						errors.New("some fake errors"),
 					)
+
 				return provider
 			},
 		}
@@ -180,10 +190,10 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 			nil,
 		)
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypePrometheus,
 		}
-		criteria := domain.Criteria{}
+		criteria := domain.Criteria{} // nolint:exhaustivestruct
 
 		from := time.Date(2022, time.March, 8, 13, 0, 0, 0, time.UTC)
 		till := time.Date(2022, time.March, 8, 14, 0, 0, 0, time.UTC)
@@ -214,6 +224,7 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 						},
 						nil,
 					)
+
 				return provider
 			},
 		}
@@ -226,10 +237,10 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 			errors.New("some fake error"),
 		)
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypePrometheus,
 		}
-		criteria := domain.Criteria{}
+		criteria := domain.Criteria{} // nolint:exhaustivestruct
 
 		from := time.Date(2022, time.March, 8, 13, 0, 0, 0, time.UTC)
 		till := time.Date(2022, time.March, 8, 14, 0, 0, 0, time.UTC)
@@ -260,6 +271,7 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 						},
 						nil,
 					)
+
 				return provider
 			},
 		}
@@ -272,10 +284,10 @@ func TestMeasurementService_GetOrPull(t *testing.T) {
 			nil, // store batch OK
 		)
 
-		source := domain.Source{
+		source := domain.Source{ // nolint:exhaustivestruct
 			Type: domain.SourceTypePrometheus,
 		}
-		criteria := domain.Criteria{}
+		criteria := domain.Criteria{} // nolint:exhaustivestruct
 
 		from := time.Date(2022, time.March, 8, 13, 0, 0, 0, time.UTC)
 		till := time.Date(2022, time.March, 8, 14, 0, 0, 0, time.UTC)
