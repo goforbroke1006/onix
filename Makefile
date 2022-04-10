@@ -32,7 +32,7 @@ build: build/backend build/frontend
 
 build/backend:
 	@echo "Build backend"
-	go build ./
+	CGO_ENABLED=0 go build ./
 
 build/frontend:
 	@echo "Build frontend"
