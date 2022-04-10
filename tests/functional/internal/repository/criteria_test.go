@@ -1,6 +1,3 @@
-//go:build functional
-// +build functional
-
 package repository
 
 import (
@@ -11,18 +8,15 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/goforbroke1006/onix/cmd"
 	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/internal/repository"
 )
 
 func TestGetAll(t *testing.T) {
-	_ = cmd.ExecuteCmdTree()
-
-	connString := common.GetDbConnString()
+	connString := common.GetTestConnectionStrings()
 	conn, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
-		panic(err)
+		t.Skip(err)
 	}
 	defer conn.Close()
 

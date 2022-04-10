@@ -1,7 +1,7 @@
+.PHONY: all
 all: dep gen build test lint
 
-.PHONY: dep gen build test/unit test/functional test/integration lint coverage
-
+.PHONY: clean
 clean:
 	find ./ -name '*.generated.go' -type f -delete
 	rm -rf ./onix
@@ -12,6 +12,7 @@ clean:
 	rm -f ./coverage.out
 	rm -rf ./mock/
 
+.PHONY: dep
 dep:
 	@echo "Install backend dependencies"
 	go mod download
@@ -19,57 +20,60 @@ dep:
 	npm --prefix ./frontend/dashboard-admin/ install
 	npm --prefix ./frontend/dashboard-main/ install
 
+.PHONY: gen
 gen:
 	@echo "Generate backend boilerplate code"
 	go generate ./...
 
+.PHONY: gen/frontend/snapshot
 gen/frontend/snapshot:
 	@echo "Generate jest test snapshots"
 	npm --prefix ./frontend/dashboard-admin/ test -- -u --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false
 
+.PHONY: build
 build: build/backend build/frontend
 
+.PHONY: build/backend
 build/backend:
 	@echo "Build backend"
 	CGO_ENABLED=0 go build ./
 
+.PHONY: build/frontend
 build/frontend:
 	@echo "Build frontend"
 	npm --prefix ./frontend/dashboard-admin/ run build
 	npm --prefix ./frontend/dashboard-main/ run build
 
-test: test/unit
-test-all: test/unit test/functional test/integration
+.PHONY: test
+test: test/backend test/frontend
 
-test/unit: test/unit/backend test/unit/frontend
+.PHONY: test/backend
+test/backend:
+	go test -race ./...
 
-test/unit/backend:
-	go test --tags=unit `go list ./... | grep -v '/mocks'` -cover
-
-test/unit/frontend:
+.PHONY: test/frontend
+test/frontend:
 	npm --prefix ./frontend/dashboard-admin/ test -- --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- --watchAll=false
 
-test/functional:
-	go test --tags=functional ./...
-
-test/integration:
-	go test --tags=integration ./...
-
+.PHONY: lint
 lint:
 	golangci-lint run
 	ineffassign ./...
 	find . -type f -name '*.go' | xargs misspell -error
 	cd ./frontend/dashboard-main/ && eslint src/**/*.js && cd ./../../
 
+.PHONY: benchmark
 benchmark:
 	go test -gcflags="-N" ./... -bench=.
 
+.PHONY: coverage
 coverage:
 	go test --coverprofile ./coverage.out ./...
 	go tool cover -html ./coverage.out
 
+.PHONY: image
 image:
 	echo "Build"
 	DOCKER_BUILDKIT=1 docker build --network=host -f .build/backend/Dockerfile -t docker.io/goforbroke1006/onix-backend:latest ./
@@ -80,6 +84,6 @@ image:
 	docker push docker.io/goforbroke1006/onix-dashboard-admin:latest
 	docker push docker.io/goforbroke1006/onix-dashboard-main:latest
 
-
+.PHONY: setup
 setup:
 	bash ./setup.sh

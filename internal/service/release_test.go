@@ -1,14 +1,23 @@
-//go:build unit
-// +build unit
-
 package service
 
 import (
+	"context"
+	"github.com/goforbroke1006/onix/common"
+	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/tests"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goforbroke1006/onix/domain"
 )
+
+func TestNewReleaseService(t *testing.T) {
+	service := NewReleaseService(nil)
+	assert.NotNil(t, service)
+}
 
 func Test_releaseService_GetAll(t *testing.T) {
 	type fields struct {
@@ -138,4 +147,55 @@ func (repo stubReleaseRepository) GetAll(serviceName string) ([]domain.Release, 
 	}
 
 	return releases, nil
+}
+
+func TestGetReleases(t *testing.T) {
+	connString := common.GetTestConnectionStrings()
+	conn, err := pgxpool.Connect(context.Background(), connString)
+	if err != nil {
+		t.Skip(err)
+	}
+	defer conn.Close()
+
+	releaseRepository := repository.NewReleaseRepository(conn)
+	releaseService := NewReleaseService(releaseRepository)
+
+	t.Run("inside range", func(t *testing.T) {
+		if err := tests.LoadFixture(conn, "./testdata/release_test.fixture.sql"); err != nil {
+			t.Fatal(err)
+		}
+
+		from, _ := time.Parse("2006-01-02 15:04:05", "2020-10-25 00:00:00")
+		till, _ := time.Parse("2006-01-02 15:04:05", "2020-11-06 00:00:00")
+		ranges, err := releaseService.GetReleases("foo/bar/backend", from, till)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, 3, len(ranges))
+		assert.Equal(t, time.Date(2020, time.October, 25, 0, 0, 0, 0, time.UTC), ranges[0].StartAt)
+		assert.Equal(t, time.Date(2020, time.October, 25, 23, 59, 59, 0, time.UTC), ranges[0].StopAt)
+
+		assert.Equal(t, time.Date(2020, time.November, 6, 0, 0, 0, 0, time.UTC), ranges[2].StartAt)
+		assert.Equal(t, time.Date(2020, time.November, 13, 23, 59, 59, 0, time.UTC), ranges[2].StopAt)
+	})
+
+	t.Run("in the end of range", func(t *testing.T) {
+		if err := tests.LoadFixture(conn, "./testdata/release_test.fixture.sql"); err != nil {
+			t.Fatal(err)
+		}
+
+		from, _ := time.Parse("2006-01-02 15:04:05", "2020-11-28 00:00:00")
+		till, _ := time.Parse("2006-01-02 15:04:05", "2020-12-26 00:00:00")
+		ranges, err := releaseService.GetReleases("foo/bar/backend", from, till)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, 3, len(ranges))
+
+		assert.Equal(t, time.Date(2020, time.December, 26, 0, 0, 0, 0, time.UTC), ranges[2].StartAt)
+		assert.Less(t, time.Now().UTC().Sub(ranges[2].StopAt), 2*time.Second)
+	})
+
 }

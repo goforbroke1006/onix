@@ -54,7 +54,7 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 	})
 
 	afterLast, err := svc.repo.GetNextAfter(serviceName, releases[lastIndex].Name)
-	if err != nil && errors.Is(err, domain.ErrNotFound) {
+	if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		return nil, errors.Wrap(err, "can't get next release")
 	}
 
