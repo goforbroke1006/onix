@@ -37,27 +37,9 @@ jobs:
         run: go test -v ./...
       - name: Calc coverage
         run: go test -race -coverprofile=coverage.out ./...
-#      - name: Convert coverage.out to coverage.lcov
-#        uses: jandelgado/gcov2lcov-action@v1.0.6
-#      - uses: shogo82148/actions-goveralls@v1
-#        with:
-#          path-to-profile: coverage.out
       - name: Install goveralls
         run: go install github.com/mattn/goveralls@latest
       - name: Send coverage
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=coverage.out -service=github
-#      - name: Coveralls
-#        uses: coverallsapp/github-action@master
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#          path-to-lcov: coverage.lcov
-#      - name: Send slack notification
-#        uses: 8398a7/action-slack@v3
-#        with:
-#          status: ${{ job.status }}
-#          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-#        if: always()
