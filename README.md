@@ -14,22 +14,26 @@ Allow to establish the fact of components regression.
 * Postgres 10
 * React
 
-### Components
+### Backend components (managed by [cobra](https://github.com/spf13/cobra))
 
-* **api dashboard-admin** - CRUD for services, release, sources and criteria
-* **api dashboard-main** - handle request from compare releases frontend side
-* **api system** - http handlers for CI integration
-* **daemon metrics-extractor** - periodic run extracting data from prometheus API
-* **stub prometheus** - fake prom API for demo build
-* **util load-historical-metrics** - tool for loading missing metrics
+| Name                             | Description                                        |
+|----------------------------------|----------------------------------------------------|
+| **api dashboard-admin**          | CRUD for services, release, sources and criteria   |
+| **api dashboard-main**           | handle request from compare releases frontend side |
+| **api system**                   | http handlers for CI integration                   |
+| **daemon metrics-extractor**     | periodic run extracting data from prometheus API   |
+| **stub prometheus**              | fake prom API for demo build                       |
+| **util load-historical-metrics** | tool for loading missing metrics                   |
 
 ### Definitions
 
-* **Service** - single process or group of processes (in the same namespace in k8s, etc).
-* **Source** - time series database (Prometheus/Thanos or InfluxDB).
-* **Release** - info about new deployment of some service.
-* **Criteria** - prometheus/influx query to extract pairs \<timestamp, double-point-value>
-* **Measurement** - locally cached metric, object with source_id, criteria_id, timestamp and value.
+| Name            | Description                                                                    |
+|-----------------|--------------------------------------------------------------------------------|
+| **Service**     | single process or group of processes (in the same namespace in k8s, etc)       |
+| **Source**      | time series database (Prometheus/Thanos or InfluxDB)                           |
+| **Release**     | info about new deployment of some service                                      |
+| **Criteria**    | prometheus/influx query to extract pairs \<timestamp, double-point-value>      |
+| **Measurement** | locally cached metric, object with source_id, criteria_id, timestamp and value |
 
 ### Demo
 
@@ -67,12 +71,13 @@ curl -X GET "http//onix.your-company-name.com:8081/api/system/register?service_n
 
 Go to **admin dashboard** and add criteria items for this service.
 
-What about field *Selector* - write here PromQL query, that returns single vector of values.
-If you are not sure, open http://prometheus.your-company-name.com/graph (where prometheus hosted) and debug your query.
+What about field *Selector* - write here PromQL query, that returns single vector of values. If you are not sure,
+open http://prometheus.your-company-name.com/graph (where prometheus hosted) and debug your query.
 
 Every 15 minutes **daemon metrics-extractor** update data. To update data faster, you can reload daemon.
 
-And then you can open **main dashboard**, select *service*, *source*, *release #1*, *release #2*, *period* and see comparison graphs.
+And then you can open **main dashboard**, select *service*, *source*, *release #1*, *release #2*, *period* and see
+comparison graphs.
 
 if you need load previous releases, run this command manually to set previous releases start time:
 
