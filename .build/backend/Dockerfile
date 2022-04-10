@@ -1,6 +1,9 @@
 FROM golang:1.17-alpine AS builder
 
 WORKDIR /code/
+
+RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
+
 COPY ./go.mod /code/go.mod
 COPY ./go.sum /code/go.sum
 RUN go mod download
