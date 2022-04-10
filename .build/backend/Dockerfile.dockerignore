@@ -1,0 +1,9 @@
+/.build/
+/.docker-compose/
+/.github/
+/frontend/
+.gitignore
+.golangci.yaml
+docker-compose.yml
+Makefile
+setup.sh

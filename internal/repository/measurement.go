@@ -72,7 +72,7 @@ func (repo measurementRepository) StoreBatch(sourceID, criteriaID int64, measure
 
 func (repo measurementRepository) GetBy(
 	sourceID, criteriaID int64, from, till time.Time,
-) ([]domain.MeasurementShortRow, error) {
+) ([]domain.MeasurementRow, error) {
 	query := fmt.Sprintf(`
 		SELECT moment, value
 		FROM measurement
@@ -89,7 +89,7 @@ func (repo measurementRepository) GetBy(
 	}
 	defer rows.Close()
 
-	result := make([]domain.MeasurementShortRow, 0, len(rows.RawValues()))
+	result := make([]domain.MeasurementRow, 0, len(rows.RawValues()))
 
 	var (
 		moment time.Time
@@ -101,7 +101,7 @@ func (repo measurementRepository) GetBy(
 			return nil, errors.Wrap(err, "can't scan measurement row")
 		}
 
-		result = append(result, domain.MeasurementShortRow{
+		result = append(result, domain.MeasurementRow{
 			Moment: moment,
 			Value:  value,
 		})
@@ -135,4 +135,52 @@ func (repo measurementRepository) Count(sourceID, criteriaID int64, from, till t
 	}
 
 	return 0, domain.ErrNotFound
+}
+
+func (repo measurementRepository) GetForPoints(
+	sourceID, criteriaID int64,
+	points []time.Time,
+) ([]domain.MeasurementRow, error) {
+	pointsInClause := make([]string, 0, len(points))
+	for _, point := range points {
+		timeStr := point.UTC().Format(time.RFC3339)
+		pointsInClause = append(pointsInClause, fmt.Sprintf(`'%s'`, timeStr))
+	}
+	pointsInClauseStr := strings.Join(pointsInClause, ",")
+
+	query := fmt.Sprintf(`
+		SELECT moment, value
+		FROM measurement
+		WHERE source_id = %d 
+			AND criteria_id = %d 
+			AND moment IN (%s)
+		ORDER BY moment ASC
+		`,
+		sourceID, criteriaID, pointsInClauseStr)
+
+	rows, err := repo.conn.Query(context.Background(), query)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't get measurement from db")
+	}
+	defer rows.Close()
+
+	result := make([]domain.MeasurementRow, 0, len(rows.RawValues()))
+
+	var (
+		moment time.Time
+		value  float64
+	)
+
+	for rows.Next() {
+		if err := rows.Scan(&moment, &value); err != nil {
+			return nil, errors.Wrap(err, "can't scan measurement row")
+		}
+
+		result = append(result, domain.MeasurementRow{
+			Moment: moment,
+			Value:  value,
+		})
+	}
+
+	return result, nil
 }

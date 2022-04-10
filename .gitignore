@@ -1,7 +1,7 @@
 .idea/
 config/onix.json
 *.generated.go
-/mocks/**/*.go
+/**/mocks/**/*.go
 /onix
 /fixtures.sql
 /dump-*.sql

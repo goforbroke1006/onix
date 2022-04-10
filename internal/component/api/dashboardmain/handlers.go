@@ -1,6 +1,7 @@
 package dashboardmain
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -13,43 +14,43 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance.
-func NewServer(
+// NewHandlers creates new handlers's handlers implementations instance.
+func NewHandlers(
 	serviceRepo domain.ServiceRepository,
 	releaseSvc domain.ReleaseService,
 	sourceRepo domain.SourceRepository,
 	criteriaRepo domain.CriteriaRepository,
-	measurementRepo domain.MeasurementRepository,
+	measurementService domain.MeasurementService,
 	logger log.Logger,
-) *server { // nolint:revive,golint
-	return &server{
-		serviceRepo:     serviceRepo,
-		releaseSvc:      releaseSvc,
-		sourceRepo:      sourceRepo,
-		criteriaRepo:    criteriaRepo,
-		measurementRepo: measurementRepo,
-		logger:          logger,
+) *handlers { // nolint:revive,golint
+	return &handlers{
+		serviceRepo:        serviceRepo,
+		releaseSvc:         releaseSvc,
+		sourceRepo:         sourceRepo,
+		criteriaRepo:       criteriaRepo,
+		measurementService: measurementService,
+		logger:             logger,
 	}
 }
 
-var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
+var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
 
-type server struct {
-	serviceRepo     domain.ServiceRepository
-	releaseSvc      domain.ReleaseService
-	sourceRepo      domain.SourceRepository
-	criteriaRepo    domain.CriteriaRepository
-	measurementRepo domain.MeasurementRepository
-	logger          log.Logger
+type handlers struct {
+	serviceRepo        domain.ServiceRepository
+	releaseSvc         domain.ReleaseService
+	sourceRepo         domain.SourceRepository
+	criteriaRepo       domain.CriteriaRepository
+	measurementService domain.MeasurementService
+	logger             log.Logger
 }
 
-func (s server) GetHealthz(ctx echo.Context) error {
+func (s handlers) GetHealthz(ctx echo.Context) error {
 	err := ctx.NoContent(http.StatusOK)
 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetService(ctx echo.Context) error {
+func (s handlers) GetService(ctx echo.Context) error {
 	services, err := s.serviceRepo.GetAll()
 	if err != nil {
 		return errors.Wrap(err, "can't get services list")
@@ -65,7 +66,7 @@ func (s server) GetService(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetSource(ctx echo.Context) error {
+func (s handlers) GetSource(ctx echo.Context) error {
 	sourcesList, err := s.sourceRepo.GetAll()
 	if err != nil {
 		return errors.Wrap(err, "can't get sources list")
@@ -77,7 +78,7 @@ func (s server) GetSource(ctx echo.Context) error {
 		response = append(response, apiSpec.Source{
 			Id:      src.ID,
 			Title:   src.Title,
-			Kind:    apiSpec.SourceKind(src.Kind),
+			Kind:    apiSpec.SourceKind(src.Type),
 			Address: src.Address,
 		})
 	}
@@ -87,7 +88,7 @@ func (s server) GetSource(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) error {
+func (s handlers) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) error {
 	ranges, err := s.releaseSvc.GetAll(params.Service)
 	if err != nil {
 		return errors.Wrap(err, "can't get releases list")
@@ -108,7 +109,7 @@ func (s server) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) er
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error { // nolint:funlen,cyclop
+func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error { // nolint:funlen,cyclop
 	const layout = "2006-01-02 15:04:05"
 
 	var (
@@ -155,21 +156,30 @@ func (s server) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) er
 		ReleaseTwo: params.ReleaseTwoTitle,
 	}
 
+	sourceOne, err := s.sourceRepo.Get(params.ReleaseOneSourceId)
+	if err != nil {
+		return err
+	}
+	sourceTwo, err := s.sourceRepo.Get(params.ReleaseTwoSourceId)
+	if err != nil {
+		return err
+	}
+
 	for _, criteria := range criteriaList {
 		var (
-			series1 []domain.MeasurementShortRow
-			series2 []domain.MeasurementShortRow
+			series1 []domain.MeasurementRow
+			series2 []domain.MeasurementRow
 			err     error
 		)
 
-		if series1, err = s.measurementRepo.GetBy(
-			params.ReleaseOneSourceId, criteria.ID, releaseOneStart, releaseOneStop,
+		if series1, err = s.measurementService.GetOrPull(context.TODO(),
+			*sourceOne, criteria, releaseOneStart, releaseOneStop, 5*time.Minute,
 		); err != nil {
 			return errors.Wrap(err, "can't get series for release one")
 		}
 
-		if series2, err = s.measurementRepo.GetBy(
-			params.ReleaseTwoSourceId, criteria.ID, releaseTwoStart, releaseTwoStop,
+		if series2, err = s.measurementService.GetOrPull(context.TODO(),
+			*sourceTwo, criteria, releaseTwoStart, releaseTwoStop, 5*time.Minute,
 		); err != nil {
 			return errors.Wrap(err, "can't get series for release two")
 		}

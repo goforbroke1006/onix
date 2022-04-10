@@ -86,7 +86,7 @@ WHERE id = %d
 		release := domain.Source{
 			ID:      identifier,
 			Title:   title,
-			Kind:    kind,
+			Type:    kind,
 			Address: address,
 		}
 
@@ -130,7 +130,7 @@ func (repo sourceRepository) GetAll() ([]domain.Source, error) {
 		result = append(result, domain.Source{
 			ID:      identifier,
 			Title:   title,
-			Kind:    kind,
+			Type:    kind,
 			Address: address,
 		})
 	}

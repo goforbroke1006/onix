@@ -70,5 +70,16 @@ coverage:
 	go test --coverprofile ./coverage.out ./...
 	go tool cover -html ./coverage.out
 
+image:
+	echo "Build"
+	DOCKER_BUILDKIT=1 docker build --network=host -f .build/backend/Dockerfile -t docker.io/goforbroke1006/onix-backend:latest ./
+	docker build --network=host -f .build/frontend/Dockerfile -t docker.io/goforbroke1006/onix-dashboard-admin:latest ./frontend/dashboard-admin
+	docker build --network=host -f .build/frontend/Dockerfile -t docker.io/goforbroke1006/onix-dashboard-main:latest ./frontend/dashboard-main
+	echo "Push"
+	docker push docker.io/goforbroke1006/onix-backend:latest
+	docker push docker.io/goforbroke1006/onix-dashboard-admin:latest
+	docker push docker.io/goforbroke1006/onix-dashboard-main:latest
+
+
 setup:
 	bash ./setup.sh

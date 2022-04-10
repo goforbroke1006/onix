@@ -10,7 +10,7 @@ const (
 type Source struct {
 	ID      int64
 	Title   string
-	Kind    SourceType
+	Type    SourceType
 	Address string
 }
 

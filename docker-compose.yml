@@ -1,102 +1,44 @@
 version: '3.9'
 
 services:
-  frontend-dashboard-main-prod-builder:
-    restart: "always"
-    build:
-      dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
-      context: ./
-    volumes:
-      - ./frontend/dashboard-main/:/code/
-    environment:
-      REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
 
-  frontend-dashboard-main-prod:
+  dashboard-main:
     restart: "on-failure"
-    image: nginx:1.21.6-alpine
-    volumes:
-      - ./frontend/dashboard-main/build:/usr/share/nginx/html
+    image: docker.io/goforbroke1006/onix-dashboard-main:latest
     ports: [ "3001:80" ]
 
-  frontend-dashboard-admin-prod-builder:
-    restart: "always"
-    build:
-      dockerfile: .docker-compose/frontend-prod-builder/Dockerfile
-      context: ./
-    volumes:
-      - ./frontend/dashboard-admin/:/code/
-    environment:
-      REACT_APP_API_DASHBOARD_ADMIN_BASE_ADDR: http://localhost:8083/api/dashboard-admin
-
-  frontend-dashboard-admin-prod:
+  dashboard-admin:
     restart: "on-failure"
-    image: nginx:1.21.6-alpine
-    volumes:
-      - ./frontend/dashboard-admin/build:/usr/share/nginx/html
+    image: docker.io/goforbroke1006/onix-dashboard-admin:latest
     ports: [ "3002:80" ]
 
   api-system:
     restart: "on-failure"
-    build:
-      dockerfile: .docker-compose/golang-runner/Dockerfile
-      context: ./
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
+    image: docker.io/goforbroke1006/onix-backend:latest
     command: "api system"
     ports: [ "8081:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/system/healthz" ]
-      timeout: 1s
-      interval: 1s
-      retries: 15
 
   api-dashboard-main:
     restart: "on-failure"
-    build:
-      dockerfile: .docker-compose/golang-runner/Dockerfile
-      context: ./
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
+    image: docker.io/goforbroke1006/onix-backend:latest
     command: "api dashboard-main"
     ports: [ "8082:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/dashboard-main/healthz" ]
-      timeout: 1s
-      interval: 1s
-      retries: 15
 
   api-dashboard-admin:
     restart: "on-failure"
-    build:
-      dockerfile: .docker-compose/golang-runner/Dockerfile
-      context: ./
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
+    image: docker.io/goforbroke1006/onix-backend:latest
     command: "api dashboard-admin"
     ports: [ "8083:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/dashboard-admin/healthz" ]
-      timeout: 1s
-      interval: 1s
-      retries: 15
 
   daemon-metrics-extractor:
     restart: "on-failure"
-    build:
-      dockerfile: .docker-compose/golang-runner/Dockerfile
-      context: ./
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
+    image: docker.io/goforbroke1006/onix-backend:latest
     command: "daemon metrics-extractor"
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
@@ -154,36 +96,6 @@ services:
     ports: [ "19091:19090" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
-
-  fixture-foo-backend-measurement:
-    restart: "on-failure"
-    image: golang:1.16-alpine
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go util load-historical-metrics --service=foo/backend --from=2020-10-25 --till=2021-02-26 --source=1"
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres, stub-prometheus ]
-
-  fixture-bar-backend-measurement:
-    restart: "on-failure"
-    image: golang:1.16-alpine
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go util load-historical-metrics --service=bar/backend --from=2021-09-30 --till=2022-04-10 --source=1"
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres, stub-prometheus ]
-
-  fixture-acme-backend-measurement:
-    restart: "on-failure"
-    image: golang:1.16-alpine
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "go run main.go util load-historical-metrics --service=acme/backend --from=2021-12-12 --till=2022-04-10 --source=1"
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres, stub-prometheus ]
 
 volumes:
   postgresql-data: ~

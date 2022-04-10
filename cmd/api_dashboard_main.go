@@ -39,18 +39,18 @@ func NewAPIDashboardMainCmd() *cobra.Command {
 			defer conn.Close()
 
 			var (
-				serviceRepo     = repository.NewServiceRepository(conn)
-				releaseSvc      = service.NewReleaseService(repository.NewReleaseRepository(conn))
-				sourceRepo      = repository.NewSourceRepository(conn)
-				criteriaRepo    = repository.NewCriteriaRepository(conn)
-				measurementRepo = repository.NewMeasurementRepository(conn)
-				logger          = log.NewLogger()
+				serviceRepo    = repository.NewServiceRepository(conn)
+				releaseSvc     = service.NewReleaseService(repository.NewReleaseRepository(conn))
+				sourceRepo     = repository.NewSourceRepository(conn)
+				criteriaRepo   = repository.NewCriteriaRepository(conn)
+				measurementSvc = service.NewMeasurementService(repository.NewMeasurementRepository(conn))
+				logger         = log.NewLogger()
 			)
 
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := dashboardmain.NewServer(serviceRepo, releaseSvc, sourceRepo, criteriaRepo, measurementRepo, logger)
+			server := dashboardmain.NewHandlers(serviceRepo, releaseSvc, sourceRepo, criteriaRepo, measurementSvc, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {

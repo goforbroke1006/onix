@@ -116,3 +116,50 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 
 	return result, nil
 }
+
+func (repo criteriaRepository) GetByID(identifier int64) (domain.Criteria, error) {
+	query := fmt.Sprintf(
+		`
+	SELECT service, title, selector, expected_dir, grouping_interval
+	FROM criteria 
+	WHERE id = %d;`,
+		identifier,
+	)
+
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
+		return domain.Criteria{}, errors.Wrap(err, "can't exec query")
+	}
+	defer rows.Close()
+
+	var (
+		service     string
+		title       string
+		selector    string
+		expectedDir domain.DynamicDirType
+		interval    string
+	)
+
+	if rows.Next() {
+		if err := rows.Scan(&service, &title, &selector, &expectedDir, interval); err != nil {
+			return domain.Criteria{}, errors.Wrap(err, "can't scan criteria row")
+		}
+
+		release := domain.Criteria{
+			ID:               identifier,
+			Service:          service,
+			Title:            title,
+			Selector:         selector,
+			ExpectedDir:      expectedDir,
+			GroupingInterval: domain.MustParseGroupingIntervalType(interval),
+		}
+
+		return release, nil
+	}
+
+	return domain.Criteria{}, domain.ErrNotFound
+}

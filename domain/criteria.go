@@ -96,4 +96,5 @@ type CriteriaRepository interface {
 		interval GroupingIntervalType,
 	) (int64, error)
 	GetAll(serviceName string) ([]Criteria, error)
+	GetByID(identifier int64) (Criteria, error)
 }

@@ -37,8 +37,8 @@ Run demo with commands:
 
 ```shell
 docker-compose down --volumes --remove-orphans
-docker-compose build
-docker-compose up -d
+#docker-compose build --parallel
+docker-compose up -d --remove-orphans
 sleep 30 # wait for frontend-prod-builder finished work
 echo "Open main dashboard http://localhost:3001/"
 echo "Open admin dashboard http://localhost:3002/"

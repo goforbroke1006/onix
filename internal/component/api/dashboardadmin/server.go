@@ -96,7 +96,7 @@ func (s server) GetSource(ctx echo.Context) error {
 		resp = append(resp, apiSpec.Source{
 			Id:      s.ID,
 			Title:   s.Title,
-			Kind:    apiSpec.SourceKind(s.Kind),
+			Kind:    apiSpec.SourceKind(s.Type),
 			Address: s.Address,
 		})
 	}

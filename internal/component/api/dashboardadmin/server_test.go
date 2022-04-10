@@ -15,7 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/goforbroke1006/onix/domain"
-	mockRepository "github.com/goforbroke1006/onix/mocks/repository"
+	mockRepository "github.com/goforbroke1006/onix/internal/repository/mocks"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
@@ -244,9 +244,9 @@ func Test_server_GetSource(t *testing.T) { // nolint:funlen
 				sourceRepo: func(ctrl *gomock.Controller) domain.SourceRepository {
 					repo := mockRepository.NewMockSourceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Source{
-						{ID: 1, Title: "source 1", Kind: "", Address: ""},
-						{ID: 2, Title: "source 2", Kind: "", Address: ""},
-						{ID: 3, Title: "source 3", Kind: "", Address: ""},
+						{ID: 1, Title: "source 1", Type: "", Address: ""},
+						{ID: 2, Title: "source 2", Type: "", Address: ""},
+						{ID: 3, Title: "source 3", Type: "", Address: ""},
 					}, nil)
 
 					return repo
@@ -261,9 +261,9 @@ func Test_server_GetSource(t *testing.T) { // nolint:funlen
 				sourceRepo: func(ctrl *gomock.Controller) domain.SourceRepository {
 					repo := mockRepository.NewMockSourceRepository(ctrl)
 					repo.EXPECT().GetAll().Return([]domain.Source{
-						{ID: 1, Title: "source 1", Kind: "", Address: ""},
-						{ID: 2, Title: "source 2", Kind: "", Address: ""},
-						{ID: 3, Title: "source 3", Kind: "", Address: ""},
+						{ID: 1, Title: "source 1", Type: "", Address: ""},
+						{ID: 2, Title: "source 2", Type: "", Address: ""},
+						{ID: 3, Title: "source 3", Type: "", Address: ""},
 					}, nil)
 
 					return repo

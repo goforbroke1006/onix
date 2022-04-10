@@ -1,7 +1,6 @@
 package service
 
 import (
-	errors2 "errors"
 	"time"
 
 	"github.com/pkg/errors"
@@ -108,7 +107,7 @@ func (svc releaseService) GetByName(serviceName, releaseName string) (*domain.Re
 	}
 
 	next, err := svc.repo.GetNextAfter(serviceName, releaseName)
-	if err != nil && errors2.Is(err, domain.ErrNotFound) {
+	if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		return nil, errors.Wrap(err, "can't get next release")
 	}
 

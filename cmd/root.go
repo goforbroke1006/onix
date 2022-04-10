@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -71,6 +70,10 @@ func setupViper() error {
 	viper.SetDefault("db.pass", "onix")
 	viper.SetDefault("db.dbname", "onix")
 
+	viper.SetDefault("server.http.api.dashboard_admin", "0.0.0.0:8080")
+	viper.SetDefault("server.http.api.dashboard_main", "0.0.0.0:8080")
+	viper.SetDefault("server.http.api.system", "0.0.0.0:8080")
+
 	viper.SetConfigName("onix")
 	viper.SetConfigType("json")
 	viper.AddConfigPath("./config")
@@ -78,9 +81,10 @@ func setupViper() error {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	if err := viper.ReadInConfig(); err != nil {
-		return fmt.Errorf("fatal error config file: %w", err)
-	}
+	_ = viper.ReadInConfig()
+	//if err := viper.ReadInConfig(); err != nil {
+	//	return errors.Wrap(err, "can't find config file")
+	//}
 
 	return nil
 }
