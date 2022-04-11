@@ -70,7 +70,7 @@ benchmark:
 
 .PHONY: coverage
 coverage:
-	go test --coverprofile ./coverage.out ./...
+	go test -race -coverprofile=./coverage.out ./...
 	go tool cover -html ./coverage.out
 
 .PHONY: image
