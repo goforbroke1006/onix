@@ -127,7 +127,7 @@ components:
           type: integer
           format: int64
     criteriaReport:
-      required: [ title, selector, graph ]
+      required: [ title, selector, graph, direction ]
       properties:
         title:
           type: string
@@ -137,7 +137,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/graphItem'
-
+        direction:
+          type: string
+          enum:
+            - equal
+            - increase
+            - decrease
     graphItem:
       required: [ t1, v1, t2, v2 ]
       properties:

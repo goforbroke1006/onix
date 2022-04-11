@@ -191,10 +191,22 @@ func (h handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) 
 			minLen = len(series2)
 		}
 
+		var direction apiSpec.CriteriaReportDirection
+
+		switch criteria.ExpectedDir {
+		case domain.DynamicDirTypeIncrease:
+			direction = apiSpec.CriteriaReportDirectionIncrease
+		case domain.DynamicDirTypeDecrease:
+			direction = apiSpec.CriteriaReportDirectionDecrease
+		case domain.DynamicDirTypeEqual:
+			direction = apiSpec.CriteriaReportDirectionEqual
+		}
+
 		criteriaReport := apiSpec.CriteriaReport{
-			Title:    criteria.Title,
-			Selector: criteria.Selector,
-			Graph:    make([]apiSpec.GraphItem, 0, minLen),
+			Title:     criteria.Title,
+			Selector:  criteria.Selector,
+			Graph:     make([]apiSpec.GraphItem, 0, minLen),
+			Direction: direction,
 		}
 
 		for seriesItemIndex := 0; seriesItemIndex < minLen; seriesItemIndex++ {
