@@ -250,9 +250,9 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		fakeServiceName = "foo/bar/backend"
 		sourceID        = int64(1)
 		releaseOne      = "2.0.0"
-		releaseOneStart = 1642877700 // Sat Jan 22 2022 18:55:00 GMT+0000
+		releaseOneStart = int64(1642877700) // Sat Jan 22 2022 18:55:00 GMT+0000
 		releaseTwo      = "2.1.0"
-		releaseTwoStart = 1643894976 // Thu Feb 03 2022 13:29:36 GMT+0000
+		releaseTwoStart = int64(1643894976) // Thu Feb 03 2022 13:29:36 GMT+0000
 	)
 
 	mockCtrl := gomock.NewController(t)
@@ -462,7 +462,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 
 		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
-			Return(nil, errors.New("fake error")).Times(2) // simulation here
+			Return(nil, errors.New("fake error")) // simulation here
 
 		handlersInstance := handlers{ // nolint:exhaustivestruct
 			releaseSvc:   service.NewReleaseService(releaseRepo),
