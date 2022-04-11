@@ -45,6 +45,11 @@ func (l baseLogger) Warn(args ...interface{}) {
 	l.clear()
 }
 
+func (l baseLogger) Errorf(format string, args ...interface{}) {
+	logrus.WithFields(l.label).Errorf(format, args...)
+	l.clear()
+}
+
 func (l baseLogger) Fatal(args ...interface{}) {
 	logrus.WithFields(l.label).Fatal(args...)
 	l.clear()

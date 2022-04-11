@@ -19,4 +19,6 @@ func (n nullLogger) Infof(format string, args ...interface{}) {}
 
 func (n nullLogger) Warn(args ...interface{}) {}
 
+func (n nullLogger) Errorf(format string, args ...interface{}) {}
+
 func (n nullLogger) Fatal(args ...interface{}) {}

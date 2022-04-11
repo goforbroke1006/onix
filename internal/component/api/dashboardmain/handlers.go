@@ -2,7 +2,6 @@ package dashboardmain
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -44,14 +43,14 @@ type handlers struct {
 	logger             log.Logger
 }
 
-func (s handlers) GetHealthz(ctx echo.Context) error {
+func (h handlers) GetHealthz(ctx echo.Context) error {
 	err := ctx.NoContent(http.StatusOK)
 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s handlers) GetService(ctx echo.Context) error {
-	services, err := s.serviceRepo.GetAll()
+func (h handlers) GetService(ctx echo.Context) error {
+	services, err := h.serviceRepo.GetAll()
 	if err != nil {
 		return errors.Wrap(err, "can't get services list")
 	}
@@ -66,8 +65,8 @@ func (s handlers) GetService(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s handlers) GetSource(ctx echo.Context) error {
-	sourcesList, err := s.sourceRepo.GetAll()
+func (h handlers) GetSource(ctx echo.Context) error {
+	sourcesList, err := h.sourceRepo.GetAll()
 	if err != nil {
 		return errors.Wrap(err, "can't get sources list")
 	}
@@ -88,8 +87,8 @@ func (s handlers) GetSource(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s handlers) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) error {
-	ranges, err := s.releaseSvc.GetAll(params.Service)
+func (h handlers) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) error {
+	ranges, err := h.releaseSvc.GetAll(params.Service)
 	if err != nil {
 		return errors.Wrap(err, "can't get releases list")
 	}
@@ -109,7 +108,7 @@ func (s handlers) GetRelease(ctx echo.Context, params apiSpec.GetReleaseParams) 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error { // nolint:funlen,cyclop
+func (h handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) error { // nolint:funlen,cyclop
 	const layout = "2006-01-02 15:04:05"
 
 	var (
@@ -123,31 +122,31 @@ func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) 
 		releaseTwoStop = releaseTwoStart.Add(period)
 	)
 
-	releaseOne, err := s.releaseSvc.GetByName(params.Service, params.ReleaseOneTitle)
+	releaseOne, err := h.releaseSvc.GetByName(params.Service, params.ReleaseOneTitle)
 	if err != nil {
 		return errors.Wrap(err, "can't get release one by name")
 	}
 
 	if releaseOneStart.Before(releaseOne.StartAt) {
-		message := fmt.Sprintf("%d before %d", params.ReleaseOneStart, releaseOne.StartAt.Unix())
+		h.logger.Errorf("%d before %d", params.ReleaseOneStart, releaseOne.StartAt.Unix())
 
-		return errors.Wrap(ErrWrongTimeRange, message)
+		return errors.Wrap(ErrWrongTimeRange, "release 1 wrong time")
 	}
 
-	releaseTwo, err := s.releaseSvc.GetByName(params.Service, params.ReleaseTwoTitle)
+	releaseTwo, err := h.releaseSvc.GetByName(params.Service, params.ReleaseTwoTitle)
 	if err != nil {
 		return errors.Wrap(err, "can't get release two by name")
 	}
 
 	if releaseTwoStart.Before(releaseTwo.StartAt) {
-		message := fmt.Sprintf("%d before %d", params.ReleaseTwoStart, releaseTwo.StartAt.Unix())
+		h.logger.Errorf("%d before %d", params.ReleaseTwoStart, releaseTwo.StartAt.Unix())
 
-		return errors.Wrap(ErrWrongTimeRange, message)
+		return errors.Wrap(ErrWrongTimeRange, "release 2 wrong time")
 	}
 
-	criteriaList, err := s.criteriaRepo.GetAll(params.Service)
+	criteriaList, err := h.criteriaRepo.GetAll(params.Service)
 	if err != nil {
-		return errors.Wrap(err, "can't get service list")
+		return errors.Wrap(err, "can't get criteria list")
 	}
 
 	response := apiSpec.CompareResponse{ // nolint:exhaustivestruct
@@ -156,12 +155,12 @@ func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) 
 		ReleaseTwo: params.ReleaseTwoTitle,
 	}
 
-	sourceOne, err := s.sourceRepo.Get(params.ReleaseOneSourceId)
+	sourceOne, err := h.sourceRepo.Get(params.ReleaseOneSourceId)
 	if err != nil {
 		return errors.Wrap(err, "can't get source #1")
 	}
 
-	sourceTwo, err := s.sourceRepo.Get(params.ReleaseTwoSourceId)
+	sourceTwo, err := h.sourceRepo.Get(params.ReleaseTwoSourceId)
 	if err != nil {
 		return errors.Wrap(err, "can't get source #2")
 	}
@@ -175,13 +174,13 @@ func (s handlers) GetCompare(ctx echo.Context, params apiSpec.GetCompareParams) 
 			err     error
 		)
 
-		if series1, err = s.measurementService.GetOrPull(context.TODO(),
+		if series1, err = h.measurementService.GetOrPull(context.TODO(),
 			*sourceOne, criteria, releaseOneStart, releaseOneStop, defaultSeriesStep,
 		); err != nil {
 			return errors.Wrap(err, "can't get series for release one")
 		}
 
-		if series2, err = s.measurementService.GetOrPull(context.TODO(),
+		if series2, err = h.measurementService.GetOrPull(context.TODO(),
 			*sourceTwo, criteria, releaseTwoStart, releaseTwoStop, defaultSeriesStep,
 		); err != nil {
 			return errors.Wrap(err, "can't get series for release two")

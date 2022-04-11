@@ -22,7 +22,7 @@ func TestNewMeasurementService(t *testing.T) {
 	assert.NotNil(t, actual)
 }
 
-func Test_measurementService_getTimePoints(t *testing.T) {
+func Test_measurementService_getTimePoints(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	type fields struct{}
@@ -81,6 +81,17 @@ func Test_measurementService_getTimePoints(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("debug", func(t *testing.T) {
+		var (
+			from = time.Unix(1642877700, 0) // Sat Jan 22 2022 18:55:00 GMT+0000
+			till = time.Unix(1642895700, 0) // Sat Jan 22 2022 23:55:00 GMT+0000
+		)
+
+		var m measurementService
+		got := m.getTimePoints(from, till, 5*time.Minute)
+		assert.Equal(t, 12*5+1, len(got))
+	})
 }
 
 func TestMeasurementService_GetOrPull(t *testing.T) { // nolint:funlen
