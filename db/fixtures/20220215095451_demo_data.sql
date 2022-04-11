@@ -47,7 +47,7 @@ VALUES ('foo/backend', 'processing duration instrument=ONE',
         'decrease', '5m'),
        ('acme/backend', 'income events count',
         'histogram_quantile(0.95, sum(increase(income_count{environment="prod"}[15m])) by (le))',
-        'decrease', '5m')
+        'equal', '5m')
 ;
 
 -- -- fake data for processing duration instrument=ONE
