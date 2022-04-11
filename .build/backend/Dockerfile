@@ -10,7 +10,6 @@ COPY ./go.sum /code/go.sum
 RUN go mod download
 
 COPY ./ /code/
-RUN ls -lah ./
 RUN go generate ./...
 RUN CGO_ENABLED=0 go build -o onix ./
 
