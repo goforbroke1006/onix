@@ -79,7 +79,7 @@ jobs:
           push: true
           tags: docker.io/goforbroke1006/onix-dashboard-admin:latest
 
-      - name: Build and push onix-backend
+      - name: Build and push onix-dashboard-main
         uses: docker/build-push-action@v2
         with:
           context: ./frontend/dashboard-main
