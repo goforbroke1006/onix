@@ -24,10 +24,10 @@ class CompareReleasesPanel extends React.Component {
                                 <span id={report.title}>&nbsp;</span>
                                 <CompareReleasesChart
                                     key={`chart-${index}`}
-                                    title={report.title}
-                                    measurements={report.measurements}
-                                    /*releaseOneStartAt={this.props.releaseOneStartAt}
-                                    releaseTwoStartAt={this.props.releaseTwoStartAt}*/
+                                    criteriaName={report.criteriaName}
+                                    releaseOne={report.releaseOne}
+                                    releaseTwo={report.releaseTwo}
+                                    graph={report.graph}
                                 />
                             </div>
                         )

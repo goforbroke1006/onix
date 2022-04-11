@@ -17,7 +17,7 @@ export default class CompareReleasesLinks extends React.Component {
             <ul>
                 {this.props.comparison.map((report, index) => {
                     return (
-                        <li key={`jump-to-${index}`}><a href={"#" + report.title}>{report.title}</a></li>
+                        <li key={`jump-to-${index}`}><a href={"#" + report.criteriaName}>{report.criteriaName}</a></li>
                     )
                 })}
             </ul>

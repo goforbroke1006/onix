@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/eslint-parser": "^7.17.0",
     "antd": "^4.18.9",
     "buffer": "^6.0.3",
     "graceful-fs": "^4.2.9",
@@ -50,6 +51,7 @@
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.3",
     "@testing-library/user-event": "^13.5.0",
+    "@types/mocha": "^9.1.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.6",
     "enzyme": "^3.11.0",
     "enzyme-to-json": "^3.6.2",
@@ -58,7 +60,8 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
-    "eslint-plugin-react": "^7.29.2"
+    "eslint-plugin-react": "^7.29.2",
+    "mocha": "^9.2.2"
   },
   "babel": {
     "presets": [
