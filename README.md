@@ -1,6 +1,7 @@
 # onix
 
 [![CI (branch)](https://github.com/goforbroke1006/onix/actions/workflows/branch.yml/badge.svg)](https://github.com/goforbroke1006/onix/actions/workflows/branch.yml)
+[![CI (tag)](https://github.com/goforbroke1006/onix/actions/workflows/tag.yml/badge.svg)](https://github.com/goforbroke1006/onix/actions/workflows/tag.yml)
 [![Coverage Status](https://coveralls.io/repos/github/goforbroke1006/onix/badge.svg)](https://coveralls.io/github/goforbroke1006/onix)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goforbroke1006/onix)](https://goreportcard.com/report/github.com/goforbroke1006/onix)
 
