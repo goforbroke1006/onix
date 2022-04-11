@@ -28,6 +28,7 @@ class CompareReleasesPanel extends React.Component {
                                     releaseOne={report.releaseOne}
                                     releaseTwo={report.releaseTwo}
                                     graph={report.graph}
+                                    direction={report.direction}
                                 />
                             </div>
                         )

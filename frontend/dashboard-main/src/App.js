@@ -217,6 +217,7 @@ class App extends React.Component {
                     releaseTwo: resp.release_two,
                     criteriaName: report.title,
                     graph: report.graph,
+                    direction: report.direction,
                 });
             }
 

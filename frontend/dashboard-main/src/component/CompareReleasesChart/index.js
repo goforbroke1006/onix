@@ -10,6 +10,7 @@ class CompareReleasesChart extends React.Component {
         releaseOne: PropTypes.string,
         releaseTwo: PropTypes.string,
         graph: PropTypes.array,
+        direction: PropTypes.string,
     };
 
     // constructor(props) {
@@ -81,6 +82,18 @@ class CompareReleasesChart extends React.Component {
 
         const diff = getAverageDiff(values1, values2);
 
+        let color = "#00ff00";
+        switch (this.props.direction) {
+            case "increase":
+                if (diff.absolute < 0) color = "#ff0000";
+                break
+            case "decrease":
+                if (diff.absolute > 0) color = "#ff0000";
+                break
+            case "equal":
+                color = "#999999"
+        }
+
         let options = {
             title: `Releases performance by "${this.props.criteriaName}" criteria`,
             curveType: 'function',
@@ -114,8 +127,8 @@ class CompareReleasesChart extends React.Component {
                         }
                     ]}
                 />
-                <div>Absolute: {diff.absolute}</div>
-                <div>Percentage: {diff.percentage}</div>
+                <div style={{color: color}}>Absolute: {diff.absolute}</div>
+                <div style={{color: color}}>Percentage: {diff.percentage}</div>
             </div>
         );
     }
