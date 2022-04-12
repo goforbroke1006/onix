@@ -6,32 +6,16 @@ import {getAverageDiff} from "../../math/series";
 class CompareReleasesChart extends React.Component {
     static propTypes = {
         criteriaName: PropTypes.any,
-        // measurements: PropTypes.array,
         releaseOne: PropTypes.string,
         releaseTwo: PropTypes.string,
-        graph: PropTypes.array,
+        graph: PropTypes.arrayOf(PropTypes.shape({
+            t1: PropTypes.string,
+            t2: PropTypes.string,
+            v1: PropTypes.number,
+            v2: PropTypes.number,
+        })),
         direction: PropTypes.string,
     };
-
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-    //         title: props.title,
-    //         // measurements: props.measurements,
-    //         releaseOne: props.releaseOne,
-    //         releaseTwo: props.releaseTwo,
-    //         graph: props.graph,
-    //     }
-    // }
-
-    // componentDidUpdate(prevProps, prevState, snapshot) {
-    //     if (prevProps.seriesOne !== this.props.seriesOne) {
-    //         this.setState({seriesOne: this.props.seriesOne,})
-    //     }
-    //     if (prevProps.seriesTwo !== this.props.seriesTwo) {
-    //         this.setState({seriesTwo: this.props.seriesTwo,})
-    //     }
-    // }
 
     render() {
         if (!Array.isArray(this.props.graph)) {
@@ -56,28 +40,6 @@ class CompareReleasesChart extends React.Component {
 
             values1.push(v1);
             values2.push(v2);
-        }
-
-        // load zero (null-as-zero logic)
-        if (this.props.graph.length === 0) {
-            let countFakeItems = 0;
-            switch (this.state.period) {
-                case '15m':
-                    countFakeItems = 15 / 5;
-                    break;
-                case '1h':
-                    countFakeItems = 60 / 5;
-                    break;
-                case '6h':
-                    countFakeItems = 6 * 60 / 5;
-                    break;
-                case '1d':
-                    countFakeItems = 24 * 60 / 5;
-                    break;
-            }
-            for (let fmi = 0; fmi < countFakeItems; fmi++) {
-                chartData.push(["" + fmi, 0, 0]);
-            }
         }
 
         const diff = getAverageDiff(values1, values2);
@@ -133,5 +95,6 @@ class CompareReleasesChart extends React.Component {
         );
     }
 }
+
 
 export default CompareReleasesChart;
