@@ -59,7 +59,23 @@ func (svc measurementService) GetOrPull(
 		return nil, errors.Wrap(err, "can't store series")
 	}
 
-	return batch, nil
+	batchMap := make(map[time.Time]float64, len(batch))
+	for _, p := range series {
+		batchMap[p.Timestamp] = p.Value
+	}
+
+	result := make([]domain.MeasurementRow, 0, len(points))
+
+	for _, timePoint := range points {
+		value := 0.0
+		if v, ok := batchMap[timePoint]; ok {
+			value = v
+		}
+
+		result = append(result, domain.MeasurementRow{Moment: timePoint, Value: value})
+	}
+
+	return result, nil
 }
 
 func (svc measurementService) getTimePoints(from, till time.Time, step time.Duration) []time.Time {
