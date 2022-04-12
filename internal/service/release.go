@@ -106,6 +106,10 @@ func (svc releaseService) GetByName(serviceName, releaseName string) (*domain.Re
 		return nil, errors.Wrap(err, "can't get release")
 	}
 
+	if current == nil {
+		return nil, domain.ErrNotFound
+	}
+
 	next, err := svc.repo.GetNextAfter(serviceName, releaseName)
 	if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		return nil, errors.Wrap(err, "can't get next release")

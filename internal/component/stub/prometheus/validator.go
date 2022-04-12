@@ -30,11 +30,11 @@ func (v validator) GetQueryRange(params apiSpec.GetQueryRangeParams) error {
 	}
 
 	if _, err = canParseDuration(params.Step); err != nil {
-		return err
+		return errors.Wrap(err, "can't parse step")
 	}
 
 	if _, err = canParseDuration(string(params.Timeout)); err != nil {
-		return err
+		return errors.Wrap(err, "can't parse timeout")
 	}
 
 	if stop.Before(start) {

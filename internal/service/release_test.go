@@ -5,12 +5,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goforbroke1006/onix/common"
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/internal/repository/mocks"
 	"github.com/goforbroke1006/onix/tests"
 )
 
@@ -19,6 +22,98 @@ func TestNewReleaseService(t *testing.T) {
 
 	service := NewReleaseService(nil)
 	assert.NotNil(t, service)
+}
+
+func Test_releaseService_GetReleases(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
+	const (
+		fakeServiceName = "wildfowl/hello"
+	)
+
+	mockCtrl := gomock.NewController(t)
+	t.Cleanup(func() {
+		mockCtrl.Finish()
+	})
+
+	t.Run("repo error", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetReleases(gomock.Eq(fakeServiceName), gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("db broken"))
+
+		svc := releaseService{repo: releaseRepository}
+		_, err := svc.GetReleases(fakeServiceName, time.Time{}, time.Time{})
+		assert.NotNil(t, err)
+		assert.Equal(t, "can't get releases: db broken", err.Error())
+	})
+
+	t.Run("no error but releases list empty", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetReleases(gomock.Eq(fakeServiceName), gomock.Any(), gomock.Any()).Return(nil, nil)
+
+		svc := releaseService{repo: releaseRepository}
+		releases, err := svc.GetReleases(fakeServiceName, time.Time{}, time.Time{})
+		assert.Nil(t, releases)
+		assert.Nil(t, err)
+	})
+
+	t.Run("releases list NOT empty", func(t *testing.T) {
+		t.Parallel()
+
+		fakeReleases := []domain.Release{
+			{ID: 1, Service: fakeServiceName, Name: "v1.0.0", StartAt: time.Time{}},
+			{ID: 2, Service: fakeServiceName, Name: "v1.0.1", StartAt: time.Time{}},
+			{ID: 3, Service: fakeServiceName, Name: "v1.0.2", StartAt: time.Time{}},
+		}
+
+		t.Run("err on getting next", func(t *testing.T) {
+			releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+			releaseRepository.EXPECT().GetReleases(gomock.Eq(fakeServiceName), gomock.Any(), gomock.Any()).
+				Return(fakeReleases, nil)
+
+			releaseRepository.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Any()).
+				Return(nil, errors.New("fake error"))
+
+			svc := releaseService{repo: releaseRepository}
+			releases, err := svc.GetReleases(fakeServiceName, time.Time{}, time.Time{})
+			assert.Nil(t, releases)
+			assert.NotNil(t, err)
+			assert.Equal(t, "can't get next release: fake error", err.Error())
+		})
+
+		t.Run("no next", func(t *testing.T) {
+			releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+			releaseRepository.EXPECT().GetReleases(gomock.Eq(fakeServiceName), gomock.Any(), gomock.Any()).
+				Return(fakeReleases, nil)
+
+			releaseRepository.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Any()).Return(nil, nil)
+
+			svc := releaseService{repo: releaseRepository}
+			releases, err := svc.GetReleases(fakeServiceName, time.Time{}, time.Time{})
+			assert.NotNil(t, releases)
+			assert.Equal(t, 3, len(releases))
+			assert.Nil(t, err)
+		})
+
+		t.Run("has next", func(t *testing.T) {
+			releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+			releaseRepository.EXPECT().GetReleases(gomock.Eq(fakeServiceName), gomock.Any(), gomock.Any()).
+				Return(fakeReleases, nil)
+
+			releaseRepository.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Any()).
+				Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+
+			svc := releaseService{repo: releaseRepository}
+			releases, err := svc.GetReleases(fakeServiceName, time.Time{}, time.Time{})
+			assert.NotNil(t, releases)
+			assert.Equal(t, len(fakeReleases), len(releases))
+			assert.Nil(t, err)
+		})
+	})
 }
 
 func Test_releaseService_GetAll(t *testing.T) { // nolint:funlen
@@ -99,6 +194,130 @@ func Test_releaseService_GetAll(t *testing.T) { // nolint:funlen
 			}
 		})
 	}
+
+	mockCtrl := gomock.NewController(t)
+	t.Cleanup(func() {
+		mockCtrl.Finish()
+	})
+
+	t.Run("repo error", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetAll(gomock.All()).Return(nil, errors.New("fake error"))
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		releases, err := svc.GetAll("")
+		assert.NotNil(t, err)
+		assert.Equal(t, "can't get releases: fake error", err.Error())
+		assert.Nil(t, releases)
+	})
+
+	t.Run("repo ok but releases list is empty", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetAll(gomock.All()).Return(nil, nil)
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		releases, err := svc.GetAll("")
+		assert.Nil(t, err)
+		assert.Nil(t, releases)
+	})
+}
+
+func Test_releaseService_GetByName(t *testing.T) { // nolint:funlen
+	t.Parallel()
+
+	mockCtrl := gomock.NewController(t)
+	t.Cleanup(func() {
+		mockCtrl.Finish()
+	})
+
+	t.Run("repo error", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetByName(gomock.Any(), gomock.Any()).Return(nil, errors.New("fake error"))
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		release, err := svc.GetByName("", "")
+		assert.NotNil(t, err)
+		assert.Equal(t, "can't get release: fake error", err.Error())
+		assert.Nil(t, release)
+	})
+
+	t.Run("repo ok but current is NIL", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetByName(gomock.Any(), gomock.Any()).Return(nil, nil)
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		release, err := svc.GetByName("", "")
+		assert.NotNil(t, err)
+		assert.Equal(t, domain.ErrNotFound, err)
+		assert.Nil(t, release)
+	})
+
+	t.Run("repo ok but current found but next with err", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetByName(gomock.Any(), gomock.Any()).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepository.EXPECT().GetNextAfter(gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("fake error"))
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		release, err := svc.GetByName("", "")
+		assert.NotNil(t, err)
+		assert.Equal(t, "can't get next release: fake error", err.Error())
+		assert.Nil(t, release)
+	})
+
+	t.Run("repo ok but current found but next NIL", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetByName(gomock.Any(), gomock.Any()).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepository.EXPECT().GetNextAfter(gomock.Any(), gomock.Any()).Return(nil, nil)
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		release, err := svc.GetByName("", "")
+		assert.Nil(t, err)
+		assert.NotNil(t, release)
+	})
+
+	t.Run("repo ok but current found and next found", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepository := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepository.EXPECT().GetByName(gomock.Any(), gomock.Any()).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepository.EXPECT().GetNextAfter(gomock.Any(), gomock.Any()).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		svc := releaseService{
+			repo: releaseRepository,
+		}
+
+		release, err := svc.GetByName("", "")
+		assert.Nil(t, err)
+		assert.NotNil(t, release)
+	})
 }
 
 var _ domain.ReleaseRepository = &stubReleaseRepository{}

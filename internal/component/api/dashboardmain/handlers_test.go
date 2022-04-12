@@ -16,8 +16,9 @@ import (
 
 	apiSpec "github.com/goforbroke1006/onix/api/dashboard-main"
 	"github.com/goforbroke1006/onix/domain"
-	"github.com/goforbroke1006/onix/internal/repository/mocks"
+	mockRepo "github.com/goforbroke1006/onix/internal/repository/mocks"
 	"github.com/goforbroke1006/onix/internal/service"
+	mockSvc "github.com/goforbroke1006/onix/internal/service/mocks"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
@@ -52,7 +53,7 @@ func TestHandlers_GetService(t *testing.T) {
 	t.Run("on db error", func(t *testing.T) {
 		t.Parallel()
 
-		serviceRepo := mocks.NewMockServiceRepository(mockCtrl)
+		serviceRepo := mockRepo.NewMockServiceRepository(mockCtrl)
 		serviceRepo.EXPECT().GetAll().Return(nil, errors.New("fake db error"))
 
 		handlersInstance := handlers{
@@ -74,7 +75,7 @@ func TestHandlers_GetService(t *testing.T) {
 	t.Run("basic usage", func(t *testing.T) {
 		t.Parallel()
 
-		serviceRepo := mocks.NewMockServiceRepository(mockCtrl)
+		serviceRepo := mockRepo.NewMockServiceRepository(mockCtrl)
 		serviceRepo.EXPECT().GetAll().Return([]domain.Service{{}, {}, {}}, nil)
 
 		handlersInstance := handlers{
@@ -113,7 +114,7 @@ func TestHandlers_GetSource(t *testing.T) {
 	t.Run("on db error", func(t *testing.T) {
 		t.Parallel()
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().GetAll().Return(nil, errors.New("fake db error"))
 
 		handlersInstance := handlers{
@@ -135,7 +136,7 @@ func TestHandlers_GetSource(t *testing.T) {
 	t.Run("basic usage", func(t *testing.T) {
 		t.Parallel()
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().GetAll().Return([]domain.Source{{}, {}, {}, {}}, nil)
 
 		handlersInstance := handlers{
@@ -176,7 +177,7 @@ func TestHandlers_GetRelease(t *testing.T) { // nolint:funlen
 	t.Run("on repo error", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return(nil, errors.New("fake db error"))
 
@@ -201,7 +202,7 @@ func TestHandlers_GetRelease(t *testing.T) { // nolint:funlen
 	t.Run("basic usage", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return([]domain.Release{
 				{ID: 2, Service: fakeServiceName, Name: "v3.4.5", StartAt: time.Unix(1000, 0)},
@@ -263,7 +264,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("release 1 not found", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(nil, errors.New("fake not found")) // simulation here
 
@@ -296,7 +297,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("ask time before release 1 starts", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Unix(1000, 0)}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -331,7 +332,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("release 2 not found", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -368,7 +369,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("ask time before release 2 starts", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Unix(1000, 0)}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -403,7 +404,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("criteria repo error", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -413,7 +414,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 
-		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return(nil, errors.New("fake error"))
 
@@ -442,7 +443,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("source 1 not found", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -452,11 +453,11 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 
-		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return([]domain.Criteria{{}, {}}, nil)
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
 			Return(nil, errors.New("fake error")) // simulation here
 
@@ -486,7 +487,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("source 2 not found", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -496,11 +497,11 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 
-		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return([]domain.Criteria{{}, {}}, nil)
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
 			Return(
 				&domain.Source{}, // nolint:exhaustivestruct
@@ -538,7 +539,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("series 1 can't extract", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -548,16 +549,16 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 
-		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return([]domain.Criteria{{}, {}}, nil)
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
 			Return(&domain.Source{ID: sourceID, Title: "", Type: domain.SourceTypePrometheus, Address: ""}, nil).
 			Times(2)
 
-		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
+		measurementRepo := mockRepo.NewMockMeasurementRepository(mockCtrl)
 		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("fake series 1 problem"))
 
@@ -588,7 +589,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 	t.Run("series 2 can't extract", func(t *testing.T) {
 		t.Parallel()
 
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -598,16 +599,16 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 
-		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return([]domain.Criteria{{}, {}}, nil)
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
 			Return(&domain.Source{ID: sourceID, Title: "", Type: domain.SourceTypePrometheus, Address: ""}, nil).
 			Times(2)
 
-		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
+		measurementRepo := mockRepo.NewMockMeasurementRepository(mockCtrl)
 		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
 			Return(make([]domain.MeasurementRow, 12+1), nil) // series 1 ok
 		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
@@ -637,12 +638,37 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		assert.Equal(t, "can't get series for release two: can't get measurements: fake series 2 problem", err.Error())
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	fakeCriteriaList := []domain.Criteria{
+		{
+			ID:               1,
+			Service:          fakeServiceName,
+			Title:            "processing duration",
+			Selector:         "some fake selector",
+			ExpectedDir:      domain.DynamicDirTypeDecrease,
+			GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
+		},
+		{
+			ID:               2,
+			Service:          fakeServiceName,
+			Title:            "served events",
+			Selector:         "some fake selector",
+			ExpectedDir:      domain.DynamicDirTypeIncrease,
+			GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
+		},
+		{
+			ID:               3,
+			Service:          fakeServiceName,
+			Title:            "RPS",
+			Selector:         "some fake selector",
+			ExpectedDir:      domain.DynamicDirTypeEqual,
+			GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
+		},
+	}
+
+	t.Run("series 2 shorter that series 1", func(t *testing.T) {
 		t.Parallel()
 
-		const releasesCountForCompareFn = 2
-
-		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
 		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
@@ -652,41 +678,84 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
 
-		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
-		fakeCriteriaList := []domain.Criteria{
-			{
-				ID:               1,
-				Service:          fakeServiceName,
-				Title:            "processing duration",
-				Selector:         "some fake selector",
-				ExpectedDir:      domain.DynamicDirTypeDecrease,
-				GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
-			},
-			{
-				ID:               2,
-				Service:          fakeServiceName,
-				Title:            "served events",
-				Selector:         "some fake selector",
-				ExpectedDir:      domain.DynamicDirTypeIncrease,
-				GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
-			},
-			{
-				ID:               3,
-				Service:          fakeServiceName,
-				Title:            "RPS",
-				Selector:         "some fake selector",
-				ExpectedDir:      domain.DynamicDirTypeEqual,
-				GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
-			},
-		}
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
 			Return(fakeCriteriaList, nil)
 
-		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
+		fakeSource := &domain.Source{ID: sourceID, Title: "", Type: domain.SourceTypePrometheus, Address: ""}
+		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
+			Return(fakeSource, nil).Times(2)
+
+		measurementService := mockSvc.NewMockMeasurementService(mockCtrl)
+		for criteriaIndex := 0; criteriaIndex < len(fakeCriteriaList); criteriaIndex++ {
+			measurementService.EXPECT().
+				GetOrPull(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(make([]domain.MeasurementRow, 12+1), nil) // std length
+			measurementService.EXPECT().
+				GetOrPull(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(make([]domain.MeasurementRow, 10+1), nil) // shorter length
+		}
+
+		handlersInstance := handlers{
+			serviceRepo:        nil,
+			releaseSvc:         service.NewReleaseService(releaseRepo),
+			sourceRepo:         sourceRepo,
+			criteriaRepo:       criteriaRepo,
+			measurementService: measurementService,
+			logger:             nil,
+		}
+
+		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+		recorder := httptest.NewRecorder()
+		echoContext := echo.New().NewContext(req, recorder)
+		err := handlersInstance.GetCompare(echoContext, apiSpec.GetCompareParams{
+			Service:            fakeServiceName,
+			ReleaseOneTitle:    releaseOne,
+			ReleaseOneStart:    releaseOneStart,
+			ReleaseOneSourceId: sourceID,
+			ReleaseTwoTitle:    releaseTwo,
+			ReleaseTwoStart:    releaseTwoStart,
+			ReleaseTwoSourceId: sourceID,
+			Period:             "1h",
+		})
+		assert.Nil(t, err)
+
+		respBytes, _ := ioutil.ReadAll(recorder.Body)
+		var responseObj apiSpec.CompareResponse
+		if err := json.Unmarshal(respBytes, &responseObj); err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, fakeServiceName, responseObj.Service)
+		assert.Equal(t, len(fakeCriteriaList), len(responseObj.Reports))
+		assert.Equal(t, 10+1, len(responseObj.Reports[0].Graph))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
+
+		const releasesCountForCompareFn = 2
+
+		releaseRepo := mockRepo.NewMockReleaseRepository(mockCtrl)
+		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+
+		criteriaRepo := mockRepo.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
+			Return(fakeCriteriaList, nil)
+
+		sourceRepo := mockRepo.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
 			Return(&domain.Source{ID: sourceID, Title: "", Type: domain.SourceTypePrometheus, Address: ""}, nil).Times(2)
 
-		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
+		measurementRepo := mockRepo.NewMockMeasurementRepository(mockCtrl)
 		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
 			Return(make([]domain.MeasurementRow, 12+1), nil).
 			Times(releasesCountForCompareFn * len(fakeCriteriaList))
