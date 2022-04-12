@@ -378,13 +378,9 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
 			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Unix(4000, 0)}, nil)
 
-		handlersInstance := handlers{
-			serviceRepo:        nil,
-			releaseSvc:         service.NewReleaseService(releaseRepo),
-			sourceRepo:         nil,
-			criteriaRepo:       nil,
-			measurementService: nil,
-			logger:             log.NewNullLogger(),
+		handlersInstance := handlers{ // nolint:exhaustivestruct
+			releaseSvc: service.NewReleaseService(releaseRepo),
+			logger:     log.NewNullLogger(),
 		}
 
 		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
@@ -539,7 +535,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		assert.Equal(t, "can't get source #2: fake error", err.Error())
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("series 1 can't extract", func(t *testing.T) {
 		t.Parallel()
 
 		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
@@ -554,10 +550,140 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 
 		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
 		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
-			Return([]domain.Criteria{
-				{},
-				{},
-			}, nil)
+			Return([]domain.Criteria{{}, {}}, nil)
+
+		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
+			Return(&domain.Source{ID: sourceID, Title: "", Type: domain.SourceTypePrometheus, Address: ""}, nil).
+			Times(2)
+
+		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
+		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("fake series 1 problem"))
+		//measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
+		//	Return(make([]domain.MeasurementRow, 12+1), nil).
+		//	Times(3)
+
+		handlersInstance := handlers{ // nolint:exhaustivestruct
+			releaseSvc:         service.NewReleaseService(releaseRepo),
+			sourceRepo:         sourceRepo,
+			criteriaRepo:       criteriaRepo,
+			measurementService: service.NewMeasurementService(measurementRepo),
+		}
+
+		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+		recorder := httptest.NewRecorder()
+		echoContext := echo.New().NewContext(req, recorder)
+		err := handlersInstance.GetCompare(echoContext, apiSpec.GetCompareParams{
+			Service:            fakeServiceName,
+			ReleaseOneTitle:    releaseOne,
+			ReleaseOneStart:    releaseOneStart,
+			ReleaseOneSourceId: sourceID,
+			ReleaseTwoTitle:    releaseTwo,
+			ReleaseTwoStart:    releaseTwoStart,
+			ReleaseTwoSourceId: sourceID,
+			Period:             "1h",
+		})
+		assert.NotNil(t, err)
+		assert.Equal(t, "can't get series for release one: can't get measurements: fake series 1 problem", err.Error())
+	})
+
+	t.Run("series 2 can't extract", func(t *testing.T) {
+		t.Parallel()
+
+		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+
+		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
+			Return([]domain.Criteria{{}, {}}, nil)
+
+		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
+		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
+			Return(&domain.Source{ID: sourceID, Title: "", Type: domain.SourceTypePrometheus, Address: ""}, nil).
+			Times(2)
+
+		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
+		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
+			Return(make([]domain.MeasurementRow, 12+1), nil) // series 1 ok
+		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
+			Return(nil, errors.New("fake series 2 problem")) // but series 2 - failed
+
+		handlersInstance := handlers{ // nolint:exhaustivestruct
+			releaseSvc:         service.NewReleaseService(releaseRepo),
+			sourceRepo:         sourceRepo,
+			criteriaRepo:       criteriaRepo,
+			measurementService: service.NewMeasurementService(measurementRepo),
+		}
+
+		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+		recorder := httptest.NewRecorder()
+		echoContext := echo.New().NewContext(req, recorder)
+		err := handlersInstance.GetCompare(echoContext, apiSpec.GetCompareParams{
+			Service:            fakeServiceName,
+			ReleaseOneTitle:    releaseOne,
+			ReleaseOneStart:    releaseOneStart,
+			ReleaseOneSourceId: sourceID,
+			ReleaseTwoTitle:    releaseTwo,
+			ReleaseTwoStart:    releaseTwoStart,
+			ReleaseTwoSourceId: sourceID,
+			Period:             "1h",
+		})
+		assert.NotNil(t, err)
+		assert.Equal(t, "can't get series for release two: can't get measurements: fake series 2 problem", err.Error())
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		t.Parallel()
+
+		const releasesCountForCompareFn = 2
+
+		releaseRepo := mocks.NewMockReleaseRepository(mockCtrl)
+		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseOne)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetByName(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+		releaseRepo.EXPECT().GetNextAfter(gomock.Eq(fakeServiceName), gomock.Eq(releaseTwo)).
+			Return(&domain.Release{ID: 0, Service: "", Name: "", StartAt: time.Time{}}, nil)
+
+		criteriaRepo := mocks.NewMockCriteriaRepository(mockCtrl)
+		fakeCriteriaList := []domain.Criteria{
+			{
+				ID:               1,
+				Service:          fakeServiceName,
+				Title:            "processing duration",
+				Selector:         "some fake selector",
+				ExpectedDir:      domain.DynamicDirTypeDecrease,
+				GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
+			},
+			{
+				ID:               2,
+				Service:          fakeServiceName,
+				Title:            "served events",
+				Selector:         "some fake selector",
+				ExpectedDir:      domain.DynamicDirTypeIncrease,
+				GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
+			},
+			{
+				ID:               3,
+				Service:          fakeServiceName,
+				Title:            "RPS",
+				Selector:         "some fake selector",
+				ExpectedDir:      domain.DynamicDirTypeEqual,
+				GroupingInterval: domain.GroupingIntervalType(5 * time.Minute),
+			},
+		}
+		criteriaRepo.EXPECT().GetAll(gomock.Eq(fakeServiceName)).
+			Return(fakeCriteriaList, nil)
 
 		sourceRepo := mocks.NewMockSourceRepository(mockCtrl)
 		sourceRepo.EXPECT().Get(gomock.Eq(sourceID)).
@@ -566,7 +692,7 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
 		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
 			Return(make([]domain.MeasurementRow, 12+1), nil).
-			Times(4)
+			Times(releasesCountForCompareFn * len(fakeCriteriaList))
 
 		handlersInstance := handlers{
 			serviceRepo:        nil,
@@ -599,6 +725,6 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		}
 
 		assert.Equal(t, fakeServiceName, responseObj.Service)
-		assert.Equal(t, 2, len(responseObj.Reports))
+		assert.Equal(t, len(fakeCriteriaList), len(responseObj.Reports))
 	})
 }
