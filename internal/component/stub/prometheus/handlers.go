@@ -13,36 +13,36 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance.
-func NewServer(logger log.Logger) *server { // nolint:revive,golint
-	return &server{
+// NewHandlers creates new handlers's handlers implementations instance.
+func NewHandlers(logger log.Logger) *handlers { // nolint:revive,golint
+	return &handlers{
 		validator: validator{},
 		logger:    logger,
 	}
 }
 
-var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
+var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
 
-type server struct {
+type handlers struct {
 	validator validator
 	logger    log.Logger
 }
 
-func (s server) GetHealthz(ctx echo.Context) error {
-	err := ctx.String(http.StatusOK, "ok")
+func (h handlers) GetHealthz(ctx echo.Context) error {
+	err := ctx.NoContent(http.StatusOK)
 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetQuery(ctx echo.Context) error {
+func (h handlers) GetQuery(ctx echo.Context) error {
 	err := ctx.String(http.StatusOK, "implement me")
 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangeParams) error {
-	if err := s.validator.GetQueryRange(params); err != nil {
-		s.logger.WithErr(err).Warn("invalid request")
+func (h handlers) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangeParams) error {
+	if err := h.validator.GetQueryRange(params); err != nil {
+		h.logger.WithErr(err).Warn("invalid request")
 		err := ctx.NoContent(http.StatusBadRequest)
 
 		return errors.Wrap(err, "write to echo context failed")

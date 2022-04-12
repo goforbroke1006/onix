@@ -11,55 +11,40 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-func Test_server_GetHealthz(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		url string
-	}
-
-	tests := []struct {
-		name         string
-		args         args
-		wantRespCode int
-		wantErr      bool
-	}{
-		{
-			name:         "ok for any request",
-			args:         args{url: ""},
-			wantRespCode: 200,
-			wantErr:      false,
-		},
-	}
-
-	for _, tt := range tests {
-		ttCase := tt
-		t.Run(ttCase.name, func(t *testing.T) {
-			t.Parallel()
-
-			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, ttCase.args.url, nil)
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
-			ctx := echo.New().NewContext(req, rec)
-
-			s := server{} // nolint:exhaustivestruct
-			err := s.GetHealthz(ctx)
-
-			if (err != nil) != ttCase.wantErr {
-				t.Errorf("GetHealthz() error = %v, wantErr %v", err, ttCase.wantErr)
-			}
-			if rec.Code != ttCase.wantRespCode {
-				t.Errorf("GetHealthz() status code, got = %v, want %v", rec.Code, ttCase.wantRespCode)
-			}
-		})
-	}
+func TestNewServer(t *testing.T) {
+	h := NewHandlers(nil)
+	assert.NotNil(t, h)
 }
 
-func Test_server_GetQueryRange(t *testing.T) { // nolint:funlen
+func Test_handlers_GetHealthz(t *testing.T) {
+	var h handlers
+
+	req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+	recorder := httptest.NewRecorder()
+	echoContext := echo.New().NewContext(req, recorder)
+
+	err := h.GetHealthz(echoContext)
+	assert.Nil(t, err)
+}
+
+func Test_handlers_GetQuery(t *testing.T) {
+	var h handlers
+
+	req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+	recorder := httptest.NewRecorder()
+	echoContext := echo.New().NewContext(req, recorder)
+
+	err := h.GetQuery(echoContext)
+	assert.Nil(t, err)
+}
+
+func Test_handlers_GetQueryRange(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	type args struct {
@@ -177,7 +162,7 @@ func Test_server_GetQueryRange(t *testing.T) { // nolint:funlen
 			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			s := server{ // nolint:exhaustivestruct
+			s := handlers{ // nolint:exhaustivestruct
 				logger: log.NewNullLogger(),
 			}
 			if err := s.GetQueryRange(ctx, ttCase.args.params); (err != nil) != ttCase.wantErr {

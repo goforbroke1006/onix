@@ -31,7 +31,7 @@ func NewStubPrometheusCmd() *cobra.Command {
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := prometheus.NewServer(logger)
+			server := prometheus.NewHandlers(logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {
