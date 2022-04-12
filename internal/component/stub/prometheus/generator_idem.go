@@ -38,8 +38,8 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 	current := start
 
 	for current.Before(stop) || current.Equal(stop) {
-		rg := rand.New(rand.NewSource(hash * current.UnixNano()))
-		f := rg.Float64() // nolint:gosec
+		rg := rand.New(rand.NewSource(hash * current.UnixNano())) // nolint:gosec
+		f := rg.Float64()
 
 		result = append(result, seriesPoint{
 			timestamp: current.Unix(),

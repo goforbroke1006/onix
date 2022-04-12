@@ -81,9 +81,6 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 
 		g := fakeMetricsIdempotentGenerator{}
 		got := g.Load(query, start, stop, step)
-		//if !reflect.DeepEqual(got, expected) {
-		//	t.Errorf("Load() = %v, want %v", got, expected)
-		//}
 
 		assert.Equal(t, expected, got)
 	})
