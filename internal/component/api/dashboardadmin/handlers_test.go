@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/goforbroke1006/onix/domain"
 	mockRepository "github.com/goforbroke1006/onix/internal/repository/mocks"
@@ -33,7 +34,7 @@ func TestNewServer(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *server
+		want *handlers
 	}{
 		{
 			name: "positive - returns instance",
@@ -44,7 +45,7 @@ func TestNewServer(t *testing.T) {
 				criteriaRepo: nil,
 				logger:       nil,
 			},
-			want: &server{
+			want: &handlers{
 				serviceRepo:  nil,
 				releaseRepo:  nil,
 				sourceRepo:   nil,
@@ -58,20 +59,31 @@ func TestNewServer(t *testing.T) {
 		t.Run(ttCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := NewServer(
+			if got := NewHandlers(
 				ttCase.args.serviceRepo,
 				ttCase.args.releaseRepo,
 				ttCase.args.sourceRepo,
 				ttCase.args.criteriaRepo,
 				ttCase.args.logger,
 			); !reflect.DeepEqual(got, ttCase.want) {
-				t.Errorf("NewServer() = %v, want %v", got, ttCase.want)
+				t.Errorf("NewHandlers() = %v, want %v", got, ttCase.want)
 			}
 		})
 	}
 }
 
-func Test_server_GetService(t *testing.T) { // nolint:funlen
+func Test_handlers_GetHealthz(t *testing.T) {
+	var h handlers
+
+	req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
+	recorder := httptest.NewRecorder()
+	echoContext := echo.New().NewContext(req, recorder)
+
+	err := h.GetHealthz(echoContext)
+	assert.Nil(t, err)
+}
+
+func Test_handlers_GetService(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	type fields struct {
@@ -187,7 +199,7 @@ func Test_server_GetService(t *testing.T) { // nolint:funlen
 				releaseRepo = ttCase.fields.releaseRepo(mockCtrl)
 			}
 
-			instance := server{
+			instance := handlers{
 				serviceRepo:  serviceRepo,
 				releaseRepo:  releaseRepo,
 				sourceRepo:   nil,
@@ -210,7 +222,7 @@ func Test_server_GetService(t *testing.T) { // nolint:funlen
 	}
 }
 
-func Test_server_GetSource(t *testing.T) { // nolint:funlen
+func Test_handlers_GetSource(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	type fields struct {
@@ -289,7 +301,7 @@ func Test_server_GetSource(t *testing.T) { // nolint:funlen
 					sourceRepo = ttCase.fields.sourceRepo(mockCtrl)
 				}
 
-				instance := server{
+				instance := handlers{
 					serviceRepo:  nil,
 					releaseRepo:  nil,
 					sourceRepo:   sourceRepo,
@@ -313,7 +325,7 @@ func Test_server_GetSource(t *testing.T) { // nolint:funlen
 	}
 }
 
-func Test_server_PostCriteria(t *testing.T) { // nolint:funlen
+func Test_handlers_PostCriteria(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	type fields struct {
@@ -411,12 +423,12 @@ func Test_server_PostCriteria(t *testing.T) { // nolint:funlen
 				criteriaRepo = ttCase.fields.criteriaRepo(mockCtrl)
 			}
 
-			instance := server{
+			instance := handlers{
 				serviceRepo:  nil,
 				releaseRepo:  nil,
 				sourceRepo:   nil,
 				criteriaRepo: criteriaRepo,
-				logger:       log.NewLogger(),
+				logger:       log.NewNullLogger(),
 			}
 
 			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", strings.NewReader(ttCase.args.postBody))

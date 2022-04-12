@@ -48,7 +48,7 @@ func NewAPIDashboardAdminCmd() *cobra.Command {
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := dashboardadmin.NewServer(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
+			server := dashboardadmin.NewHandlers(serviceRepo, releaseRepo, sourceRepo, criteriaRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {

@@ -13,15 +13,15 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance.
-func NewServer(
+// NewHandlers creates new handlers implementations instance.
+func NewHandlers(
 	serviceRepo domain.ServiceRepository,
 	releaseRepo domain.ReleaseRepository,
 	sourceRepo domain.SourceRepository,
 	criteriaRepo domain.CriteriaRepository,
 	logger log.Logger,
-) *server { // nolint:revive,golint
-	return &server{
+) *handlers { // nolint:revive,golint
+	return &handlers{
 		serviceRepo:  serviceRepo,
 		releaseRepo:  releaseRepo,
 		sourceRepo:   sourceRepo,
@@ -30,9 +30,9 @@ func NewServer(
 	}
 }
 
-var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
+var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
 
-type server struct {
+type handlers struct {
 	serviceRepo  domain.ServiceRepository
 	releaseRepo  domain.ReleaseRepository
 	sourceRepo   domain.SourceRepository
@@ -40,18 +40,18 @@ type server struct {
 	logger       log.Logger
 }
 
-func (s server) GetHealthz(ctx echo.Context) error {
+func (h handlers) GetHealthz(ctx echo.Context) error {
 	err := ctx.NoContent(http.StatusOK)
 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetService(ctx echo.Context) error {
+func (h handlers) GetService(ctx echo.Context) error {
 	const (
 		defaultReleasesCount = 5
 	)
 
-	services, err := s.serviceRepo.GetAll()
+	services, err := h.serviceRepo.GetAll()
 	if err != nil {
 		return errors.Wrap(err, "can't get services from repository")
 	}
@@ -64,7 +64,7 @@ func (s server) GetService(ctx echo.Context) error {
 			Releases: []string{},
 		}
 
-		releases, err := s.releaseRepo.GetNLasts(svc.Title, defaultReleasesCount)
+		releases, err := h.releaseRepo.GetNLasts(svc.Title, defaultReleasesCount)
 		if err != nil {
 			return errors.Wrap(err, "can't get N last releases")
 		}
@@ -81,13 +81,13 @@ func (s server) GetService(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetSource(ctx echo.Context) error {
+func (h handlers) GetSource(ctx echo.Context) error {
 	var (
 		sources []domain.Source
 		err     error
 	)
 
-	if sources, err = s.sourceRepo.GetAll(); err != nil {
+	if sources, err = h.sourceRepo.GetAll(); err != nil {
 		return errors.Wrap(err, "can't get sources")
 	}
 
@@ -106,13 +106,13 @@ func (s server) GetSource(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) PostCriteria(ctx echo.Context) error {
+func (h handlers) PostCriteria(ctx echo.Context) error {
 	var requestBody apiSpec.CreateCriteriaRequest
 	if err := json.NewDecoder(ctx.Request().Body).Decode(&requestBody); err != nil {
 		return errors.Wrap(err, "incorrect post body")
 	}
 
-	criteriaID, err := s.criteriaRepo.Create(
+	criteriaID, err := h.criteriaRepo.Create(
 		requestBody.ServiceName, requestBody.Title, requestBody.Selector,
 		domain.DynamicDirType(requestBody.ExpectedDir),
 		domain.MustParseGroupingIntervalType(string(requestBody.Interval)))
@@ -120,7 +120,7 @@ func (s server) PostCriteria(ctx echo.Context) error {
 		return errors.Wrap(err, "can't store criteria in db")
 	}
 
-	s.logger.Info("create new criteria")
+	h.logger.Info("create new criteria")
 
 	resp := apiSpec.CreateResourceResponse{
 		NewId:  fmt.Sprintf("%d", criteriaID),

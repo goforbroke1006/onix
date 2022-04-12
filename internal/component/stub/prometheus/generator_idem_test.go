@@ -2,33 +2,11 @@ package prometheus // nolint:testpackage
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
 )
-
-func Test_fakeMetricsRandGenerator_Load(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		query string
-		start time.Time
-		stop  time.Time
-		step  time.Duration
-	}
-
-	g := fakeMetricsRandGenerator{}
-	a := args{query: "hello world", start: time.Time{}, stop: time.Time{}, step: time.Minute}
-
-	for i := 0; i < 10; i++ {
-		got1 := g.Load(a.query, a.start, a.stop, a.step)
-		got2 := g.Load(a.query, a.start, a.stop, a.step)
-
-		if reflect.DeepEqual(got1, got2) {
-			t.Errorf("Load() has no diff %v and %v", got1, got2)
-		}
-	}
-}
 
 func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 	t.Parallel()
@@ -67,21 +45,6 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 			},
 			want: nil,
 		},
-		{
-			name: "positive - some range 15 min",
-			args: args{
-				query: "hello wildfowl",
-				start: time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC),
-				stop:  time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC),
-				step:  5 * time.Minute,
-			},
-			want: []seriesPoint{
-				{645007500, 0.5452772128272665},
-				{645007800, 0.9309666611451856},
-				{645008100, 0.32090824169586474},
-				{645008400, 0.6830072977477972},
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -98,6 +61,67 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 			})
 		}(ttCase)
 	}
+
+	t.Run("no regress", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			query = "hello wildfowl"
+			start = time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC)
+			stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
+			step  = 5 * time.Minute
+		)
+		expected := []seriesPoint{
+			{645007500, 0.5452772128272665},
+			{645007800, 0.9309666611451856},
+			{645008100, 0.32090824169586474},
+			{645008400, 0.6830072977477972},
+		}
+
+		g := fakeMetricsIdempotentGenerator{}
+		got := g.Load(query, start, stop, step)
+		if !reflect.DeepEqual(got, expected) {
+			t.Errorf("Load() = %v, want %v", got, expected)
+		}
+	})
+
+	t.Run("negative - wrong step", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("eq 0", func(t *testing.T) {
+			t.Parallel()
+
+			var (
+				query = "hello wildfowl"
+				start = time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC)
+				stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
+				step  = 0 * time.Minute
+			)
+
+			g := fakeMetricsIdempotentGenerator{}
+
+			assert.Panics(t, func() {
+				_ = g.Load(query, start, stop, step)
+			})
+		})
+
+		t.Run("less than 0", func(t *testing.T) {
+			t.Parallel()
+
+			var (
+				query = "hello wildfowl"
+				start = time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC)
+				stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
+				step  = -1 * time.Minute
+			)
+
+			g := fakeMetricsIdempotentGenerator{}
+
+			assert.Panics(t, func() {
+				_ = g.Load(query, start, stop, step)
+			})
+		})
+	})
 }
 
 func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) { // nolint:tparallel
