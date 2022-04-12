@@ -10,10 +10,6 @@ on:
       - master
       - staging
       - develop
-
-env:
-  GOPATH: ./.golang
-
 jobs:
 
   build:
@@ -27,17 +23,21 @@ jobs:
           go-version: '1.16.0'
       - name: Install dependencies
         run: |
+          export GOPATH=./.golang
           go version
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
           go install github.com/golang/mock/mockgen@v1.6.0
           go mod download
-      - name: Cache GOPATH
-        id: cache-gopath
-        uses: actions/cache@v3
-        with:
-          path: ./.golang
-          key: ${{ runner.os }}-gopath
+      - name: Print env
+        run: |
+          echo ${GOPATH}
+#      - name: Cache GOPATH
+#        id: cache-gopath
+#        uses: actions/cache@v3
+#        with:
+#          path: ./.golang
+#          key: ${{ runner.os }}-gopath
       - name: Run build
         run: |
           go generate ./...
