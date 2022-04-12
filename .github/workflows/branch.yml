@@ -17,6 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
@@ -31,12 +40,13 @@ jobs:
       - name: Print env
         run: |
           echo ${GOPATH}
-      - name: Cache GOPATH
-        id: cache-gopath
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go
-          key: ${{ runner.os }}-gopath
+#      - name: Cache GOPATH
+#        id: cache-gopath
+#        uses: actions/cache@v3
+#        with:
+#          path: /home/runner/go
+#          key: ${{ runner.os }}-gopath
+
       - name: Run build
         run: |
           go generate ./...
