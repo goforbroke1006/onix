@@ -73,13 +73,15 @@ func TestNewServer(t *testing.T) {
 }
 
 func Test_handlers_GetHealthz(t *testing.T) {
-	var h handlers
+	t.Parallel()
+
+	var target handlers
 
 	req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
 	recorder := httptest.NewRecorder()
 	echoContext := echo.New().NewContext(req, recorder)
 
-	err := h.GetHealthz(echoContext)
+	err := target.GetHealthz(echoContext)
 	assert.Nil(t, err)
 }
 

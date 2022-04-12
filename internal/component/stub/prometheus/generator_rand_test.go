@@ -1,4 +1,4 @@
-package prometheus
+package prometheus // nolint:testpackage
 
 import (
 	"reflect"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_fakeMetricsRandGenerator_Load(t *testing.T) {
+func Test_fakeMetricsRandGenerator_Load(t *testing.T) { // nolint:funlen
 	t.Parallel()
 
 	t.Run("idempotent", func(t *testing.T) {

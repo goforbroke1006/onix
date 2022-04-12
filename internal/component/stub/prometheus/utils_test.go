@@ -2,8 +2,11 @@ package prometheus // nolint:testpackage
 
 import (
 	"reflect"
+	"regexp"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_server_canParseTime(t *testing.T) { // nolint:funlen
@@ -73,6 +76,16 @@ func Test_server_canParseTime(t *testing.T) { // nolint:funlen
 			}
 		})
 	}
+}
+
+func Test_server_canParseTime_withBrokenDigitRegex(t *testing.T) {
+	t.Parallel()
+
+	onlyNumbersRegex = regexp.MustCompile(`^[\w]+$`)
+
+	_, err := canParseTime("123hello")
+	assert.NotNil(t, err)
+	assert.Equal(t, "can't parse integer: strconv.ParseInt: parsing \"123hello\": invalid syntax", err.Error())
 }
 
 func Test_server_canParseDuration(t *testing.T) {

@@ -2,10 +2,11 @@ package prometheus // nolint:testpackage
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
@@ -88,37 +89,27 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 	t.Run("negative - wrong step", func(t *testing.T) {
 		t.Parallel()
 
+		var (
+			query = "hello wildfowl"
+			start = time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC)
+			stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
+		)
+
+		generator := fakeMetricsIdempotentGenerator{}
+
 		t.Run("eq 0", func(t *testing.T) {
 			t.Parallel()
 
-			var (
-				query = "hello wildfowl"
-				start = time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC)
-				stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
-				step  = 0 * time.Minute
-			)
-
-			g := fakeMetricsIdempotentGenerator{}
-
 			assert.Panics(t, func() {
-				_ = g.Load(query, start, stop, step)
+				_ = generator.Load(query, start, stop, 0)
 			})
 		})
 
 		t.Run("less than 0", func(t *testing.T) {
 			t.Parallel()
 
-			var (
-				query = "hello wildfowl"
-				start = time.Date(1990, time.June, 10, 8, 45, 0o0, 0, time.UTC)
-				stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
-				step  = -1 * time.Minute
-			)
-
-			g := fakeMetricsIdempotentGenerator{}
-
 			assert.Panics(t, func() {
-				_ = g.Load(query, start, stop, step)
+				_ = generator.Load(query, start, stop, -1*time.Minute)
 			})
 		})
 	})

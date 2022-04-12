@@ -560,9 +560,6 @@ func Test_handlers_GetCompare(t *testing.T) { // nolint:funlen,maintidx
 		measurementRepo := mocks.NewMockMeasurementRepository(mockCtrl)
 		measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("fake series 1 problem"))
-		//measurementRepo.EXPECT().GetForPoints(gomock.Eq(sourceID), gomock.Any(), gomock.Any()).
-		//	Return(make([]domain.MeasurementRow, 12+1), nil).
-		//	Times(3)
 
 		handlersInstance := handlers{ // nolint:exhaustivestruct
 			releaseSvc:         service.NewReleaseService(releaseRepo),
