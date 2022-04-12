@@ -10,6 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
@@ -20,6 +29,7 @@ jobs:
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
           go install github.com/golang/mock/mockgen@v1.6.0
+          go mod download
       - name: Run build
         run: |
           go generate ./...

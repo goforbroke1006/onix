@@ -37,16 +37,6 @@ jobs:
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
           go install github.com/golang/mock/mockgen@v1.6.0
           go mod download
-      - name: Print env
-        run: |
-          echo ${GOPATH}
-#      - name: Cache GOPATH
-#        id: cache-gopath
-#        uses: actions/cache@v3
-#        with:
-#          path: /home/runner/go
-#          key: ${{ runner.os }}-gopath
-
       - name: Run build
         run: |
           go generate ./...
