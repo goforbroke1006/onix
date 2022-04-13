@@ -2,6 +2,14 @@ version: '3.9'
 
 services:
 
+  register:
+    image: docker.io/goforbroke1006/onix-register:latest
+    environment:
+      BASE_URL: "http://api-system:8080"
+      SERVICE_NAME: "onix/debug/docker-compose"
+      RELEASE_NAME: "v1.0.0-debug"
+    depends_on: [ api-system ]
+
   dashboard-main:
     restart: "on-failure"
     image: docker.io/goforbroke1006/onix-dashboard-main:latest
