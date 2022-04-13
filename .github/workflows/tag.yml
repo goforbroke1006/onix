@@ -72,6 +72,14 @@ jobs:
       - name: Print tag
         run: echo "Build tag ${{ env.GITHUB_REF_SLUG }}"
 
+      - name: Build and push onix-register
+        uses: docker/build-push-action@v2
+        with:
+          context: ./.build/register
+          file: .build/register/Dockerfile
+          push: true
+          tags: docker.io/goforbroke1006/onix-register:${{ env.GITHUB_REF_SLUG }}
+
       - name: Build and push onix-backend
         uses: docker/build-push-action@v2
         with:
