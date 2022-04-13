@@ -12,44 +12,44 @@ import (
 	"github.com/goforbroke1006/onix/pkg/log"
 )
 
-// NewServer creates new server's handlers implementations instance.
-func NewServer(
+// NewHandlers creates new handlers's handlers implementations instance.
+func NewHandlers(
 	serviceRepo domain.ServiceRepository,
 	releaseRepo domain.ReleaseRepository,
 	logger log.Logger,
-) *server { // nolint:revive,golint
-	return &server{
+) *handlers { // nolint:revive,golint
+	return &handlers{
 		serviceRepo: serviceRepo,
 		releaseRepo: releaseRepo,
 		logger:      logger,
 	}
 }
 
-var _ apiSpec.ServerInterface = &server{} // nolint:exhaustivestruct
+var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
 
-type server struct {
+type handlers struct {
 	serviceRepo domain.ServiceRepository
 	releaseRepo domain.ReleaseRepository
 	logger      log.Logger
 }
 
-func (s server) GetHealthz(ctx echo.Context) error {
+func (h handlers) GetHealthz(ctx echo.Context) error {
 	err := ctx.NoContent(http.StatusOK)
 
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (s server) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams) error {
+func (h handlers) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams) error {
 	startAt := time.Now().UTC()
 	if params.StartAt != nil {
 		startAt = time.Unix(*params.StartAt, 0).UTC()
 	}
 
-	if err := s.serviceRepo.Store(params.ServiceName); err != nil {
+	if err := h.serviceRepo.Store(params.ServiceName); err != nil {
 		return errors.Wrap(err, "can't store service in repository")
 	}
 
-	if err := s.releaseRepo.Store(params.ServiceName, params.ReleaseName, startAt); err != nil {
+	if err := h.releaseRepo.Store(params.ServiceName, params.ReleaseName, startAt); err != nil {
 		return errors.Wrap(err, "can't get release")
 	}
 

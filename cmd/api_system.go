@@ -46,7 +46,7 @@ func NewAPISystemCmd() *cobra.Command {
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := system.NewServer(serviceRepo, releaseRepo, logger)
+			server := system.NewHandlers(serviceRepo, releaseRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {

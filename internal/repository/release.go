@@ -71,8 +71,11 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 }
 
 func (repo releaseRepository) Store(serviceName string, releaseName string, startAt time.Time) error {
-	query := fmt.Sprintf(
-		"INSERT INTO release (service, name, start_at) VALUES ('%s', '%s', '%s');",
+	query := fmt.Sprintf(`
+		INSERT INTO release (service, name, start_at) 
+		VALUES ('%s', '%s', '%s')
+		ON CONFLICT (service, name) DO UPDATE SET start_at = EXCLUDED.start_at;
+	`,
 		serviceName, releaseName, startAt.Format(time.RFC3339),
 	)
 	_, err := repo.conn.Exec(context.TODO(), query)
