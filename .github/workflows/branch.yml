@@ -76,6 +76,7 @@ jobs:
       - name: Build and push onix-register
         uses: docker/build-push-action@v2
         with:
+          pull: true
           context: ./.build/register
           file: .build/register/Dockerfile
           push: true
@@ -84,6 +85,7 @@ jobs:
       - name: Build and push onix-backend
         uses: docker/build-push-action@v2
         with:
+          pull: true
           context: ./
           file: .build/backend/Dockerfile
           push: true
@@ -92,6 +94,7 @@ jobs:
       - name: Build and push onix-dashboard-admin
         uses: docker/build-push-action@v2
         with:
+          pull: true
           context: ./frontend/dashboard-admin
           file: .build/frontend/Dockerfile
           push: true
@@ -100,6 +103,7 @@ jobs:
       - name: Build and push onix-dashboard-main
         uses: docker/build-push-action@v2
         with:
+          pull: true
           context: ./frontend/dashboard-main
           file: .build/frontend/Dockerfile
           push: true
