@@ -1,8 +1,9 @@
 // import fetch from "node-fetch";
+import { env } from '../env'
 
 export default class DashboardMainApiClient {
     constructor() {
-        this.baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
+        this.baseUrl = env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://127.0.0.1:8082/api/dashboard-main';
     }
 
     loadServices() {

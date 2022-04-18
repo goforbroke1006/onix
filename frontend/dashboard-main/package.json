@@ -61,7 +61,8 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-react": "^7.29.2",
-    "mocha": "^9.2.2"
+    "mocha": "^9.2.2",
+    "react-inject-env": "^2.1.0"
   },
   "babel": {
     "presets": [

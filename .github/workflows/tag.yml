@@ -94,7 +94,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           pull: true
-          context: ./frontend/dashboard-admin
+          context: ./
           file: .build/frontend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-dashboard-admin:${{ env.GITHUB_REF_SLUG }}
@@ -103,7 +103,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           pull: true
-          context: ./frontend/dashboard-main
+          context: ./
           file: .build/frontend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-dashboard-main:${{ env.GITHUB_REF_SLUG }}

@@ -81,7 +81,15 @@ image:
 	docker build --pull --network=host -f ./.build/register/Dockerfile -t docker.io/goforbroke1006/onix-register:latest ./.build/register
 	DOCKER_BUILDKIT=1 docker build --pull --network=host -f .build/backend/Dockerfile -t docker.io/goforbroke1006/onix-backend:latest ./
 	docker build --pull --network=host -f .build/frontend/Dockerfile -t docker.io/goforbroke1006/onix-dashboard-admin:latest ./frontend/dashboard-admin
-	docker build --pull --network=host -f .build/frontend/Dockerfile -t docker.io/goforbroke1006/onix-dashboard-main:latest ./frontend/dashboard-main
+
+image/frontend/dashboard-main:
+	docker build --pull --network=host -f .build/frontend/main/Dockerfile -t docker.io/goforbroke1006/onix-dashboard-main:latest ./
+	docker push docker.io/goforbroke1006/onix-dashboard-main:latest
+
+image/frontend/dashboard-admin:
+	docker build --pull --network=host -f .build/frontend/admin/Dockerfile -t docker.io/goforbroke1006/onix-dashboard-admin:latest ./
+	docker push docker.io/goforbroke1006/onix-dashboard-admin:latest
+
 
 .PHONY: setup
 setup:
