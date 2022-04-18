@@ -5,9 +5,9 @@ services:
   register:
     image: docker.io/goforbroke1006/onix-register:latest
     environment:
-      BASE_URL: "http://api-system:8080"
-      SERVICE_NAME: "onix/debug/docker-compose"
-      RELEASE_NAME: "v1.0.0-debug"
+      ONIX_REGISTER_BASE_URL: "http://api-system:8080"
+      ONIX_REGISTER_SERVICE_NAME: "onix/debug/docker-compose"
+      ONIX_REGISTER_RELEASE_NAME: "v1.0.0-debug-2"
     depends_on: [ api-system ]
 
   dashboard-main:
