@@ -14,11 +14,15 @@ services:
     restart: "on-failure"
     image: docker.io/goforbroke1006/onix-dashboard-main:latest
     ports: [ "3001:80" ]
+    environment:
+      REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
 
   dashboard-admin:
     restart: "on-failure"
     image: docker.io/goforbroke1006/onix-dashboard-admin:latest
     ports: [ "3002:80" ]
+    environment:
+      REACT_APP_API_DASHBOARD_ADMIN_BASE_ADDR: http://localhost:8083/api/dashboard-admin
 
   api-system:
     restart: "on-failure"
