@@ -8,7 +8,7 @@ go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
 go install github.com/golang/mock/mockgen@v1.6.0
 go install golang.org/x/lint/golint
 go get -u github.com/gordonklaus/ineffassign && go mod tidy
-go install github.com/client9/misspell/cmd/misspell
+go get -u github.com/client9/misspell/cmd/misspell && go mod tidy
 
 sudo apt-get install -y gcc g++ make
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
