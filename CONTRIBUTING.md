@@ -31,7 +31,6 @@ make coverage
 
 ```shell
 docker-compose down --volumes --remove-orphans
-docker-compose build
 docker-compose up -d
 
 echo 'Open dev build http://localhost:3002/'

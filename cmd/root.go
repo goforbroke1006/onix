@@ -54,6 +54,7 @@ func ExecuteCmdTree() error {
 	)
 	utilCmd.AddCommand(
 		NewUtilLoadHistoricalMetrics(),
+		NewUtilMigrateCmd(),
 	)
 
 	err := rootCmd.Execute()

@@ -3,6 +3,7 @@ config/onix.json
 *.generated.go
 /**/mocks/**/*.go
 /onix
+/db/schema.sql
 /fixtures.sql
 /dump-*.sql
 /coverage.out

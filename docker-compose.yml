@@ -68,17 +68,12 @@ services:
       timeout: 5s
       retries: 5
 
-  migrate:
+  util-migrate:
     restart: "on-failure"
-    image: amacneil/dbmate:v1.12
-    command: "-d /migrations up"
-    environment:
-      DATABASE_URL: postgres://onix:onix@postgres:5432/onix?sslmode=disable
-    volumes:
-      - ./db/migrations:/migrations
-    depends_on:
-      postgres:
-        condition: service_healthy
+    image: docker.io/goforbroke1006/onix-backend:latest
+    command: "util migrate"
+    environment: { DB_HOST: postgres }
+    depends_on: [ postgres ]
 
   fixture-common:
     restart: "on-failure"

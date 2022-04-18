@@ -10,15 +10,17 @@ clean:
 	rm -rf ./frontend/dashboard-main/build/ || true
 	rm -rf ./frontend/dashboard-main/node_modules/ || true
 	rm -f ./coverage.out
-	rm -rf ./mock/
+	rm -rf internal/repository/mocks || true
+	rm -rf internal/service/mocks || true
 
 .PHONY: dep
 dep:
 	@echo "Install backend dependencies"
 	go mod download
+	go mod tidy
 	@echo "Install frontend dependencies"
 	npm --prefix ./frontend/dashboard-admin/ install
-	npm --prefix ./frontend/dashboard-main/ install
+	npm --prefix ./frontend/dashboard-main/  install
 
 .PHONY: gen
 gen:
