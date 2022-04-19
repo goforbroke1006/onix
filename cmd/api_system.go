@@ -38,15 +38,17 @@ func NewAPISystemCmd() *cobra.Command {
 			defer conn.Close()
 
 			var (
-				serviceRepo = repository.NewServiceRepository(conn)
-				releaseRepo = repository.NewReleaseRepository(conn)
-				logger      = log.NewLogger()
+				serviceRepo  = repository.NewServiceRepository(conn)
+				sourceRepo   = repository.NewSourceRepository(conn)
+				criteriaRepo = repository.NewCriteriaRepository(conn)
+				releaseRepo  = repository.NewReleaseRepository(conn)
+				logger       = log.NewLogger()
 			)
 
 			router := echo.New()
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := system.NewHandlers(serviceRepo, releaseRepo, logger)
+			server := system.NewHandlers(serviceRepo, sourceRepo, criteriaRepo, releaseRepo, logger)
 
 			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
 			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {

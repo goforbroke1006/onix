@@ -9,7 +9,7 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
-func NewMeasurementService( // nolint:ireturn
+func NewMeasurementService(
 	measurementRepo domain.MeasurementRepository,
 ) domain.MeasurementService {
 	return &measurementService{

@@ -6,3 +6,5 @@ linters:
     - interfacer  # deprecated
     - scopelint   # deprecated
     - gci         # annoying
+    - dupl        # annoying
+    - ireturn     # annoying

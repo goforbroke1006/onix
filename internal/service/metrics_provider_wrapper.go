@@ -11,7 +11,7 @@ import (
 var ErrUnexpectedProviderType = errors.New("unexpected metrics provider type")
 
 // NewMetricsProvider inits metrics provider from domain.Source instance.
-func NewMetricsProvider(source domain.Source) domain.MetricsProvider { // nolint:ireturn
+func NewMetricsProvider(source domain.Source) domain.MetricsProvider {
 	switch source.Type {
 	case domain.SourceTypePrometheus:
 		return metricsprovider.NewPrometheusMetricsProvider(source.Address)

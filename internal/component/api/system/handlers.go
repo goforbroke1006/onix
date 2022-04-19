@@ -15,22 +15,28 @@ import (
 // NewHandlers creates new handlers's handlers implementations instance.
 func NewHandlers(
 	serviceRepo domain.ServiceRepository,
+	sourceRepo domain.SourceRepository,
+	criteriaRepo domain.CriteriaRepository,
 	releaseRepo domain.ReleaseRepository,
 	logger log.Logger,
 ) *handlers { // nolint:revive,golint
 	return &handlers{
-		serviceRepo: serviceRepo,
-		releaseRepo: releaseRepo,
-		logger:      logger,
+		serviceRepo:  serviceRepo,
+		sourceRepo:   sourceRepo,
+		criteriaRepo: criteriaRepo,
+		releaseRepo:  releaseRepo,
+		logger:       logger,
 	}
 }
 
 var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
 
 type handlers struct {
-	serviceRepo domain.ServiceRepository
-	releaseRepo domain.ReleaseRepository
-	logger      log.Logger
+	serviceRepo  domain.ServiceRepository
+	sourceRepo   domain.SourceRepository
+	criteriaRepo domain.CriteriaRepository
+	releaseRepo  domain.ReleaseRepository
+	logger       log.Logger
 }
 
 func (h handlers) GetHealthz(ctx echo.Context) error {
@@ -39,7 +45,39 @@ func (h handlers) GetHealthz(ctx echo.Context) error {
 	return errors.Wrap(err, "write to echo context failed")
 }
 
-func (h handlers) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams) error {
+func (h handlers) GetRegisterSource(ctx echo.Context, params apiSpec.GetRegisterSourceParams) error {
+	if _, err := h.sourceRepo.Create(params.Title, domain.SourceType(params.Kind), params.Address); err != nil {
+		return errors.Wrap(err, "can't store source in repository")
+	}
+
+	response := apiSpec.RegisterSourceResponse{
+		Status: apiSpec.RegisterSourceResponseStatusOk,
+	}
+	err := ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
+}
+
+func (h handlers) GetRegisterCriteria(ctx echo.Context, params apiSpec.GetRegisterCriteriaParams) error {
+	if _, err := h.criteriaRepo.Create(
+		params.Service,
+		params.Title,
+		params.Selector,
+		domain.DynamicDirType(params.ExpectedDir),
+		domain.MustParseGroupingIntervalType(params.GroupingInterval),
+	); err != nil {
+		return errors.Wrap(err, "can't store criteria in repository")
+	}
+
+	response := apiSpec.RegisterCriteriaResponse{
+		Status: apiSpec.RegisterCriteriaResponseStatusOk,
+	}
+	err := ctx.JSON(http.StatusOK, response)
+
+	return errors.Wrap(err, "write to echo context failed")
+}
+
+func (h handlers) GetRegisterRelease(ctx echo.Context, params apiSpec.GetRegisterReleaseParams) error {
 	startAt := time.Now().UTC()
 	if params.StartAt != nil {
 		startAt = time.Unix(*params.StartAt, 0).UTC()
@@ -53,8 +91,8 @@ func (h handlers) GetRegister(ctx echo.Context, params apiSpec.GetRegisterParams
 		return errors.Wrap(err, "can't get release")
 	}
 
-	response := apiSpec.RegisterResponse{
-		Status: apiSpec.RegisterResponseStatusOk,
+	response := apiSpec.RegisterReleaseResponse{
+		Status: apiSpec.RegisterReleaseResponseStatusOk,
 	}
 	err := ctx.JSON(http.StatusOK, response)
 
