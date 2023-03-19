@@ -3,11 +3,9 @@ module github.com/goforbroke1006/onix
 go 1.19
 
 require (
-	github.com/amacneil/dbmate v1.15.0
 	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/labstack/echo/v4 v4.9.1
-	github.com/lib/pq v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
@@ -32,6 +30,7 @@ require (
 	github.com/jackc/pgtype v1.10.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
+	github.com/lib/pq v1.10.4 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect

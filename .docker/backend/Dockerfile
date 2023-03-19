@@ -15,7 +15,6 @@ RUN go build -o onix ./
 FROM debian:buster
 
 COPY --from=builder /code/onix /onix
-COPY ./db/migrations /db/migrations
 
 ENTRYPOINT [ "/onix" ]
 

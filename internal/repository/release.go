@@ -13,13 +13,11 @@ import (
 )
 
 // NewReleaseRepository creates data exchange object with db.
-func NewReleaseRepository(conn *pgxpool.Pool) *releaseRepository { //nolint:revive,golint
-	return &releaseRepository{
-		conn: conn,
-	}
+func NewReleaseRepository(conn *pgxpool.Pool) domain.ReleaseRepository { //nolint:revive,golint
+	return &releaseRepository{conn: conn}
 }
 
-var _ domain.ReleaseRepository = &releaseRepository{} //nolint:exhaustivestruct
+var _ domain.ReleaseRepository = (*releaseRepository)(nil)
 
 type releaseRepository struct {
 	conn *pgxpool.Pool
@@ -28,7 +26,7 @@ type releaseRepository struct {
 func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, error) {
 	query := fmt.Sprintf(
 		`
-		SELECT id, name, start_at 
+		SELECT tag, start_at 
 		FROM release 
 		WHERE service = '%s'
 		ORDER BY start_at ASC
@@ -47,7 +45,6 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 	defer rows.Close()
 
 	var (
-		identifier  int64
 		releaseName string
 		startAt     time.Time
 	)
@@ -55,12 +52,11 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 	result := make([]domain.Release, 0, len(rows.RawValues()))
 
 	for rows.Next() {
-		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&releaseName, &startAt); err != nil {
 			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		result = append(result, domain.Release{
-			ID:      identifier,
 			Service: serviceName,
 			Tag:     releaseName,
 			StartAt: startAt,
@@ -72,9 +68,9 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 
 func (repo releaseRepository) Store(serviceName string, releaseName string, startAt time.Time) error {
 	query := fmt.Sprintf(`
-		INSERT INTO release (service, name, start_at) 
+		INSERT INTO release (service, tag, start_at) 
 		VALUES ('%s', '%s', '%s')
-		ON CONFLICT (service, name) DO UPDATE SET start_at = EXCLUDED.start_at;
+		ON CONFLICT (service, tag) DO UPDATE SET start_at = EXCLUDED.start_at;
 	`,
 		serviceName, releaseName, startAt.Format(time.RFC3339),
 	)
@@ -83,15 +79,15 @@ func (repo releaseRepository) Store(serviceName string, releaseName string, star
 	return errors.Wrap(err, "can't exec query")
 }
 
-func (repo releaseRepository) GetByName(serviceName, releaseName string) (*domain.Release, error) {
+func (repo releaseRepository) GetByName(serviceName, tagName string) (*domain.Release, error) {
 	query := fmt.Sprintf(
 		`
-		SELECT id, name, start_at 
+		SELECT start_at 
 		FROM release 
-		WHERE service = '%s' AND name = '%s'
+		WHERE service = '%s' AND tag = '%s'
 		LIMIT 1
 		;`,
-		serviceName, releaseName,
+		serviceName, tagName,
 	)
 
 	var (
@@ -105,19 +101,17 @@ func (repo releaseRepository) GetByName(serviceName, releaseName string) (*domai
 	defer rows.Close()
 
 	var (
-		identifier int64
-		startAt    time.Time
+		startAt time.Time
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&startAt); err != nil {
 			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		release := domain.Release{
-			ID:      identifier,
 			Service: serviceName,
-			Tag:     releaseName,
+			Tag:     tagName,
 			StartAt: startAt,
 		}
 
@@ -130,10 +124,10 @@ func (repo releaseRepository) GetByName(serviceName, releaseName string) (*domai
 func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*domain.Release, error) {
 	query := fmt.Sprintf(
 		`
-		SELECT id, name, start_at 
+		SELECT tag, start_at 
 		FROM release 
 		WHERE service = '%s'
-		  AND start_at > (SELECT start_at FROM release WHERE service = '%s' AND name = '%s')
+		  AND start_at > (SELECT start_at FROM release WHERE service = '%s' AND tag = '%s')
 		ORDER BY start_at ASC
 		LIMIT 1
 		;`,
@@ -152,19 +146,18 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 	defer rows.Close()
 
 	var (
-		identifier int64
-		startAt    time.Time
+		tagName string
+		startAt time.Time
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&tagName, &startAt); err != nil {
 			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		release := domain.Release{
-			ID:      identifier,
 			Service: serviceName,
-			Tag:     releaseName,
+			Tag:     tagName,
 			StartAt: startAt,
 		}
 
@@ -177,7 +170,7 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 func (repo releaseRepository) GetLast(serviceName string) (*domain.Release, error) {
 	query := fmt.Sprintf(
 		`
-SELECT id, name, start_at 
+SELECT tag, start_at 
 FROM release 
 WHERE service = '%s'
 ORDER BY start_at DESC
@@ -197,20 +190,18 @@ LIMIT 1
 	defer rows.Close()
 
 	var (
-		identifier  int64
-		releaseName string
-		startAt     time.Time
+		tagName string
+		startAt time.Time
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&tagName, &startAt); err != nil {
 			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		release := domain.Release{
-			ID:      identifier,
 			Service: serviceName,
-			Tag:     releaseName,
+			Tag:     tagName,
 			StartAt: startAt,
 		}
 
@@ -223,7 +214,7 @@ LIMIT 1
 func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domain.Release, error) {
 	query := fmt.Sprintf(
 		`
-		SELECT id, name, start_at 
+		SELECT tag, start_at 
 		FROM release 
 		WHERE service = '%s'
 		ORDER BY start_at DESC
@@ -243,22 +234,20 @@ func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domai
 	defer rows.Close()
 
 	var (
-		identifier  int64
-		releaseName string
-		startAt     time.Time
+		tagName string
+		startAt time.Time
 	)
 
 	result := make([]domain.Release, 0, len(rows.RawValues()))
 
 	for rows.Next() {
-		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&tagName, &startAt); err != nil {
 			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		result = append(result, domain.Release{
-			ID:      identifier,
 			Service: serviceName,
-			Tag:     releaseName,
+			Tag:     tagName,
 			StartAt: startAt,
 		})
 	}
@@ -269,7 +258,7 @@ func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domai
 func (repo releaseRepository) GetReleases(serviceName string, from, till time.Time) ([]domain.Release, error) {
 	query := fmt.Sprintf(
 		`
-SELECT id, name, start_at 
+SELECT tag, start_at 
 FROM release 
 WHERE service = '%s' 
   AND start_at BETWEEN '%s' AND '%s'
@@ -289,22 +278,20 @@ ORDER BY start_at ASC
 	defer rows.Close()
 
 	var (
-		identifier  int64
-		releaseName string
-		startAt     time.Time
+		tagName string
+		startAt time.Time
 	)
 
 	result := make([]domain.Release, 0, len(rows.RawValues()))
 
 	for rows.Next() {
-		if err := rows.Scan(&identifier, &releaseName, &startAt); err != nil {
+		if err := rows.Scan(&tagName, &startAt); err != nil {
 			return nil, errors.Wrap(err, "can't scan release row")
 		}
 
 		result = append(result, domain.Release{
-			ID:      identifier,
 			Service: serviceName,
-			Tag:     releaseName,
+			Tag:     tagName,
 			StartAt: startAt,
 		})
 	}

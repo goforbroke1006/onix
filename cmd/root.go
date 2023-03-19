@@ -44,9 +44,6 @@ func ExecuteCmdTree() error {
 	stubCmd.AddCommand(
 		NewStubPrometheusCmd(),
 	)
-	utilCmd.AddCommand(
-		NewUtilMigrateCmd(),
-	)
 
 	err := rootCmd.Execute()
 

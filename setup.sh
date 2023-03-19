@@ -3,6 +3,7 @@
 sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
 sudo chmod +x /usr/local/bin/dbmate
 
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.0
 go install github.com/golang/mock/mockgen@v1.6.0
 go install golang.org/x/lint/golint
 go install github.com/gordonklaus/ineffassign

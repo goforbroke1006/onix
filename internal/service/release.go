@@ -9,13 +9,11 @@ import (
 )
 
 // NewReleaseService creates service for manipulate with release data.
-func NewReleaseService(repo domain.ReleaseRepository) *releaseService { //nolint:revive,golint
-	return &releaseService{
-		repo: repo,
-	}
+func NewReleaseService(repo domain.ReleaseRepository) domain.ReleaseService { //nolint:revive,golint
+	return &releaseService{repo: repo}
 }
 
-var _ domain.ReleaseService = &releaseService{} //nolint:exhaustivestruct
+var _ domain.ReleaseService = (*releaseService)(nil)
 
 type releaseService struct {
 	repo domain.ReleaseRepository
@@ -35,7 +33,6 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 
 	for releaseIndex := 0; releaseIndex <= len(releases)-2; releaseIndex++ {
 		ranges = append(ranges, domain.ReleaseTimeRange{
-			ID:      releases[releaseIndex].ID,
 			Service: releases[releaseIndex].Service,
 			Tag:     releases[releaseIndex].Tag,
 			StartAt: releases[releaseIndex].StartAt,
@@ -46,7 +43,6 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 	lastIndex := len(releases) - 1
 
 	ranges = append(ranges, domain.ReleaseTimeRange{
-		ID:      releases[lastIndex].ID,
 		Service: releases[lastIndex].Service,
 		Tag:     releases[lastIndex].Tag,
 		StartAt: releases[lastIndex].StartAt,
@@ -79,7 +75,6 @@ func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange,
 
 	for releaseIndex := 0; releaseIndex <= len(releases)-2; releaseIndex++ {
 		ranges = append(ranges, domain.ReleaseTimeRange{
-			ID:      releases[releaseIndex].ID,
 			Service: releases[releaseIndex].Service,
 			Tag:     releases[releaseIndex].Tag,
 			StartAt: releases[releaseIndex].StartAt,
@@ -90,7 +85,6 @@ func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange,
 	lastIndex := len(releases) - 1
 
 	ranges = append(ranges, domain.ReleaseTimeRange{
-		ID:      releases[lastIndex].ID,
 		Service: releases[lastIndex].Service,
 		Tag:     releases[lastIndex].Tag,
 		StartAt: releases[lastIndex].StartAt,
@@ -123,7 +117,6 @@ func (svc releaseService) GetByName(serviceName, releaseName string) (*domain.Re
 	}
 
 	timeRange := domain.ReleaseTimeRange{
-		ID:      current.ID,
 		Service: serviceName,
 		Tag:     releaseName,
 		StartAt: current.StartAt,

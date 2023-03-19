@@ -1,15 +1,13 @@
--- migrate:up
-
-INSERT INTO service (title)
+INSERT INTO service (id)
 VALUES ('foo/backend'),
        ('bar/backend'),
        ('acme/backend');
 
-INSERT INTO source (title, kind, address)
+INSERT INTO source (id, kind, address)
 VALUES ('stub prometheus', 'prometheus', 'http://stub-prometheus:19090'),
        ('stub prometheus HOST', 'prometheus', 'http://localhost:19091');
 
-INSERT INTO release (service, name, start_at)
+INSERT INTO release (service, tag, start_at)
 VALUES ('foo/backend', '2.1.0', '2020-12-26 00:00:00'),   -- 1608940800
        ('foo/backend', '2.0.0', '2020-12-13 00:00:00'),   -- 1607817600
        ('foo/backend', '1.2.1', '2020-11-28 00:00:00'),
@@ -32,7 +30,7 @@ VALUES ('foo/backend', '2.1.0', '2020-12-26 00:00:00'),   -- 1608940800
        ('acme/backend', 'v2.4.0', '2021-12-12 00:00:00') -- 1639267200
 ;
 
-INSERT INTO criteria (service, title, selector, expected_dir, grouping_interval)
+INSERT INTO criteria (service, title, selector, direction, interval)
 VALUES ('foo/backend', 'processing duration instrument=ONE',
         'histogram_quantile(0.95, sum(increase(api_request_count{environment="prod",instrument="one"}[15m])) by (le))',
         'decrease', '5m'),
@@ -62,9 +60,3 @@ VALUES ('foo/backend', 'processing duration instrument=ONE',
 -- FROM generate_series(1607817600, 1608940800 + 2 * 12 * 31 * 24 * 60 * 60, 300) AS t(_gen_moment)
 -- ON CONFLICT (source_id, criteria_id, moment) DO UPDATE SET value = EXCLUDED.value;
 
--- migrate:down
-TRUNCATE service;
-TRUNCATE source;
-TRUNCATE release;
-TRUNCATE criteria;
-TRUNCATE measurement;

@@ -21,7 +21,7 @@ type serviceRepository struct {
 }
 
 func (repo serviceRepository) Store(ctx context.Context, id string) error {
-	const query = "INSERT INTO service (title) VALUES (:id) ON CONFLICT DO NOTHING;"
+	const query = "INSERT INTO service (id) VALUES (:id) ON CONFLICT DO NOTHING;"
 
 	_, err := repo.conn.Exec(ctx, query, id)
 
@@ -29,7 +29,7 @@ func (repo serviceRepository) Store(ctx context.Context, id string) error {
 }
 
 func (repo serviceRepository) GetAll(ctx context.Context) ([]domain.Service, error) {
-	const query = `SELECT title FROM service ORDER BY title ASC;`
+	const query = `SELECT id FROM service ORDER BY id ASC;`
 
 	rows, rowsErr := repo.conn.Query(ctx, query)
 	if rowsErr != nil {

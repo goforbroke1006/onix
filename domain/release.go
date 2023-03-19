@@ -6,7 +6,6 @@ import (
 
 // Release keeps data about service's release.
 type Release struct {
-	ID      int64
 	Service string
 	Tag     string
 	StartAt time.Time
@@ -14,7 +13,6 @@ type Release struct {
 
 // ReleaseTimeRange looks like Release but has StopAt time, that calculated from db data.
 type ReleaseTimeRange struct {
-	ID      int64
 	Service string
 	Tag     string
 	StartAt time.Time
@@ -25,7 +23,7 @@ type ReleaseTimeRange struct {
 type ReleaseRepository interface {
 	Store(serviceName string, releaseName string, startAt time.Time) error
 	GetReleases(serviceName string, from, till time.Time) ([]Release, error)
-	GetByName(serviceName, releaseName string) (*Release, error)
+	GetByName(serviceName, tagName string) (*Release, error)
 	GetNextAfter(serviceName, releaseName string) (*Release, error)
 	GetLast(serviceName string) (*Release, error)
 	GetNLasts(serviceName string, count uint) ([]Release, error)

@@ -15,12 +15,14 @@ func NewHandlers(
 	sourceRepo domain.SourceRepository,
 	criteriaRepo domain.CriteriaRepository,
 	releaseRepo domain.ReleaseRepository,
+	releaseSvc domain.ReleaseService,
 ) spec.ServerInterface {
 	return &handlersImpl{
 		serviceRepo:  serviceRepo,
 		sourceRepo:   sourceRepo,
 		criteriaRepo: criteriaRepo,
 		releaseRepo:  releaseRepo,
+		releaseSvc:   releaseSvc,
 	}
 }
 

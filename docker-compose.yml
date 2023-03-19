@@ -9,18 +9,31 @@ services:
     ports: [ "3000:3000" ]
     environment:
       REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8080
+    volumes:
+      - ./web/app/node_modules:/code/node_modules
+      - ./web/app/public:/code/public
+      - ./web/app/src:/code/src
+      - ./web/app/package.json:/code/package.json
+      - ./web/app/package-lock.json:/code/package-lock.json
 
-  # http://localhost:8080/
+  # http://localhost:8080/ping
   # curl -X POST http://localhost:8080/release?service=acme&release=v1.0.0&start_at=
   api-external:
     restart: "on-failure"
     image: local-env/onix-backend:dev
-    command: "api system"
     ports: [ "8080:8080" ]
+    command: "api external"
     environment:
       DB_HOST: postgres
+    volumes:
+      - ./cmd/:/code/cmd/
+      - ./domain/:/code/domain/
+      - ./external/:/code/external/
+      - ./internal/:/code/internal/
+      - ./pkg/:/code/pkg/
+      - ./main.go:/code/main.go
     healthcheck:
-      test: curl --fail http//127.0.0.1:8080/ping || exit 1
+      test: [ "CMD-SHELL", "curl --fail http://127.0.0.1:8080/ping || exit 1" ]
       start_period: 5s
       interval: 5s
       retries: 2
@@ -33,6 +46,8 @@ services:
     image: local-env/onix-backend:dev
     command: "daemon metrics-extractor"
     environment: { DB_HOST: postgres }
+    volumes:
+      - ./:/code
     depends_on:
       postgres: { condition: service_healthy }
 
@@ -44,30 +59,15 @@ services:
       POSTGRES_DB: "onix"
       POSTGRES_USER: "onix"
       POSTGRES_PASSWORD: "onix"
+    volumes:
+      - ./db/migrations/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql
+      - ./.docker-compose/postgres/fixtures/demo_data.sql:/docker-entrypoint-initdb.d/002-demo-data.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U onix -d onix" ]
+      start_period: 10s
       interval: 10s
-      timeout: 5s
       retries: 5
-
-  util-migrate:
-    restart: "on-failure"
-    image: local-env/onix-backend:dev
-    command: "util migrate"
-    environment: { DB_HOST: postgres }
-    depends_on:
-      postgres: { condition: service_healthy }
-
-  fixture-common:
-    restart: "on-failure"
-    image: amacneil/dbmate:v1.12
-    command: "-d /fixtures up"
-    environment:
-      DATABASE_URL: postgres://onix:onix@postgres:5432/onix?sslmode=disable
-    volumes:
-      - ./db/fixtures:/fixtures
-    depends_on:
-      postgres: { condition: service_healthy }
+      timeout: 5s
 
   stub-prometheus:
     restart: "on-failure"
