@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,27 +14,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
-	"github.com/goforbroke1006/onix/pkg/log"
 )
 
 func TestNewServer(t *testing.T) {
 	t.Parallel()
 
-	h := NewHandlers(nil)
+	h := NewHandlers()
 	assert.NotNil(t, h)
-}
-
-func Test_handlers_GetHealthz(t *testing.T) {
-	t.Parallel()
-
-	var target handlers
-
-	req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, "", nil)
-	recorder := httptest.NewRecorder()
-	echoContext := echo.New().NewContext(req, recorder)
-
-	err := target.GetHealthz(echoContext)
-	assert.Nil(t, err)
 }
 
 func Test_handlers_GetQuery(t *testing.T) {
@@ -168,9 +154,8 @@ func Test_handlers_GetQueryRange(t *testing.T) { // nolint:funlen
 			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			s := handlers{ // nolint:exhaustivestruct
-				logger: log.NewNullLogger(),
-			}
+			s := handlers{} // nolint:exhaustivestruct
+
 			if err := s.GetQueryRange(ctx, ttCase.args.params); (err != nil) != ttCase.wantErr {
 				t.Errorf("GetQueryRange() error = %v, wantErr %v", err, ttCase.wantErr)
 			}
@@ -180,7 +165,7 @@ func Test_handlers_GetQueryRange(t *testing.T) { // nolint:funlen
 			}
 
 			if ttCase.wantCount > 0 {
-				respBody, _ := ioutil.ReadAll(rec.Body)
+				respBody, _ := io.ReadAll(rec.Body)
 				var respObj apiSpec.QueryRangeResponse
 				if err := json.Unmarshal(respBody, &respObj); err != nil {
 					t.Error(err)

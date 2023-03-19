@@ -1,42 +1,42 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"os"
+	"os/signal"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"go.uber.org/zap"
 
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
 	"github.com/goforbroke1006/onix/internal/component/stub/prometheus"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
-	"github.com/goforbroke1006/onix/pkg/log"
 )
 
 // NewStubPrometheusCmd create prometheus stub cobra-command.
 func NewStubPrometheusCmd() *cobra.Command {
-	const (
-		baseURL = "api/v1"
-	)
-
 	return &cobra.Command{ // nolint:exhaustivestruct
 		Use: "prometheus",
 		Run: func(cmd *cobra.Command, args []string) {
-			httpAddr := viper.GetString("server.http.stub.prometheus")
-
-			logger := log.NewLogger()
+			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+			defer stop()
 
 			router := echo.New()
 			router.Use(middleware.CORS())
-			router.HTTPErrorHandler = pkgEcho.ErrorHandler(logger)
-			server := prometheus.NewHandlers(logger)
+			router.HTTPErrorHandler = pkgEcho.ErrorHandler()
+			server := prometheus.NewHandlers()
+			apiSpec.RegisterHandlers(router, server)
+			go func() {
+				if err := router.Start("0.0.0.0:8080"); errors.Is(err, http.ErrServerClosed) {
+					zap.L().Fatal("can't run server", zap.Error(err))
+				}
+			}()
 
-			apiSpec.RegisterHandlersWithBaseURL(router, server, baseURL)
-			if err := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {
-				logger.WithErr(err).Fatal("can't run server")
-			}
+			<-ctx.Done()
 		},
 	}
 }

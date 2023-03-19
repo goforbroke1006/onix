@@ -62,7 +62,7 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 		result = append(result, domain.Release{
 			ID:      identifier,
 			Service: serviceName,
-			Name:    releaseName,
+			Tag:     releaseName,
 			StartAt: startAt,
 		})
 	}
@@ -117,7 +117,7 @@ func (repo releaseRepository) GetByName(serviceName, releaseName string) (*domai
 		release := domain.Release{
 			ID:      identifier,
 			Service: serviceName,
-			Name:    releaseName,
+			Tag:     releaseName,
 			StartAt: startAt,
 		}
 
@@ -164,7 +164,7 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 		release := domain.Release{
 			ID:      identifier,
 			Service: serviceName,
-			Name:    releaseName,
+			Tag:     releaseName,
 			StartAt: startAt,
 		}
 
@@ -210,7 +210,7 @@ LIMIT 1
 		release := domain.Release{
 			ID:      identifier,
 			Service: serviceName,
-			Name:    releaseName,
+			Tag:     releaseName,
 			StartAt: startAt,
 		}
 
@@ -258,7 +258,7 @@ func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domai
 		result = append(result, domain.Release{
 			ID:      identifier,
 			Service: serviceName,
-			Name:    releaseName,
+			Tag:     releaseName,
 			StartAt: startAt,
 		})
 	}
@@ -304,7 +304,7 @@ ORDER BY start_at ASC
 		result = append(result, domain.Release{
 			ID:      identifier,
 			Service: serviceName,
-			Name:    releaseName,
+			Tag:     releaseName,
 			StartAt: startAt,
 		})
 	}

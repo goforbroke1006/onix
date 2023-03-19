@@ -9,19 +9,11 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
-func NewMeasurementService(
-	measurementRepo domain.MeasurementRepository,
-) domain.MeasurementService {
-	return &measurementService{
-		measurementRepo:  measurementRepo,
-		createProviderFn: NewMetricsProvider,
-	}
+func NewMeasurementService() domain.MeasurementService {
+	return &measurementService{}
 }
 
-type measurementService struct {
-	measurementRepo  domain.MeasurementRepository
-	createProviderFn func(source domain.Source) domain.MetricsProvider
-}
+type measurementService struct{}
 
 func (svc measurementService) GetOrPull(
 	ctx context.Context,
@@ -31,16 +23,7 @@ func (svc measurementService) GetOrPull(
 ) ([]domain.MeasurementRow, error) {
 	points := svc.getTimePoints(from, till, step)
 
-	measurementRows, err := svc.measurementRepo.GetForPoints(source.ID, criteria.ID, points)
-	if err != nil {
-		return nil, errors.Wrap(err, "can't get measurements")
-	}
-
-	if len(measurementRows) == len(points) {
-		return measurementRows, nil
-	}
-
-	provider := svc.createProviderFn(source)
+	provider := NewMetricsProvider(source)
 
 	series, err := provider.LoadSeries(ctx, criteria.Selector, from, till, step)
 	if err != nil {
@@ -53,10 +36,6 @@ func (svc measurementService) GetOrPull(
 			Moment: item.Timestamp,
 			Value:  item.Value,
 		})
-	}
-
-	if err := svc.measurementRepo.StoreBatch(source.ID, criteria.ID, batch); err != nil {
-		return nil, errors.Wrap(err, "can't store series")
 	}
 
 	batchMap := make(map[time.Time]float64, len(batch))

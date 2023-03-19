@@ -2,9 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 
@@ -12,53 +10,47 @@ import (
 )
 
 // NewServiceRepository creates data exchange object with db.
-func NewServiceRepository(conn *pgxpool.Pool) *serviceRepository { // nolint:revive,golint
-	return &serviceRepository{
-		conn: conn,
-	}
+func NewServiceRepository(conn *pgxpool.Pool) domain.ServiceRepository {
+	return &serviceRepository{conn: conn}
 }
 
-var _ domain.ServiceRepository = &serviceRepository{} // nolint:exhaustivestruct
+var _ domain.ServiceRepository = (*serviceRepository)(nil)
 
 type serviceRepository struct {
 	conn *pgxpool.Pool
 }
 
-func (repo serviceRepository) Store(title string) error {
-	query := fmt.Sprintf(
-		"INSERT INTO service (title) VALUES ('%s') ON CONFLICT DO NOTHING;",
-		title,
-	)
-	_, err := repo.conn.Exec(context.TODO(), query)
+func (repo serviceRepository) Store(ctx context.Context, id string) error {
+	const query = "INSERT INTO service (title) VALUES (:id) ON CONFLICT DO NOTHING;"
+
+	_, err := repo.conn.Exec(ctx, query, id)
 
 	return errors.Wrap(err, "can't store service")
 }
 
-func (repo serviceRepository) GetAll() ([]domain.Service, error) {
-	query := `SELECT title FROM service ORDER BY title ASC;`
+func (repo serviceRepository) GetAll(ctx context.Context) ([]domain.Service, error) {
+	const query = `SELECT title FROM service ORDER BY title ASC;`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't exec query")
+	rows, rowsErr := repo.conn.Query(ctx, query)
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't exec query")
 	}
 	defer rows.Close()
 
-	var title string
+	var id string
 
-	result := make([]domain.Service, 0, len(rows.RawValues()))
+	var result []domain.Service
 
 	for rows.Next() {
-		if err := rows.Scan(&title); err != nil {
-			return nil, errors.Wrap(err, "can't scan service row")
+		if scanErr := rows.Scan(&id); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan service row")
 		}
 
-		result = append(result, domain.Service{
-			Title: title,
-		})
+		result = append(result, domain.Service{ID: id})
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 
 	return result, nil

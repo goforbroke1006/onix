@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/goforbroke1006/onix/common"
+	"github.com/goforbroke1006/onix/internal/common"
 	"github.com/goforbroke1006/onix/internal/repository"
 	"github.com/goforbroke1006/onix/tests"
 )

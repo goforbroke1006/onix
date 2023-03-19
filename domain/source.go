@@ -1,5 +1,7 @@
 package domain
 
+import "context"
+
 type SourceType string
 
 const (
@@ -8,14 +10,13 @@ const (
 )
 
 type Source struct {
-	ID      int64
-	Title   string
-	Type    SourceType
+	ID      string
+	Kind    SourceType
 	Address string
 }
 
 type SourceRepository interface {
-	Create(title string, kind SourceType, address string) (int64, error)
-	Get(identifier int64) (*Source, error)
-	GetAll() ([]Source, error)
+	Create(ctx context.Context, id string, kind SourceType, address string) error
+	Get(ctx context.Context, id string) (Source, error)
+	GetAll(ctx context.Context) ([]Source, error)
 }

@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/cobra"
 
-	"github.com/goforbroke1006/onix/common"
+	"github.com/goforbroke1006/onix/internal/common"
 )
 
 func NewUtilMigrateCmd() *cobra.Command {

@@ -15,7 +15,7 @@ func TestNewMetricsProvider(t *testing.T) {
 		t.Parallel()
 
 		source := domain.Source{ // nolint:exhaustivestruct
-			Type: domain.SourceTypePrometheus,
+			Kind: domain.SourceTypePrometheus,
 		}
 		provider := NewMetricsProvider(source)
 		assert.NotNil(t, provider, "NewMetricsProvider(%v)", source)
@@ -25,7 +25,7 @@ func TestNewMetricsProvider(t *testing.T) {
 		t.Parallel()
 
 		source := domain.Source{ // nolint:exhaustivestruct
-			Type: domain.SourceTypeInfluxDB,
+			Kind: domain.SourceTypeInfluxDB,
 		}
 		provider := NewMetricsProvider(source)
 		assert.NotNil(t, provider, "NewMetricsProvider(%v)", source)
@@ -41,7 +41,7 @@ func TestNewMetricsProvider(t *testing.T) {
 		}()
 
 		source := domain.Source{ // nolint:exhaustivestruct
-			Type: domain.SourceType("unknown"),
+			Kind: domain.SourceType("unknown"),
 		}
 		_ = NewMetricsProvider(source)
 	})

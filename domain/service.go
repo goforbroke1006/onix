@@ -1,12 +1,14 @@
 package domain
 
+import "context"
+
 // Service keeps service name.
 type Service struct {
-	Title string
+	ID string
 }
 
 // ServiceRepository describes how to manage Service in db.
 type ServiceRepository interface {
-	Store(title string) error
-	GetAll() ([]Service, error)
+	Store(ctx context.Context, id string) error
+	GetAll(ctx context.Context) ([]Service, error)
 }

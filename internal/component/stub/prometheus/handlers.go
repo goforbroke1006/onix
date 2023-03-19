@@ -8,16 +8,15 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 
 	apiSpec "github.com/goforbroke1006/onix/api/stub_prometheus"
-	"github.com/goforbroke1006/onix/pkg/log"
 )
 
 // NewHandlers creates new handlers's handlers implementations instance.
-func NewHandlers(logger log.Logger) *handlers { // nolint:revive,golint
+func NewHandlers() *handlers { // nolint:revive,golint
 	return &handlers{
 		validator: validator{},
-		logger:    logger,
 	}
 }
 
@@ -25,7 +24,6 @@ var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
 
 type handlers struct {
 	validator validator
-	logger    log.Logger
 }
 
 func (h handlers) GetHealthz(ctx echo.Context) error {
@@ -42,10 +40,8 @@ func (h handlers) GetQuery(ctx echo.Context) error {
 
 func (h handlers) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangeParams) error {
 	if err := h.validator.GetQueryRange(params); err != nil {
-		h.logger.WithErr(err).Warn("invalid request")
-		err := ctx.NoContent(http.StatusBadRequest)
-
-		return errors.Wrap(err, "write to echo context failed")
+		zap.L().Error("invalid request", zap.Error(err))
+		return ctx.NoContent(http.StatusBadRequest)
 	}
 
 	var (

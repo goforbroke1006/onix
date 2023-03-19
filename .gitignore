@@ -1,9 +1,6 @@
-.idea/
-config/onix.json
-*.generated.go
-/**/mocks/**/*.go
-/onix
-/db/schema.sql
-/fixtures.sql
-/dump-*.sql
+/.idea/
+/application
 /coverage.out
+
+*.gen.go
+*.mocks.go

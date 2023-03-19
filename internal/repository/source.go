@@ -2,9 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 
@@ -12,110 +10,80 @@ import (
 )
 
 // NewSourceRepository creates data exchange object with db.
-func NewSourceRepository(conn *pgxpool.Pool) *sourceRepository { // nolint:revive,golint
-	return &sourceRepository{
-		conn: conn,
-	}
+func NewSourceRepository(conn *pgxpool.Pool) domain.SourceRepository { // nolint:golint
+	return &sourceRepository{conn: conn}
 }
 
-var _ domain.SourceRepository = &sourceRepository{} // nolint:exhaustivestruct
+var _ domain.SourceRepository = (*sourceRepository)(nil)
 
 type sourceRepository struct {
 	conn *pgxpool.Pool
 }
 
-func (repo sourceRepository) Create(title string, kind domain.SourceType, address string) (int64, error) {
-	query := fmt.Sprintf(
-		"INSERT INTO source (title, kind, address) VALUES ('%s', '%s', '%s') RETURNING id;",
-		title, kind, address,
-	)
+func (repo sourceRepository) Create(
+	ctx context.Context,
+	id string,
+	kind domain.SourceType,
+	address string,
+) error {
+	const query = `
+		INSERT INTO source (id, kind, address) 
+		VALUES (:id, :kind, :address);`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return 0, errors.Wrap(err, "can't exec query")
-	}
-	defer rows.Close()
-
-	var identifier int64
-	if rows.Next() {
-		if err := rows.Scan(&identifier); err != nil {
-			return 0, errors.Wrap(err, "can't scan source row")
-		}
-
-		return identifier, nil
+	if _, execErr := repo.conn.Exec(ctx, query, id, kind, address); execErr != nil {
+		return errors.Wrap(execErr, "can't exec query")
 	}
 
-	return 0, domain.ErrNotFound
+	return nil
 }
 
-func (repo sourceRepository) Get(identifier int64) (*domain.Source, error) {
-	query := fmt.Sprintf(
+func (repo sourceRepository) Get(ctx context.Context, id string) (domain.Source, error) {
+	const query = `
+		SELECT kind, address 
+		FROM source 
+		WHERE id = :id;
 		`
-SELECT title, kind, address 
-FROM source 
-WHERE id = %d
-;`,
-		identifier,
-	)
-
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't exec query")
+	rows, rowsErr := repo.conn.Query(ctx, query, id)
+	if rowsErr != nil {
+		return domain.Source{}, errors.Wrap(rowsErr, "can't exec query")
 	}
 	defer rows.Close()
 
+	if !rows.Next() {
+		return domain.Source{}, domain.ErrNotFound
+	}
+
 	var (
-		title   string
 		kind    domain.SourceType
 		address string
 	)
 
-	if rows.Next() {
-		if err := rows.Scan(&title, &kind, &address); err != nil {
-			return nil, errors.Wrap(err, "can't scan source row")
-		}
-
-		release := domain.Source{
-			ID:      identifier,
-			Title:   title,
-			Type:    kind,
-			Address: address,
-		}
-
-		return &release, nil
+	if scanErr := rows.Scan(&kind, &address); scanErr != nil {
+		return domain.Source{}, errors.Wrap(scanErr, "can't scan source row")
 	}
 
-	return nil, domain.ErrNotFound
+	if rows.Err() != nil {
+		return domain.Source{}, rows.Err()
+	}
+
+	return domain.Source{ID: id, Kind: kind, Address: address}, nil
 }
 
-func (repo sourceRepository) GetAll() ([]domain.Source, error) {
-	query := `
-		SELECT id, title, kind, address
+func (repo sourceRepository) GetAll(ctx context.Context) ([]domain.Source, error) {
+	const query = `
+		SELECT id, kind, address
 		FROM source 
 		ORDER BY id ASC
 	;`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't exec query")
+	rows, rowsErr := repo.conn.Query(ctx, query)
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't exec query")
 	}
 	defer rows.Close()
 
 	var (
-		identifier int64
-		title      string
+		identifier string
 		kind       domain.SourceType
 		address    string
 	)
@@ -123,16 +91,19 @@ func (repo sourceRepository) GetAll() ([]domain.Source, error) {
 	result := make([]domain.Source, 0, len(rows.RawValues()))
 
 	for rows.Next() {
-		if err := rows.Scan(&identifier, &title, &kind, &address); err != nil {
-			return nil, errors.Wrap(err, "can't scan source row")
+		if scanErr := rows.Scan(&identifier, &kind, &address); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan source row")
 		}
 
 		result = append(result, domain.Source{
 			ID:      identifier,
-			Title:   title,
-			Type:    kind,
+			Kind:    kind,
 			Address: address,
 		})
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 
 	return result, nil

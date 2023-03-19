@@ -8,52 +8,43 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	rootCmd = &cobra.Command{ // nolint:gochecknoglobals
+		Use:   "onix",
+		Short: "Onix is performance comparison service",
+		Long:  `Onix collect information about releases and compare metrics between its.`,
+	}
+
+	apiCmd = &cobra.Command{ // nolint:gochecknoglobals
+		Use:   "api",
+		Short: "API handlers",
+	}
+	daemonCmd = &cobra.Command{Use: "daemon"} // nolint:gochecknoglobals
+	stubCmd   = &cobra.Command{               // nolint:gochecknoglobals
+		Use:   "stub",
+		Short: "Fake external services",
+	}
+	utilCmd = &cobra.Command{ // nolint:gochecknoglobals
+		Use:   "util",
+		Short: "CLI utils",
+	}
+)
+
 // ExecuteCmdTree enables default settings for viper and initialize cobra commands tree.
 func ExecuteCmdTree() error {
 	if err := setupViper(); err != nil {
 		return err
 	}
 
-	var (
-		rootCmd = &cobra.Command{ // nolint:exhaustivestruct
-			Use:   "onix",
-			Short: "Onix is performance comparison service",
-			Long:  `Onix collect information about releases and compare metrics between its.`,
-		}
-
-		apiCmd = &cobra.Command{ // nolint:exhaustivestruct
-			Use:   "api",
-			Short: "API handlers",
-		}
-		daemonCmd = &cobra.Command{ // nolint:exhaustivestruct
-			Use:   "daemon",
-			Short: "Periodic task runners",
-		}
-		stubCmd = &cobra.Command{ // nolint:exhaustivestruct
-			Use:   "stub",
-			Short: "Fake external services",
-		}
-		utilCmd = &cobra.Command{ // nolint:exhaustivestruct
-			Use:   "util",
-			Short: "CLI utils",
-		}
-	)
-
 	rootCmd.AddCommand(apiCmd, daemonCmd, stubCmd, utilCmd)
 
 	apiCmd.AddCommand(
-		NewAPISystemCmd(),
-		NewAPIDashboardMainCmd(),
-		NewAPIDashboardAdminCmd(),
-	)
-	daemonCmd.AddCommand(
-		NewDaemonMetricsExtractorCmd(),
+		NewAPIExternalCmd(),
 	)
 	stubCmd.AddCommand(
 		NewStubPrometheusCmd(),
 	)
 	utilCmd.AddCommand(
-		NewUtilLoadHistoricalMetrics(),
 		NewUtilMigrateCmd(),
 	)
 

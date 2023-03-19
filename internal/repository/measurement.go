@@ -13,43 +13,51 @@ import (
 )
 
 // NewMeasurementRepository creates data exchange object with db.
-func NewMeasurementRepository(conn *pgxpool.Pool) *measurementRepository { // nolint:revive,golint
-	return &measurementRepository{
-		conn: conn,
-	}
+func NewMeasurementRepository(conn *pgxpool.Pool) domain.MeasurementRepository {
+	return &measurementRepository{conn: conn}
 }
 
-var _ domain.MeasurementRepository = &measurementRepository{} // nolint:exhaustivestruct
+var _ domain.MeasurementRepository = (*measurementRepository)(nil)
 
 type measurementRepository struct {
 	conn *pgxpool.Pool
 }
 
-func (repo measurementRepository) Store(sourceID, criteriaID int64, moment time.Time, value float64) error {
-	query := fmt.Sprintf(
-		`
+func (repo measurementRepository) Store(
+	ctx context.Context,
+	sourceID string,
+	criteriaID int64, moment time.Time, value float64,
+) error {
+	const query = `
 		INSERT INTO measurement (source_id, criteria_id, moment, value, updated_at) 
-		VALUES (%d, %d, '%s', %f, NOW())
+		VALUES (:sourceID, :criteriaID, :moment, :value, NOW())
 		ON CONFLICT (source_id, criteria_id, moment) 
 		  DO UPDATE SET 
             value      = EXCLUDED.value,
 			updated_at = EXCLUDED.updated_at
         ;
-		`,
-		sourceID, criteriaID, moment.UTC().Format(time.RFC3339), value,
-	)
-	_, err := repo.conn.Exec(context.TODO(), query)
+		`
+	_, err := repo.conn.Exec(ctx, query,
+		sourceID, criteriaID, moment.UTC().Format(time.RFC3339), value)
+	if err != nil {
+		return errors.Wrap(err, "can't exec query")
+	}
 
-	return errors.Wrap(err, "can't exec query")
+	return nil
 }
 
-func (repo measurementRepository) StoreBatch(sourceID, criteriaID int64, measurements []domain.MeasurementRow) error {
+func (repo measurementRepository) StoreBatch(
+	ctx context.Context,
+	sourceID string,
+	criteriaID int64,
+	measurements []domain.MeasurementRow,
+) error {
 	valuesStrs := make([]string, 0, len(measurements))
-
 	for _, m := range measurements {
 		valuesStrs = append(
 			valuesStrs,
-			fmt.Sprintf("(%d, %d, '%s', %f, NOW())", sourceID, criteriaID, m.Moment.UTC().Format(time.RFC3339), m.Value),
+			fmt.Sprintf("('%s', %d, '%s', %f, NOW())",
+				sourceID, criteriaID, m.Moment.UTC().Format(time.RFC3339), m.Value),
 		)
 	}
 
@@ -65,7 +73,7 @@ func (repo measurementRepository) StoreBatch(sourceID, criteriaID int64, measure
 		`,
 		strings.Join(valuesStrs, ", "),
 	)
-	_, err := repo.conn.Exec(context.TODO(), query)
+	_, err := repo.conn.Exec(ctx, query)
 
 	return errors.Wrap(err, "can't exec query")
 }

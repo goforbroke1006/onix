@@ -105,12 +105,12 @@ func (repo criteriaRepository) GetAll(serviceName string) ([]domain.Criteria, er
 		duration, _ := time.ParseDuration(interval)
 
 		result = append(result, domain.Criteria{
-			ID:               identifier,
-			Service:          serviceName,
-			Title:            title,
-			Selector:         selector,
-			ExpectedDir:      expectedDir,
-			GroupingInterval: domain.GroupingIntervalType(duration),
+			ID:        identifier,
+			Service:   serviceName,
+			Title:     title,
+			Selector:  selector,
+			Direction: expectedDir,
+			Interval:  domain.GroupingIntervalType(duration),
 		})
 	}
 
@@ -150,12 +150,12 @@ func (repo criteriaRepository) GetByID(identifier int64) (domain.Criteria, error
 		}
 
 		release := domain.Criteria{
-			ID:               identifier,
-			Service:          service,
-			Title:            title,
-			Selector:         selector,
-			ExpectedDir:      expectedDir,
-			GroupingInterval: domain.MustParseGroupingIntervalType(interval),
+			ID:        identifier,
+			Service:   service,
+			Title:     title,
+			Selector:  selector,
+			Direction: expectedDir,
+			Interval:  domain.MustParseGroupingIntervalType(interval),
 		}
 
 		return release, nil

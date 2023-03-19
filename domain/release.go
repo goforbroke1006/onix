@@ -8,7 +8,7 @@ import (
 type Release struct {
 	ID      int64
 	Service string
-	Name    string
+	Tag     string
 	StartAt time.Time
 }
 
@@ -16,7 +16,7 @@ type Release struct {
 type ReleaseTimeRange struct {
 	ID      int64
 	Service string
-	Name    string
+	Tag     string
 	StartAt time.Time
 	StopAt  time.Time
 }

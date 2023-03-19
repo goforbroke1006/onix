@@ -2,13 +2,13 @@ package tests
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func LoadFixture(conn *pgxpool.Pool, filename string) error {
-	fixtureData, err := ioutil.ReadFile(filename)
+	fixtureData, err := os.ReadFile(filename)
 	if err != nil {
 		return err // nolint:wrapcheck
 	}

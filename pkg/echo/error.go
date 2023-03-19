@@ -4,18 +4,17 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-
-	"github.com/goforbroke1006/onix/pkg/log"
+	"go.uber.org/zap"
 )
 
 // ErrorHandler is middleware to create echo error handler.
-func ErrorHandler(logger log.Logger) func(err error, ctx echo.Context) {
+func ErrorHandler() func(err error, ctx echo.Context) {
 	return func(err error, ctx echo.Context) {
 		type errResponse struct {
 			Error string
 		}
 
-		logger.WithErr(err).Info("api handler error")
+		zap.L().Error("handle request fail", zap.Error(err))
 
 		_ = ctx.JSON(http.StatusInternalServerError, errResponse{Error: err.Error()})
 	}

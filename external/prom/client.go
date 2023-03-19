@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -52,7 +52,7 @@ func (c client) Query(
 	}
 	defer response.Body.Close()
 
-	respBytes, _ := ioutil.ReadAll(response.Body)
+	respBytes, _ := io.ReadAll(response.Body)
 
 	var respObj QueryResponse
 	if err = json.Unmarshal(respBytes, &respObj); err != nil {
@@ -86,7 +86,7 @@ func (c client) QueryRange(
 		return nil, errors.Wrap(ErrUnexpectedStatusCode, fmt.Sprintf("%d", response.StatusCode))
 	}
 
-	respBytes, _ := ioutil.ReadAll(response.Body)
+	respBytes, _ := io.ReadAll(response.Body)
 
 	var respObj QueryRangeResponse
 	if err = json.Unmarshal(respBytes, &respObj); err != nil {

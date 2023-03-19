@@ -12,13 +12,13 @@ var ErrUnexpectedProviderType = errors.New("unexpected metrics provider type")
 
 // NewMetricsProvider inits metrics provider from domain.Source instance.
 func NewMetricsProvider(source domain.Source) domain.MetricsProvider {
-	switch source.Type {
+	switch source.Kind {
 	case domain.SourceTypePrometheus:
 		return metricsprovider.NewPrometheusMetricsProvider(source.Address)
 	case domain.SourceTypeInfluxDB:
 		return metricsprovider.NewInfluxDBMetricsProvider()
 	default:
-		wrErr := errors.Wrap(ErrUnexpectedProviderType, string(source.Type))
+		wrErr := errors.Wrap(ErrUnexpectedProviderType, string(source.Kind))
 		panic(wrErr)
 	}
 }

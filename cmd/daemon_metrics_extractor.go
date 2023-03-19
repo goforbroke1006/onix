@@ -2,25 +2,29 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"os/signal"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
-	"github.com/goforbroke1006/onix/common"
-	"github.com/goforbroke1006/onix/internal/component/daemon/metricsextractor"
+	"github.com/goforbroke1006/onix/internal/common"
+	"github.com/goforbroke1006/onix/internal/component/daemon/metrics_extractor"
 	"github.com/goforbroke1006/onix/internal/repository"
-	"github.com/goforbroke1006/onix/pkg/log"
-	"github.com/goforbroke1006/onix/pkg/shutdowner"
 )
 
 // NewDaemonMetricsExtractorCmd create metrics extractor cobra-command.
 func NewDaemonMetricsExtractorCmd() *cobra.Command {
-	return &cobra.Command{ // nolint:exhaustivestruct
+	return &cobra.Command{
 		Use: "metrics-extractor",
 		Run: func(cmd *cobra.Command, args []string) {
-			conn, err := pgxpool.Connect(context.Background(), common.GetDBConnString())
-			if err != nil {
-				panic(err)
+			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+			defer stop()
+
+			conn, connErr := pgxpool.Connect(context.Background(), common.GetDBConnString())
+			if connErr != nil {
+				zap.L().Fatal("db connection fail", zap.Error(connErr))
 			}
 			defer conn.Close()
 
@@ -29,16 +33,21 @@ func NewDaemonMetricsExtractorCmd() *cobra.Command {
 				criteriaRepository    = repository.NewCriteriaRepository(conn)
 				sourceRepository      = repository.NewSourceRepository(conn)
 				measurementRepository = repository.NewMeasurementRepository(conn)
-				logger                = log.NewLogger()
 			)
 
-			application := metricsextractor.NewApplication(
-				serviceRepo, criteriaRepository, sourceRepository, measurementRepository,
-				logger)
-			go application.Run()
-			defer application.Stop()
+			application := metrics_extractor.NewApplication(
+				serviceRepo, criteriaRepository, sourceRepository, measurementRepository)
+			go func() {
+				if runErr := application.Run(ctx); runErr != nil {
+					zap.L().Fatal("application stop with fail", zap.Error(runErr))
+				}
+			}()
 
-			shutdowner.WaitForShutdown()
+			<-ctx.Done()
 		},
 	}
+}
+
+func init() {
+	daemonCmd.AddCommand(NewDaemonMetricsExtractorCmd())
 }

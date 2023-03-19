@@ -79,12 +79,12 @@ func (ppt GroupingIntervalType) String() string {
 
 // Criteria keep data how to evaluate and extract metric from external provider.
 type Criteria struct {
-	ID               int64
-	Service          string
-	Title            string
-	Selector         string
-	ExpectedDir      DynamicDirType
-	GroupingInterval GroupingIntervalType
+	ID        int64
+	Service   string
+	Title     string
+	Selector  string
+	Direction DynamicDirType
+	Interval  GroupingIntervalType
 }
 
 // CriteriaRepository describe methods for managing Criteria in db.

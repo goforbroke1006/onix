@@ -37,7 +37,7 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 		ranges = append(ranges, domain.ReleaseTimeRange{
 			ID:      releases[releaseIndex].ID,
 			Service: releases[releaseIndex].Service,
-			Name:    releases[releaseIndex].Name,
+			Tag:     releases[releaseIndex].Tag,
 			StartAt: releases[releaseIndex].StartAt,
 			StopAt:  releases[releaseIndex+1].StartAt.Add(-1 * time.Second),
 		})
@@ -48,12 +48,12 @@ func (svc releaseService) GetReleases(serviceName string, from, till time.Time) 
 	ranges = append(ranges, domain.ReleaseTimeRange{
 		ID:      releases[lastIndex].ID,
 		Service: releases[lastIndex].Service,
-		Name:    releases[lastIndex].Name,
+		Tag:     releases[lastIndex].Tag,
 		StartAt: releases[lastIndex].StartAt,
 		StopAt:  time.Now(),
 	})
 
-	afterLast, err := svc.repo.GetNextAfter(serviceName, releases[lastIndex].Name)
+	afterLast, err := svc.repo.GetNextAfter(serviceName, releases[lastIndex].Tag)
 	if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		return nil, errors.Wrap(err, "can't get next release")
 	}
@@ -81,7 +81,7 @@ func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange,
 		ranges = append(ranges, domain.ReleaseTimeRange{
 			ID:      releases[releaseIndex].ID,
 			Service: releases[releaseIndex].Service,
-			Name:    releases[releaseIndex].Name,
+			Tag:     releases[releaseIndex].Tag,
 			StartAt: releases[releaseIndex].StartAt,
 			StopAt:  releases[releaseIndex+1].StartAt.Add(-1 * time.Second),
 		})
@@ -92,7 +92,7 @@ func (svc releaseService) GetAll(serviceName string) ([]domain.ReleaseTimeRange,
 	ranges = append(ranges, domain.ReleaseTimeRange{
 		ID:      releases[lastIndex].ID,
 		Service: releases[lastIndex].Service,
-		Name:    releases[lastIndex].Name,
+		Tag:     releases[lastIndex].Tag,
 		StartAt: releases[lastIndex].StartAt,
 		StopAt:  time.Now().Truncate(time.Second).UTC(),
 	})
@@ -125,7 +125,7 @@ func (svc releaseService) GetByName(serviceName, releaseName string) (*domain.Re
 	timeRange := domain.ReleaseTimeRange{
 		ID:      current.ID,
 		Service: serviceName,
-		Name:    releaseName,
+		Tag:     releaseName,
 		StartAt: current.StartAt,
 		StopAt:  stopAt,
 	}

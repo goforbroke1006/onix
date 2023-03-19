@@ -5,6 +5,15 @@ linters:
     - golint      # deprecated
     - interfacer  # deprecated
     - scopelint   # deprecated
-    - gci         # annoying
-    - dupl        # annoying
-    - ireturn     # annoying
+    - gci               # annoying
+    - dupl              # annoying
+    - ireturn           # annoying
+    - nlreturn          # annoying
+    - exhaustruct       # annoying
+    - exhaustivestruct  # annoying
+    - wrapcheck         # annoying
+    - varnamelen        # annoying
+    - testpackage       # annoying
+    - wsl               # annoying
+    - nosprintfhostport # annoying
+    - gochecknoinits    # annoying

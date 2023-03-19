@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/goforbroke1006/onix/common"
+	"github.com/goforbroke1006/onix/internal/common"
 	"github.com/goforbroke1006/onix/internal/repository"
 	"github.com/goforbroke1006/onix/tests"
 )
@@ -33,7 +33,7 @@ func TestGetLast(t *testing.T) { // nolint:paralleltest
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, "2.1.0", release.Name)
+	assert.Equal(t, "2.1.0", release.Tag)
 }
 
 func TestGetReleases(t *testing.T) { // nolint:paralleltest
@@ -60,7 +60,7 @@ func TestGetReleases(t *testing.T) { // nolint:paralleltest
 	}
 
 	assert.Equal(t, 3, len(ranges))
-	assert.Equal(t, "1.0.0", ranges[0].Name)
-	assert.Equal(t, "1.0.1", ranges[1].Name)
-	assert.Equal(t, "1.1.0", ranges[2].Name)
+	assert.Equal(t, "1.0.0", ranges[0].Tag)
+	assert.Equal(t, "1.0.1", ranges[1].Tag)
+	assert.Equal(t, "1.1.0", ranges[2].Tag)
 }
