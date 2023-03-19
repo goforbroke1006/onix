@@ -2,13 +2,12 @@ FROM node:16-buster AS builder
 
 WORKDIR /code/
 
-COPY ./web/dashboard-main-app/package.json      /code/package.json
-COPY ./web/dashboard-main-app/package-lock.json /code/package-lock.json
+COPY ./web/app/package.json      /code/package.json
+COPY ./web/app/package-lock.json /code/package-lock.json
 RUN npm install
 
-COPY ./web/dashboard-main-app/ /code/
+COPY ./web/app/ /code/
 RUN npm run build
-
 
 
 FROM nginx:1.21.6

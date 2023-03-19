@@ -2,55 +2,24 @@ version: '3.9'
 
 services:
 
-  register:
-    image: docker.io/goforbroke1006/onix-register:latest
-    environment:
-      ONIX_REGISTER_BASE_URL: "http://api-system:8080"
-      ONIX_REGISTER_SERVICE_NAME: "onix/debug/docker-compose"
-      ONIX_REGISTER_RELEASE_NAME: "v1.0.0-debug-2"
-    depends_on: [ api-system ]
-
-  dashboard-main:
+  frontend:
     restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-dashboard-main:latest
-    ports: [ "3001:80" ]
-    environment:
-      REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8082/api/dashboard-main
-
-  dashboard-admin:
-    restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-dashboard-admin:latest
+    image: local-env/onix-frontend:dev
     ports: [ "3002:80" ]
     environment:
       REACT_APP_API_DASHBOARD_ADMIN_BASE_ADDR: http://localhost:8083/api/dashboard-admin
 
-  api-system:
+  api-external:
     restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-backend:latest
+    image: local-env/onix-backend:dev
     command: "api system"
     ports: [ "8081:8080" ]
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
 
-  api-dashboard-main:
-    restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-backend:latest
-    command: "api dashboard-main"
-    ports: [ "8082:8080" ]
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres ]
-
-  api-dashboard-admin:
-    restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-backend:latest
-    command: "api dashboard-admin"
-    ports: [ "8083:8080" ]
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres ]
-
   daemon-metrics-extractor:
     restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-backend:latest
+    image: local-env/onix-backend:dev
     command: "daemon metrics-extractor"
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
@@ -74,7 +43,7 @@ services:
 
   util-migrate:
     restart: "on-failure"
-    image: docker.io/goforbroke1006/onix-backend:latest
+    image: local-env/onix-backend:dev
     command: "util migrate"
     environment: { DB_HOST: postgres }
     depends_on: [ postgres ]
@@ -93,16 +62,11 @@ services:
 
   stub-prometheus:
     restart: "on-failure"
-    build:
-      dockerfile: .docker-compose/golang-runner/Dockerfile
-      context: ./
-    volumes:
-      - ./:/go/src/github.com/goforbroke1006/onix
-    working_dir: /go/src/github.com/goforbroke1006/onix
-    command: "stub prometheus"
+    image: local-env/onix-backend:dev
     ports: [ "19091:19090" ]
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres ]
+    command: "stub prometheus"
+    volumes:
+      - ./:/code/
 
 volumes:
   postgresql-data: ~
