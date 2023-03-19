@@ -73,7 +73,7 @@ jobs:
         with:
           pull: true
           context: ./
-          file: .build/backend/Dockerfile
+          file: .docker/backend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-backend:latest
 
@@ -82,6 +82,6 @@ jobs:
         with:
           pull: true
           context: ./
-          file: .build/frontend/Dockerfile
+          file: .docker/frontend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-frontend:latest

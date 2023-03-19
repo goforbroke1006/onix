@@ -75,7 +75,7 @@ jobs:
         with:
           pull: true
           context: ./
-          file: .build/backend/Dockerfile
+          file: .docker/backend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-backend:${{ env.GITHUB_REF_SLUG }}
 
@@ -84,6 +84,6 @@ jobs:
         with:
           pull: true
           context: ./
-          file: .build/frontend/Dockerfile
+          file: .docker/frontend/Dockerfile
           push: true
           tags: docker.io/goforbroke1006/onix-frontend:${{ env.GITHUB_REF_SLUG }}
