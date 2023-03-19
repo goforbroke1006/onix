@@ -15,6 +15,6 @@ FROM nginx:1.21.6
 
 COPY --from=builder /code/build/ /usr/share/nginx/html/
 
-COPY ./.build/frontend/entrypoint.sh /entrypoint.sh
+COPY ./.docker/frontend/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
