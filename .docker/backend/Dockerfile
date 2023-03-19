@@ -6,9 +6,10 @@ COPY ./go.mod /code/go.mod
 COPY ./go.sum /code/go.sum
 RUN go mod download
 
+ENV CGO_ENABLED=0
 COPY ./ /code/
 RUN go generate ./...
-RUN CGO_ENABLED=0 go build -o onix ./
+RUN go build -o onix ./
 
 
 FROM debian:buster
