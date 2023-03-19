@@ -9,22 +9,22 @@ import (
 )
 
 var (
-	rootCmd = &cobra.Command{ // nolint:gochecknoglobals
+	rootCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "onix",
 		Short: "Onix is performance comparison service",
 		Long:  `Onix collect information about releases and compare metrics between its.`,
 	}
 
-	apiCmd = &cobra.Command{ // nolint:gochecknoglobals
+	apiCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "api",
 		Short: "API handlers",
 	}
-	daemonCmd = &cobra.Command{Use: "daemon"} // nolint:gochecknoglobals
-	stubCmd   = &cobra.Command{               // nolint:gochecknoglobals
+	daemonCmd = &cobra.Command{Use: "daemon"} //nolint:gochecknoglobals
+	stubCmd   = &cobra.Command{               //nolint:gochecknoglobals
 		Use:   "stub",
 		Short: "Fake external services",
 	}
-	utilCmd = &cobra.Command{ // nolint:gochecknoglobals
+	utilCmd = &cobra.Command{ //nolint:gochecknoglobals
 		Use:   "util",
 		Short: "CLI utils",
 	}

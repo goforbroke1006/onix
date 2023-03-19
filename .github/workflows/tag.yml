@@ -22,7 +22,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16.0'
+          go-version: '1.18.0'
       - name: Install dependencies
         run: |
           go version
@@ -30,14 +30,12 @@ jobs:
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
           go install github.com/golang/mock/mockgen@v1.6.0
           go mod download
-      - name: Run build
+      - name: Prepare
         run: |
+          go version
+          go mod download
           go generate ./...
           go build .
-      - name: Run vet & lint
-        run: |
-          go vet .
-          golangci-lint run
       - name: Run testing
         run: go test -v ./...
       - name: Calc coverage

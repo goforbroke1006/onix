@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReportCompareRequest_Validate(t *testing.T) { // nolint:funlen
+func TestReportCompareRequest_Validate(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	type fields struct {

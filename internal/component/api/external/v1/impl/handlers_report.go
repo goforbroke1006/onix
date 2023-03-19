@@ -11,7 +11,7 @@ import (
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/spec"
 )
 
-func (h handlersImpl) PostReportCompare(ctx echo.Context) error { // nolint:funlen,cyclop
+func (h handlersImpl) PostReportCompare(ctx echo.Context) error { //nolint:funlen,cyclop
 	var params spec.ReportCompareRequest
 	if bindErr := ctx.Bind(params); bindErr != nil {
 		return ctx.JSON(http.StatusBadRequest, spec.NewErrorResponse(bindErr))

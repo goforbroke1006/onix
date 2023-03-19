@@ -19,7 +19,7 @@ import (
 
 // NewStubPrometheusCmd create prometheus stub cobra-command.
 func NewStubPrometheusCmd() *cobra.Command {
-	return &cobra.Command{ // nolint:exhaustivestruct
+	return &cobra.Command{ //nolint:exhaustivestruct
 		Use: "prometheus",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)

@@ -1,4 +1,4 @@
-package metrics_extractor // nolint:revive,stylecheck
+package metrics_extractor //nolint:revive,stylecheck
 
 import (
 	"context"
@@ -56,7 +56,7 @@ func (app Application) Run(ctx context.Context) error {
 	}
 }
 
-func (app Application) extractMetrics(ctx context.Context, period time.Duration) { // nolint:funlen,gocognit,cyclop
+func (app Application) extractMetrics(ctx context.Context, period time.Duration) { //nolint:funlen,gocognit,cyclop
 	sources, sourcesErr := app.sourceRepo.GetAll(ctx)
 	if sourcesErr != nil {
 		zap.L().Error("can't find sources", zap.Error(sourcesErr))

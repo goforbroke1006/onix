@@ -1,4 +1,4 @@
-package prometheus // nolint:testpackage
+package prometheus //nolint:testpackage
 
 import (
 	"reflect"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_server_canParseTime(t *testing.T) { // nolint:funlen
+func Test_server_canParseTime(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	type args struct {
@@ -78,7 +78,7 @@ func Test_server_canParseTime(t *testing.T) { // nolint:funlen
 	}
 }
 
-func Test_server_canParseTime_withBrokenDigitRegex(t *testing.T) { // nolint:paralleltest
+func Test_server_canParseTime_withBrokenDigitRegex(t *testing.T) { //nolint:paralleltest
 	onlyNumbersRegex = regexp.MustCompile(`^[\w]+$`) // break regex
 
 	_, err := canParseTime("123hello")

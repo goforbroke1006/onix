@@ -1,4 +1,4 @@
-package prometheus // nolint:testpackage
+package prometheus //nolint:testpackage
 
 import (
 	"reflect"
@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_fakeMetricsRandGenerator_Load(t *testing.T) { // nolint:funlen
+func Test_fakeMetricsRandGenerator_Load(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
-	t.Run("idempotent", func(t *testing.T) {
+	t.Run("is not idempotent", func(t *testing.T) {
 		t.Parallel()
 
 		var (
@@ -21,7 +21,7 @@ func Test_fakeMetricsRandGenerator_Load(t *testing.T) { // nolint:funlen
 			step  = time.Minute
 		)
 
-		g := fakeMetricsRandGenerator{}
+		g := NewFakeMetricsRandGenerator()
 
 		for i := 0; i < 10; i++ {
 			got1 := g.Load(query, start, stop, step)

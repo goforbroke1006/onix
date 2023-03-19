@@ -13,12 +13,7 @@ type seriesPoint struct {
 	value     float64
 }
 
-// FakeMetricsGenerator describe methods for metrics generator.
-type FakeMetricsGenerator interface {
-	Load(query string, start, stop time.Time, step time.Duration) []seriesPoint
-}
-
-var _ FakeMetricsGenerator = &fakeMetricsIdempotentGenerator{}
+var _ FakeMetricsGenerator = (*fakeMetricsIdempotentGenerator)(nil)
 
 type fakeMetricsIdempotentGenerator struct{}
 
@@ -38,7 +33,7 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 	current := start
 
 	for current.Before(stop) || current.Equal(stop) {
-		rg := rand.New(rand.NewSource(hash * current.UnixNano())) // nolint:gosec
+		rg := rand.New(rand.NewSource(hash * current.UnixNano())) //nolint:gosec
 		f := rg.Float64()
 
 		result = append(result, seriesPoint{

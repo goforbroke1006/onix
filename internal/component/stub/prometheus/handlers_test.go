@@ -1,4 +1,4 @@
-package prometheus // nolint:testpackage
+package prometheus //nolint:testpackage
 
 import (
 	"bytes"
@@ -36,7 +36,7 @@ func Test_handlers_GetQuery(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_handlers_GetQueryRange(t *testing.T) { // nolint:funlen
+func Test_handlers_GetQueryRange(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	type args struct {
@@ -151,10 +151,10 @@ func Test_handlers_GetQueryRange(t *testing.T) { // nolint:funlen
 			t.Parallel()
 
 			req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, ttCase.args.url, nil)
-			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} // nolint:exhaustivestruct
+			rec := &httptest.ResponseRecorder{Body: bytes.NewBuffer([]byte{})} //nolint:exhaustivestruct
 			ctx := echo.New().NewContext(req, rec)
 
-			s := handlers{} // nolint:exhaustivestruct
+			s := handlers{} //nolint:exhaustivestruct
 
 			if err := s.GetQueryRange(ctx, ttCase.args.params); (err != nil) != ttCase.wantErr {
 				t.Errorf("GetQueryRange() error = %v, wantErr %v", err, ttCase.wantErr)

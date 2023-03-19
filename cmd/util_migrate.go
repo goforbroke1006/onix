@@ -14,13 +14,13 @@ import (
 )
 
 func NewUtilMigrateCmd() *cobra.Command {
-	return &cobra.Command{ // nolint:exhaustivestruct
+	return &cobra.Command{ //nolint:exhaustivestruct
 		Use: "migrate",
 		Run: func(cmd *cobra.Command, args []string) {
 			connString := common.GetDBConnString()
 			dbURL, err := url.Parse(connString)
 			if err != nil {
-				fmt.Println("ERROR:", err.Error()) // nolint:forbidigo
+				fmt.Println("ERROR:", err.Error()) //nolint:forbidigo
 				os.Exit(1)
 			}
 
@@ -29,11 +29,11 @@ func NewUtilMigrateCmd() *cobra.Command {
 
 			err = db.CreateAndMigrate()
 			if err != nil {
-				fmt.Println("ERROR:", err.Error()) // nolint:forbidigo
+				fmt.Println("ERROR:", err.Error()) //nolint:forbidigo
 				os.Exit(1)
 			}
 
-			fmt.Println("ok") // nolint:forbidigo
+			fmt.Println("ok") //nolint:forbidigo
 		},
 	}
 }

@@ -12,13 +12,13 @@ import (
 )
 
 // NewPrometheusMetricsProvider inits new prom data provider.
-func NewPrometheusMetricsProvider(address string) *promMetricsProvider { // nolint:revive,golint
+func NewPrometheusMetricsProvider(address string) *promMetricsProvider { //nolint:revive,golint
 	return &promMetricsProvider{
 		client: prom.NewClient(address),
 	}
 }
 
-var _ domain.MetricsProvider = &promMetricsProvider{} // nolint:exhaustivestruct
+var _ domain.MetricsProvider = &promMetricsProvider{} //nolint:exhaustivestruct
 
 type promMetricsProvider struct {
 	client prom.APIClient

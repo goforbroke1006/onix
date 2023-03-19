@@ -44,7 +44,7 @@ describe('<SourceDropDown /> rendering', () => {
 });
 
 
-const fakeSourcesListPromise = new Promise((resolve, reject) => {
+const fakeSourcesListPromise = new Promise((resolve) => {
     const fakeSourcesList = [
         {id: 101, title: "Source 1", kind: "prometheus", address: "http://foo-bar:4001/"},
         {id: 102, title: "Source 2", kind: "influxdb", address: "http://foo-bar:4002/"},

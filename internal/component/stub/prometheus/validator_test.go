@@ -1,4 +1,4 @@
-package prometheus // nolint:testpackage
+package prometheus //nolint:testpackage
 
 import (
 	"testing"

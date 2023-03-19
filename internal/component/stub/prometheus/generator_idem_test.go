@@ -1,4 +1,4 @@
-package prometheus // nolint:testpackage
+package prometheus //nolint:testpackage
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
+func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	type args struct {
@@ -114,7 +114,7 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { // nolint:funlen
 	})
 }
 
-func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) { // nolint:tparallel
+func Test_fakeMetricsIdempotentGenerator_hash(t *testing.T) { //nolint:tparallel
 	t.Parallel()
 
 	type args struct {
@@ -153,7 +153,7 @@ histogram_quantile(
 		},
 	}
 
-	for _, tt := range tests { // nolint:paralleltest
+	for _, tt := range tests { //nolint:paralleltest
 		ttCase := tt
 		t.Run(ttCase.name, func(t *testing.T) {
 			g := fakeMetricsIdempotentGenerator{}

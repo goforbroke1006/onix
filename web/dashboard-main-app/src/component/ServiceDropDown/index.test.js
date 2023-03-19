@@ -43,7 +43,7 @@ describe('<ServiceDropDown /> component', () => {
     });
 });
 
-const fakeServiceListPromise = new Promise((resolve, reject) => {
+const fakeServiceListPromise = new Promise((resolve) => {
     const fakeServicesList = [
         {title: "acme/backend"},
         {title: "foo/backend"},

@@ -1,3 +1,6 @@
+SERVICE_NAME=onix
+FRONTEND_DIR=./web/dashboard-main-app
+
 .PHONY: all
 all: prepare build test lint
 
@@ -5,39 +8,38 @@ prepare:
 	go mod download
 	go generate ./...
 	go mod tidy
-	npm --prefix ./web/dashboard-main-app/ install
+	cd ${FRONTEND_DIR} && npm install && cd -
 .PHONY: prepare
 
-.PHONY: build
 build: build/backend build/frontend
+.PHONY: build
 
 build/backend:
 	CGO_ENABLED=0 go build -o ./application ./
 .PHONY: build/backend
 
 build/frontend:
-	npm --prefix ./web/dashboard-main-app/ run build
+	npm --prefix ${FRONTEND_DIR} run build
 .PHONY: build/frontend
 
-.PHONY: test
 test: test/backend test/frontend
+.PHONY: test
 
 test/backend:
-	go test -short -race -coverprofile=./coverage.out ./...
+	go test -short -coverprofile=./coverage.out ./...
 .PHONY: test/backend
 
 test/frontend:
-	npm --prefix ./web/dashboard-main-app/ test -- --watchAll=false
+	npm --prefix ${FRONTEND_DIR} test -- --watchAll=false
 .PHONY: test/frontend
 
 lint:
 	golangci-lint run
-	ineffassign ./...
-	cd ./web/dashboard-main-app/ && eslint src/**/*.js && cd ./../../
+	cd ${FRONTEND_DIR} && npm run lint && cd -
 .PHONY: lint
 
 coverage:
-	go test -short -race -coverprofile=./coverage.out ./...
+	go test -short -coverprofile=./coverage.out ./...
 	go tool cover -html ./coverage.out
 .PHONY: coverage
 
@@ -63,3 +65,9 @@ gen/frontend/snapshot:
 	npm --prefix ./frontend/dashboard-admin/ test -- -u --watchAll=false
 	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false
 .PHONY: gen/frontend/snapshot
+
+dev:
+	docker build \
+		-f ./.docker-compose/backend/Dockerfile \
+		-t "local-env/${SERVICE_NAME}:dev" \
+		./

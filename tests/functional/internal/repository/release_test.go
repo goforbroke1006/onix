@@ -1,4 +1,4 @@
-package repository // nolint:testpackage
+package repository //nolint:testpackage
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/goforbroke1006/onix/tests"
 )
 
-func TestGetLast(t *testing.T) { // nolint:paralleltest
+func TestGetLast(t *testing.T) { //nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
 
 	conn, err := pgxpool.Connect(context.Background(), connString)
@@ -36,7 +36,7 @@ func TestGetLast(t *testing.T) { // nolint:paralleltest
 	assert.Equal(t, "2.1.0", release.Tag)
 }
 
-func TestGetReleases(t *testing.T) { // nolint:paralleltest
+func TestGetReleases(t *testing.T) { //nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
 
 	conn, err := pgxpool.Connect(context.Background(), connString)

@@ -8,11 +8,11 @@ import (
 )
 
 // NewInfluxDBMetricsProvider inits new influx data provider.
-func NewInfluxDBMetricsProvider() *influxDBMetricsProvider { // nolint:revive,golint
+func NewInfluxDBMetricsProvider() domain.MetricsProvider {
 	return &influxDBMetricsProvider{}
 }
 
-var _ domain.MetricsProvider = &influxDBMetricsProvider{}
+var _ domain.MetricsProvider = (*influxDBMetricsProvider)(nil)
 
 type influxDBMetricsProvider struct{}
 
@@ -22,5 +22,10 @@ func (p influxDBMetricsProvider) LoadSeries(
 	from, till time.Time,
 	step time.Duration,
 ) ([]domain.SeriesItem, error) {
+	_ = ctx
+	_ = selector
+	_, _ = from, till
+	_ = step
+
 	panic("implement me")
 }

@@ -5,6 +5,11 @@ linters:
     - golint      # deprecated
     - interfacer  # deprecated
     - scopelint   # deprecated
+    - ifshort     # deprecated
+    - deadcode    # deprecated
+    - varcheck    # deprecated
+    - nosnakecase # deprecated
+    - structcheck # deprecated
     - gci               # annoying
     - dupl              # annoying
     - ireturn           # annoying

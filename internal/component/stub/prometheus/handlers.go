@@ -14,13 +14,13 @@ import (
 )
 
 // NewHandlers creates new handlers's handlers implementations instance.
-func NewHandlers() *handlers { // nolint:revive,golint
+func NewHandlers() *handlers { //nolint:revive,golint
 	return &handlers{
 		validator: validator{},
 	}
 }
 
-var _ apiSpec.ServerInterface = &handlers{} // nolint:exhaustivestruct
+var _ apiSpec.ServerInterface = &handlers{} //nolint:exhaustivestruct
 
 type handlers struct {
 	validator validator
@@ -70,8 +70,8 @@ func (h handlers) GetQueryRange(ctx echo.Context, params apiSpec.GetQueryRangePa
 		},
 	}
 
-	queryRangeResult := apiSpec.QueryRangeResult{ // nolint:exhaustivestruct
-		Metric: apiSpec.QueryRangeResult_Metric{}, // nolint:exhaustivestruct
+	queryRangeResult := apiSpec.QueryRangeResult{ //nolint:exhaustivestruct
+		Metric: apiSpec.QueryRangeResult_Metric{}, //nolint:exhaustivestruct
 	}
 
 	ctx2, cancel2 := context.WithTimeout(ctx.Request().Context(), timeout)

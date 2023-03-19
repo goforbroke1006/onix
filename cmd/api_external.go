@@ -16,14 +16,14 @@ import (
 
 	"github.com/goforbroke1006/onix/internal/common"
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/impl"
-	apiSpec "github.com/goforbroke1006/onix/internal/component/api/external/v1/spec"
+	"github.com/goforbroke1006/onix/internal/component/api/external/v1/spec"
 	"github.com/goforbroke1006/onix/internal/repository"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
 )
 
 // NewAPIExternalCmd create new system backend cobra-command.
 func NewAPIExternalCmd() *cobra.Command {
-	return &cobra.Command{ // nolint:exhaustivestruct
+	return &cobra.Command{ //nolint:exhaustivestruct
 		Use: "external",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -49,7 +49,7 @@ func NewAPIExternalCmd() *cobra.Command {
 			router.Use(middleware.CORS())
 			router.HTTPErrorHandler = pkgEcho.ErrorHandler()
 			handlers := impl.NewHandlers(serviceRepo, sourceRepo, criteriaRepo, releaseRepo)
-			apiSpec.RegisterHandlers(router, handlers)
+			spec.RegisterHandlers(router, handlers)
 			go func() {
 				if startErr := router.Start(httpAddr); errors.Is(err, http.ErrServerClosed) {
 					zap.L().Fatal("start server fail", zap.Error(startErr))

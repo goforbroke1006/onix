@@ -29,16 +29,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16.0'
-      - name: Install dependencies
+          go-version: '1.18.0'
+      - name: Prepare
         run: |
           go version
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
-          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
-          go install github.com/golang/mock/mockgen@v1.6.0
           go mod download
-      - name: Run build
-        run: |
           go generate ./...
           go build .
       - name: Run vet & lint

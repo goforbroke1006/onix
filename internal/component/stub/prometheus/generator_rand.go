@@ -5,13 +5,21 @@ import (
 	"time"
 )
 
-var _ FakeMetricsGenerator = &fakeMetricsRandGenerator{}
+func NewFakeMetricsRandGenerator() FakeMetricsGenerator {
+	return &fakeMetricsRandGenerator{
+		randomizer: rand.New(rand.NewSource(time.Now().UnixNano())), //nolint:gosec
+	}
+}
 
-type fakeMetricsRandGenerator struct{}
+var _ FakeMetricsGenerator = (*fakeMetricsRandGenerator)(nil)
+
+type fakeMetricsRandGenerator struct {
+	randomizer *rand.Rand
+}
 
 // Load returns totally random data for each invocation.
 func (g fakeMetricsRandGenerator) Load(query string, start, stop time.Time, step time.Duration) []seriesPoint {
-	rand.Seed(time.Now().UnixNano())
+	_ = query
 
 	if step == 0 {
 		panic(ErrZeroStep)
@@ -25,7 +33,7 @@ func (g fakeMetricsRandGenerator) Load(query string, start, stop time.Time, step
 	current := start
 
 	for current.Before(stop) || current.Equal(stop) {
-		f := rand.Float64() // nolint:gosec
+		f := g.randomizer.Float64()
 
 		result = append(result, seriesPoint{
 			timestamp: current.Unix(),

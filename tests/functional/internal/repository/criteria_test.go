@@ -1,4 +1,4 @@
-package repository // nolint:testpackage
+package repository //nolint:testpackage
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/goforbroke1006/onix/tests"
 )
 
-func TestGetAll(t *testing.T) { // nolint:paralleltest
+func TestGetAll(t *testing.T) { //nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
 
 	conn, err := pgxpool.Connect(context.Background(), connString)

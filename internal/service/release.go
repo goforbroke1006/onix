@@ -9,13 +9,13 @@ import (
 )
 
 // NewReleaseService creates service for manipulate with release data.
-func NewReleaseService(repo domain.ReleaseRepository) *releaseService { // nolint:revive,golint
+func NewReleaseService(repo domain.ReleaseRepository) *releaseService { //nolint:revive,golint
 	return &releaseService{
 		repo: repo,
 	}
 }
 
-var _ domain.ReleaseService = &releaseService{} // nolint:exhaustivestruct
+var _ domain.ReleaseService = &releaseService{} //nolint:exhaustivestruct
 
 type releaseService struct {
 	repo domain.ReleaseRepository
