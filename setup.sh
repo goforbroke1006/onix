@@ -20,6 +20,6 @@ npm install -g npm
 npm install -g eslint
 
 (
-  cd ./web/dashboard-main-app/ || exit 1
+  cd ./web/app/ || exit 1
   npx browserslist@latest --update-db -y
 )

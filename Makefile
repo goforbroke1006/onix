@@ -1,5 +1,5 @@
 SERVICE_NAME=onix
-FRONTEND_DIR=./web/dashboard-main-app
+FRONTEND_DIR=./web/app
 
 .PHONY: all
 all: prepare build test lint
@@ -48,23 +48,22 @@ benchmark:
 .PHONY: benchmark
 
 image:
-	docker build --pull -f .docker/backend/Dockerfile -t docker.io/goforbroke1006/onix-backend:latest ./
+	docker build --pull -f .docker/backend/Dockerfile  -t docker.io/goforbroke1006/onix-backend:latest  ./
 	docker build --pull -f .docker/frontend/Dockerfile -t docker.io/goforbroke1006/onix-frontend:latest ./
 .PHONY: image
 
 clean:
 	find ./ -name '*.generated.go' -type f -delete
 	rm -rf ./application
-	rm -rf ./web/dashboard-main-app/build/ || true
-	rm -rf ./web/dashboard-main-app/node_modules/ || true
+	rm -rf ${FRONTEND_DIR}/build/ || true
+	rm -rf ${FRONTEND_DIR}/node_modules/ || true
 	rm -f ./coverage.out
 .PHONY: clean
 
 gen/frontend/snapshot:
-	@echo "Generate jest test snapshots"
-	npm --prefix ./frontend/dashboard-admin/ test -- -u --watchAll=false
-	npm --prefix ./frontend/dashboard-main/ test -- -u --watchAll=false
+	npm --prefix ${FRONTEND_DIR} test -- -u --watchAll=false
 .PHONY: gen/frontend/snapshot
 
 dev:
-	docker build -f ./.docker-compose/backend/Dockerfile -t "local-env/${SERVICE_NAME}:dev" .
+	docker build -f ./.docker-compose/backend/Dockerfile  -t "local-env/${SERVICE_NAME}-backend:dev"  .
+	docker build -f ./.docker-compose/frontend/Dockerfile -t "local-env/${SERVICE_NAME}-frontend:dev" .
