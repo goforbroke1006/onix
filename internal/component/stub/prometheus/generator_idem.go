@@ -6,29 +6,34 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/goforbroke1006/onix/domain"
 )
 
-type seriesPoint struct {
-	timestamp int64
-	value     float64
+func NewFakeMetricsIdempotentGenerator() domain.FakeMetricsGenerator {
+	return &fakeMetricsIdempotentGenerator{}
 }
 
-var _ FakeMetricsGenerator = (*fakeMetricsIdempotentGenerator)(nil)
+var _ domain.FakeMetricsGenerator = (*fakeMetricsIdempotentGenerator)(nil)
 
 type fakeMetricsIdempotentGenerator struct{}
 
-func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time, step time.Duration) []seriesPoint {
+func (g fakeMetricsIdempotentGenerator) Load(
+	query string,
+	start, stop time.Time,
+	step time.Duration,
+) []domain.SeriesPoint {
 	hash := g.hash(query)
 
 	if step == 0 {
-		panic(ErrZeroStep)
+		panic(domain.ErrZeroStep)
 	}
 
 	if step < 0 {
-		panic(ErrNegativeStep)
+		panic(domain.ErrNegativeStep)
 	}
 
-	var result []seriesPoint
+	var result []domain.SeriesPoint
 
 	current := start
 
@@ -36,9 +41,9 @@ func (g fakeMetricsIdempotentGenerator) Load(query string, start, stop time.Time
 		rg := rand.New(rand.NewSource(hash * current.UnixNano())) //nolint:gosec
 		f := rg.Float64()
 
-		result = append(result, seriesPoint{
-			timestamp: current.Unix(),
-			value:     f,
+		result = append(result, domain.SeriesPoint{
+			Timestamp: current.Unix(),
+			Value:     f,
 		})
 		current = current.Add(step)
 	}

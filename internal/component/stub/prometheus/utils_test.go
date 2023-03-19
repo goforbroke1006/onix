@@ -65,7 +65,7 @@ func Test_server_canParseTime(t *testing.T) { //nolint:funlen
 		t.Run(ttCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := canParseTime(ttCase.args.str)
+			got, err := CanParseTime(ttCase.args.str)
 			if (err != nil) != ttCase.wantErr {
 				t.Errorf("canParseTime() error = %v, wantErr %v", err, ttCase.wantErr)
 
@@ -81,7 +81,7 @@ func Test_server_canParseTime(t *testing.T) { //nolint:funlen
 func Test_server_canParseTime_withBrokenDigitRegex(t *testing.T) { //nolint:paralleltest
 	onlyNumbersRegex = regexp.MustCompile(`^[\w]+$`) // break regex
 
-	_, err := canParseTime("123hello")
+	_, err := CanParseTime("123hello")
 	assert.NotNil(t, err)
 	assert.Equal(t, "can't parse integer: strconv.ParseInt: parsing \"123hello\": invalid syntax", err.Error())
 
@@ -126,7 +126,7 @@ func Test_server_canParseDuration(t *testing.T) {
 		t.Run(ttCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := canParseDuration(ttCase.args.str)
+			got, err := CanParseDuration(ttCase.args.str)
 			if (err != nil) != ttCase.wantErr {
 				t.Errorf("canParseDuration() error = %v, wantErr %v", err, ttCase.wantErr)
 

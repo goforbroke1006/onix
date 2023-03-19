@@ -3,7 +3,7 @@
 
 export default class DashboardMainApiClient {
     constructor() {
-        this.baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? '/api/dashboard-main';
+        this.baseUrl = process.env.REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR ?? 'http://localhost:8080';
     }
 
     loadServices() {

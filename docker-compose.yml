@@ -1,42 +1,51 @@
-version: '3.9'
+version: "3.9"
 
 services:
 
+  # http://localhost:3000/
   frontend:
     restart: "on-failure"
     image: local-env/onix-frontend:dev
-    ports: [ "3002:80" ]
+    ports: [ "3000:3000" ]
     environment:
-      REACT_APP_API_DASHBOARD_ADMIN_BASE_ADDR: http://localhost:8083/api/dashboard-admin
+      REACT_APP_API_DASHBOARD_MAIN_BASE_ADDR: http://localhost:8080
 
+  # http://localhost:8080/
+  # curl -X POST http://localhost:8080/release?service=acme&release=v1.0.0&start_at=
   api-external:
     restart: "on-failure"
     image: local-env/onix-backend:dev
     command: "api system"
-    ports: [ "8081:8080" ]
-    environment: { DB_HOST: postgres }
-    depends_on: [ postgres ]
+    ports: [ "8080:8080" ]
+    environment:
+      DB_HOST: postgres
+    healthcheck:
+      test: curl --fail http//127.0.0.1:8080/ping || exit 1
+      start_period: 5s
+      interval: 5s
+      retries: 2
+      timeout: 5s
+    depends_on:
+      postgres: { condition: service_healthy }
 
   daemon-metrics-extractor:
     restart: "on-failure"
     image: local-env/onix-backend:dev
     command: "daemon metrics-extractor"
     environment: { DB_HOST: postgres }
-    depends_on: [ postgres ]
+    depends_on:
+      postgres: { condition: service_healthy }
 
   postgres:
     restart: "on-failure"
     image: postgres:10.0
+    ports: [ "5432:5432" ]
     environment:
       POSTGRES_DB: "onix"
       POSTGRES_USER: "onix"
       POSTGRES_PASSWORD: "onix"
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgresql-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "pg_isready -U onix -d onix" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -46,7 +55,8 @@ services:
     image: local-env/onix-backend:dev
     command: "util migrate"
     environment: { DB_HOST: postgres }
-    depends_on: [ postgres ]
+    depends_on:
+      postgres: { condition: service_healthy }
 
   fixture-common:
     restart: "on-failure"
@@ -57,8 +67,7 @@ services:
     volumes:
       - ./db/fixtures:/fixtures
     depends_on:
-      postgres:
-        condition: service_healthy
+      postgres: { condition: service_healthy }
 
   stub-prometheus:
     restart: "on-failure"
@@ -67,6 +76,3 @@ services:
     command: "stub prometheus"
     volumes:
       - ./:/code/
-
-volumes:
-  postgresql-data: ~

@@ -16,3 +16,5 @@ RUN go generate ./...
 COPY ./.docker-compose/backend/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
+
+EXPOSE 8080

@@ -1,4 +1,4 @@
-package prometheus
+package domain
 
 import (
 	"fmt"
@@ -13,5 +13,10 @@ var (
 
 // FakeMetricsGenerator describe methods for metrics generator.
 type FakeMetricsGenerator interface {
-	Load(query string, start, stop time.Time, step time.Duration) []seriesPoint
+	Load(query string, start, stop time.Time, step time.Duration) []SeriesPoint
+}
+
+type SeriesPoint struct {
+	Timestamp int64
+	Value     float64
 }

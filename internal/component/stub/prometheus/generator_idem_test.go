@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goforbroke1006/onix/domain"
 )
 
 func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { //nolint:funlen
@@ -22,7 +24,7 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { //nolint:funlen
 	type testCase struct {
 		name string
 		args args
-		want []seriesPoint
+		want []domain.SeriesPoint
 	}
 
 	tests := []testCase{
@@ -34,7 +36,7 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { //nolint:funlen
 				stop:  time.Time{},
 				step:  time.Minute,
 			},
-			want: []seriesPoint{{-62135596800, 0.5007022298180581}},
+			want: []domain.SeriesPoint{{-62135596800, 0.5007022298180581}},
 		},
 		{
 			name: "negative - invalid range = no result",
@@ -72,7 +74,7 @@ func Test_fakeMetricsIdempotentGenerator_Load(t *testing.T) { //nolint:funlen
 			stop  = time.Date(1990, time.June, 10, 9, 0, 0o0, 0, time.UTC)
 			step  = 5 * time.Minute
 		)
-		expected := []seriesPoint{
+		expected := []domain.SeriesPoint{
 			{645007500, 0.5452772128272665},
 			{645007800, 0.9309666611451856},
 			{645008100, 0.32090824169586474},

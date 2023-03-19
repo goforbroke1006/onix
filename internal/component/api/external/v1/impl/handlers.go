@@ -1,6 +1,10 @@
 package impl
 
 import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
 	"github.com/goforbroke1006/onix/domain"
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/spec"
 )
@@ -29,4 +33,8 @@ type handlersImpl struct {
 	releaseRepo        domain.ReleaseRepository
 	releaseSvc         domain.ReleaseService
 	measurementService domain.MeasurementService
+}
+
+func (h handlersImpl) GetPing(ctx echo.Context) error {
+	return ctx.String(http.StatusOK, "pong")
 }

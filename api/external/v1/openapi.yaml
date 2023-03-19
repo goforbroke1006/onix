@@ -4,8 +4,30 @@ info:
   description: External API
   version: 1.0.0
 servers:
-  - url: "http//127.0.0.1:8081/"
+  - url: "http//127.0.0.1:8080/"
 paths:
+
+  /ping:
+    get:
+      responses:
+        200:
+          description: API healthy and ready
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /service:
+    get:
+      responses:
+        200:
+          description: returns services list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/service'
 
   /source:
     post:
@@ -78,17 +100,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/release'
 
-  /service:
-    get:
-      responses:
-        200:
-          description: returns services list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/service'
+
 
   /report/compare:
     post:

@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/goforbroke1006/onix/domain"
 )
 
 var onlyNumbersRegex = regexp.MustCompile(`^[\d]+$`)
 
-func canParseTime(str string) (time.Time, error) {
+func CanParseTime(str string) (time.Time, error) {
 	if onlyNumbersRegex.Match([]byte(str)) {
 		const (
 			base    = 10
@@ -40,7 +42,7 @@ func canParseTime(str string) (time.Time, error) {
 	return res.UTC(), nil
 }
 
-func canParseDuration(str string) (time.Duration, error) {
+func CanParseDuration(str string) (time.Duration, error) {
 	const bitsSize = 64
 	float, err := strconv.ParseFloat(str, bitsSize)
 
@@ -60,5 +62,5 @@ func canParseDuration(str string) (time.Duration, error) {
 		return duration, nil
 	}
 
-	return 0, errors.Wrap(ErrParseDurationFailed, str)
+	return 0, errors.Wrap(domain.ErrParseDurationFailed, str)
 }
