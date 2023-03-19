@@ -72,15 +72,6 @@ jobs:
       - name: Print tag
         run: echo "Build tag ${{ env.GITHUB_REF_SLUG }}"
 
-      - name: Build and push onix-register
-        uses: docker/build-push-action@v2
-        with:
-          pull: true
-          context: ./.build/register
-          file: .build/register/Dockerfile
-          push: true
-          tags: docker.io/goforbroke1006/onix-register:${{ env.GITHUB_REF_SLUG }}
-
       - name: Build and push onix-backend
         uses: docker/build-push-action@v2
         with:
@@ -90,20 +81,11 @@ jobs:
           push: true
           tags: docker.io/goforbroke1006/onix-backend:${{ env.GITHUB_REF_SLUG }}
 
-      - name: Build and push onix-dashboard-admin
+      - name: Build and push onix-frontend
         uses: docker/build-push-action@v2
         with:
           pull: true
           context: ./
-          file: .build/frontend/admin/Dockerfile
+          file: .build/frontend/Dockerfile
           push: true
-          tags: docker.io/goforbroke1006/onix-dashboard-admin:${{ env.GITHUB_REF_SLUG }}
-
-      - name: Build and push onix-dashboard-main
-        uses: docker/build-push-action@v2
-        with:
-          pull: true
-          context: ./
-          file: .build/frontend/main/Dockerfile
-          push: true
-          tags: docker.io/goforbroke1006/onix-dashboard-main:${{ env.GITHUB_REF_SLUG }}
+          tags: docker.io/goforbroke1006/onix-frontend:${{ env.GITHUB_REF_SLUG }}
