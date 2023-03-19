@@ -1,6 +1,6 @@
 module github.com/goforbroke1006/onix
 
-go 1.18
+go 1.19
 
 require (
 	github.com/amacneil/dbmate v1.15.0
@@ -55,4 +55,5 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	honnef.co/go/tools v0.4.3 // indirect
 )
