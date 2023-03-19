@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"os"
+
+	"go.uber.org/zap"
 
 	"github.com/goforbroke1006/onix/cmd"
 )
@@ -15,6 +16,5 @@ func main() {
 
 	if err := cmd.ExecuteCmdTree(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
 	}
 }

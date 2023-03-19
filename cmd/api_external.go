@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"github.com/goforbroke1006/onix/internal/service"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,6 +17,7 @@ import (
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/impl"
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/spec"
 	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/internal/service"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
 )
 

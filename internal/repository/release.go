@@ -13,7 +13,7 @@ import (
 )
 
 // NewReleaseRepository creates data exchange object with db.
-func NewReleaseRepository(conn *pgxpool.Pool) domain.ReleaseRepository { //nolint:revive,golint
+func NewReleaseRepository(conn *pgxpool.Pool) domain.ReleaseRepository {
 	return &releaseRepository{conn: conn}
 }
 
@@ -100,9 +100,7 @@ func (repo releaseRepository) GetByName(serviceName, tagName string) (*domain.Re
 	}
 	defer rows.Close()
 
-	var (
-		startAt time.Time
-	)
+	var startAt time.Time
 
 	if rows.Next() {
 		if err := rows.Scan(&startAt); err != nil {
