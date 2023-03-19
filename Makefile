@@ -67,7 +67,4 @@ gen/frontend/snapshot:
 .PHONY: gen/frontend/snapshot
 
 dev:
-	docker build \
-		-f ./.docker-compose/backend/Dockerfile \
-		-t "local-env/${SERVICE_NAME}:dev" \
-		./
+	docker build -f ./.docker-compose/backend/Dockerfile -t "local-env/${SERVICE_NAME}:dev" .

@@ -1,9 +1,6 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:1.19-alpine AS builder
 
 WORKDIR /code/
-
-RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.9.1
-RUN go install github.com/golang/mock/mockgen@v1.6.0
 
 COPY ./go.mod /code/go.mod
 COPY ./go.sum /code/go.sum
