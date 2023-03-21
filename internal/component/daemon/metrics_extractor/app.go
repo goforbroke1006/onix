@@ -71,7 +71,7 @@ func (app Application) extractMetrics(ctx context.Context, period time.Duration)
 
 	for _, source := range sources {
 		for _, svc := range services {
-			criteriaList, critListErr := app.criteriaRepo.GetAll(svc.ID)
+			criteriaList, critListErr := app.criteriaRepo.GetAll(ctx, svc.ID)
 			if critListErr != nil {
 				zap.L().Error("can't find criteria list for service", zap.Error(critListErr))
 				continue

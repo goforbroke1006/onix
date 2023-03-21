@@ -36,7 +36,7 @@ func (h handlersImpl) PostReportCompare(ctx echo.Context) error { //nolint:funle
 		return errors.Wrap(err, "can't get release two by name")
 	}
 
-	criteriaList, err := h.criteriaRepo.GetAll(params.Service)
+	criteriaList, err := h.criteriaRepo.GetAll(reqCtx, params.Service)
 	if err != nil {
 		return errors.Wrap(err, "can't get criteria list")
 	}

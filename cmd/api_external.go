@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/cobra"
@@ -29,18 +28,17 @@ func NewAPIExternalCmd() *cobra.Command {
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 			defer stop()
 
-			connString := common.GetDBConnString()
-			conn, err := pgxpool.Connect(context.Background(), connString)
-			if err != nil {
-				panic(err)
+			db, dbErr := common.OpenDBConn(ctx)
+			if dbErr != nil {
+				zap.L().Fatal("db connection fail", zap.Error(dbErr))
 			}
-			defer conn.Close()
+			defer func() { _ = db.Close() }()
 
 			var (
-				serviceRepo  = repository.NewServiceRepository(conn)
-				sourceRepo   = repository.NewSourceRepository(conn)
-				criteriaRepo = repository.NewCriteriaRepository(conn)
-				releaseRepo  = repository.NewReleaseRepository(conn)
+				serviceRepo  = repository.NewServiceRepository(db)
+				sourceRepo   = repository.NewSourceRepository(db)
+				criteriaRepo = repository.NewCriteriaRepository(db)
+				releaseRepo  = repository.NewReleaseRepository(db)
 				releaseSvc   = service.NewReleaseService(releaseRepo)
 			)
 
@@ -50,7 +48,7 @@ func NewAPIExternalCmd() *cobra.Command {
 			handlers := impl.NewHandlers(serviceRepo, sourceRepo, criteriaRepo, releaseRepo, releaseSvc)
 			spec.RegisterHandlers(router, handlers)
 			go func() {
-				if startErr := router.Start("0.0.0.0:8080"); errors.Is(err, http.ErrServerClosed) {
+				if startErr := router.Start("0.0.0.0:8080"); errors.Is(startErr, http.ErrServerClosed) {
 					zap.L().Fatal("start server fail", zap.Error(startErr))
 				}
 			}()

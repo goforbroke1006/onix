@@ -4,17 +4,17 @@ import (
 	"context"
 	"os"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
-func LoadFixture(conn *pgxpool.Pool, filename string) error {
-	fixtureData, err := os.ReadFile(filename)
-	if err != nil {
-		return err //nolint:wrapcheck
+func LoadFixture(db *sqlx.DB, filename string) error {
+	fixtureData, loadFileErr := os.ReadFile(filename)
+	if loadFileErr != nil {
+		return loadFileErr //nolint:wrapcheck
 	}
 
-	if _, err := conn.Exec(context.TODO(), string(fixtureData)); err != nil {
-		return err //nolint:wrapcheck
+	if _, execErr := db.ExecContext(context.TODO(), string(fixtureData)); execErr != nil {
+		return execErr //nolint:wrapcheck
 	}
 
 	return nil

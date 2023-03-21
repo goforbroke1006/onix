@@ -1,18 +1,24 @@
 package common
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 )
+
+func OpenDBConn(ctx context.Context) (*sqlx.DB, error) {
+	return sqlx.ConnectContext(ctx, "postgres", GetDBConnString())
+}
 
 // GetDBConnString returns db connection string from viper settings.
 func GetDBConnString() string {
 	var (
-		user   = viper.GetString("db.user")
-		pass   = viper.GetString("db.pass")
 		host   = viper.GetString("db.host")
 		port   = viper.GetInt("db.port")
+		user   = viper.GetString("db.user")
+		pass   = viper.GetString("db.pass")
 		dbname = viper.GetString("db.dbname")
 	)
 

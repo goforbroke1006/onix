@@ -34,7 +34,7 @@ test/frontend:
 .PHONY: test/frontend
 
 lint:
-	golangci-lint run
+	golangci-lint run -v
 	cd ${FRONTEND_DIR} && npm run lint && cd -
 .PHONY: lint
 

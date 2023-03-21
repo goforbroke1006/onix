@@ -4,7 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goforbroke1006/onix/internal/common"
@@ -15,22 +16,21 @@ import (
 func TestGetAll(t *testing.T) { //nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
 
-	conn, err := pgxpool.Connect(context.Background(), connString)
-	if err != nil {
-		t.Skip(err)
-	}
-	defer conn.Close()
+	ctx := context.Background()
 
-	if err := tests.LoadFixture(conn, "./criteria_test.fixture.sql"); err != nil {
+	db, dbErr := sqlx.ConnectContext(ctx, "postgres", connString)
+	if dbErr != nil {
+		t.Skip(dbErr)
+	}
+	defer func() { _ = db.Close() }()
+
+	if err := tests.LoadFixture(db, "./criteria_test.fixture.sql"); err != nil {
 		t.Fatal(err)
 	}
 
-	criteriaRepository := repository.NewCriteriaRepository(conn)
+	criteriaRepository := repository.NewCriteriaRepository(db)
 
-	criteriaList, err := criteriaRepository.GetAll("foo/bar/backend")
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	criteriaList, critListErr := criteriaRepository.GetAll(ctx, "foo/bar/backend")
+	assert.Nil(t, critListErr)
 	assert.Equal(t, 3, len(criteriaList))
 }

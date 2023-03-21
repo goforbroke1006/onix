@@ -12,10 +12,11 @@ import (
 
 func (h handlersImpl) PostCriteria(ctx echo.Context, params spec.PostCriteriaParams) error {
 	if _, err := h.criteriaRepo.Create(
+		ctx.Request().Context(),
 		params.Service,
 		params.Title,
 		params.Selector,
-		domain.DynamicDirType(params.Direction),
+		domain.DirectionType(params.Direction),
 		domain.MustParseGroupingIntervalType(params.Interval),
 	); err != nil {
 		return errors.Wrap(err, "can't store criteria in repository")

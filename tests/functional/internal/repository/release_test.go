@@ -2,10 +2,10 @@ package repository //nolint:testpackage
 
 import (
 	"context"
+	"github.com/jmoiron/sqlx"
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goforbroke1006/onix/internal/common"
@@ -16,17 +16,19 @@ import (
 func TestGetLast(t *testing.T) { //nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
 
-	conn, err := pgxpool.Connect(context.Background(), connString)
-	if err != nil {
-		t.Skip(err)
-	}
-	defer conn.Close()
+	ctx := context.Background()
 
-	if err := tests.LoadFixture(conn, "./release_test.fixture.sql"); err != nil {
+	db, dbErr := sqlx.ConnectContext(ctx, "postgres", connString)
+	if dbErr != nil {
+		t.Skip(dbErr)
+	}
+	defer func() { _ = db.Close() }()
+
+	if err := tests.LoadFixture(db, "./release_test.fixture.sql"); err != nil {
 		t.Fatal(err)
 	}
 
-	releaseRepository := repository.NewReleaseRepository(conn)
+	releaseRepository := repository.NewReleaseRepository(db)
 
 	release, err := releaseRepository.GetLast("foo/bar/backend")
 	if err != nil {
@@ -39,17 +41,19 @@ func TestGetLast(t *testing.T) { //nolint:paralleltest
 func TestGetReleases(t *testing.T) { //nolint:paralleltest
 	connString := common.GetTestConnectionStrings()
 
-	conn, err := pgxpool.Connect(context.Background(), connString)
-	if err != nil {
-		t.Skip(err)
-	}
-	defer conn.Close()
+	ctx := context.Background()
 
-	if err := tests.LoadFixture(conn, "./release_test.fixture.sql"); err != nil {
+	db, dbErr := sqlx.ConnectContext(ctx, "postgres", connString)
+	if dbErr != nil {
+		t.Skip(dbErr)
+	}
+	defer func() { _ = db.Close() }()
+
+	if err := tests.LoadFixture(db, "./release_test.fixture.sql"); err != nil {
 		t.Fatal(err)
 	}
 
-	releaseRepository := repository.NewReleaseRepository(conn)
+	releaseRepository := repository.NewReleaseRepository(db)
 
 	from, _ := time.Parse("2006-01-02 15:04:05", "2020-10-25 00:00:00")
 	till, _ := time.Parse("2006-01-02 15:04:05", "2020-11-06 00:00:00")

@@ -46,16 +46,17 @@ ALTER TABLE criteria
 
 CREATE TABLE IF NOT EXISTS measurement
 (
-    criteria_id INT NOT NULL,
+    source      VARCHAR(1024) NOT NULL,
+    criteria_id INT           NOT NULL,
     moment      BIGINT,
     value       DECIMAL(24, 6),
     updated_at  TIMESTAMP DEFAULT NOW()
 );
 
 ALTER TABLE measurement
-    ADD CONSTRAINT measurement_criteria_ts_key UNIQUE (criteria_id, moment);
+    ADD CONSTRAINT measurement_criteria_ts_key UNIQUE (source, criteria_id, moment);
 
-CREATE INDEX IF NOT EXISTS measurement_criteria_ts_idx ON measurement (criteria_id, moment);
+CREATE INDEX IF NOT EXISTS measurement_criteria_ts_idx ON measurement (source, criteria_id, moment);
 
 
 -- migrate:down

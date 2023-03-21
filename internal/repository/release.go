@@ -2,58 +2,51 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
 // NewReleaseRepository creates data exchange object with db.
-func NewReleaseRepository(conn *pgxpool.Pool) domain.ReleaseRepository {
-	return &releaseRepository{conn: conn}
+func NewReleaseRepository(db *sqlx.DB) domain.ReleaseRepository {
+	return &releaseRepository{db: db}
 }
 
 var _ domain.ReleaseRepository = (*releaseRepository)(nil)
 
 type releaseRepository struct {
-	conn *pgxpool.Pool
+	db *sqlx.DB
 }
 
 func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, error) {
-	query := fmt.Sprintf(
-		`
+	const query = `
 		SELECT tag, start_at 
 		FROM release 
-		WHERE service = '%s'
-		ORDER BY start_at ASC
-		;`,
-		serviceName,
-	)
+		WHERE service = :serviceName
+		ORDER BY start_at;
+	`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't extract releases from db")
+	rows, rowsErr := repo.db.NamedQueryContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+	})
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't extract releases from db")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var (
 		releaseName string
 		startAt     time.Time
 	)
 
-	result := make([]domain.Release, 0, len(rows.RawValues()))
+	var result []domain.Release
 
 	for rows.Next() {
-		if err := rows.Scan(&releaseName, &startAt); err != nil {
-			return nil, errors.Wrap(err, "can't scan release row")
+		if scanErr := rows.Scan(&releaseName, &startAt); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan release row")
 		}
 
 		result = append(result, domain.Release{
@@ -66,39 +59,37 @@ func (repo releaseRepository) GetAll(serviceName string) ([]domain.Release, erro
 	return result, nil
 }
 
-func (repo releaseRepository) Store(serviceName string, releaseName string, startAt time.Time) error {
-	query := fmt.Sprintf(`
+func (repo releaseRepository) Store(serviceName string, tagName string, startAt time.Time) error {
+	const query = `
 		INSERT INTO release (service, tag, start_at) 
-		VALUES ('%s', '%s', '%s')
+		VALUES (:serviceName, :tagName, :startAt)
 		ON CONFLICT (service, tag) DO UPDATE SET start_at = EXCLUDED.start_at;
-	`,
-		serviceName, releaseName, startAt.Format(time.RFC3339),
-	)
-	_, err := repo.conn.Exec(context.TODO(), query)
+	`
 
-	return errors.Wrap(err, "can't exec query")
+	_, execErr := repo.db.NamedExecContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+		"tagName":     tagName,
+		"startAt":     startAt.Format(time.RFC3339),
+	})
+
+	return errors.Wrap(execErr, "can't exec query")
 }
 
 func (repo releaseRepository) GetByName(serviceName, tagName string) (*domain.Release, error) {
-	query := fmt.Sprintf(
-		`
+	const query = `
 		SELECT start_at 
 		FROM release 
-		WHERE service = '%s' AND tag = '%s'
-		LIMIT 1
-		;`,
-		serviceName, tagName,
-	)
+		WHERE service = :serviceName AND tag = :tagName
+		LIMIT 1;`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't get release by name from db")
+	rows, rowsErr := repo.db.NamedQueryContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+		"tagName":     tagName,
+	})
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't get release by name from db")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var startAt time.Time
 
@@ -119,38 +110,29 @@ func (repo releaseRepository) GetByName(serviceName, tagName string) (*domain.Re
 	return nil, domain.ErrNotFound
 }
 
-func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*domain.Release, error) {
-	query := fmt.Sprintf(
-		`
+func (repo releaseRepository) GetNextAfter(serviceName, tagName string) (*domain.Release, error) {
+	const query = `
 		SELECT tag, start_at 
 		FROM release 
-		WHERE service = '%s'
-		  AND start_at > (SELECT start_at FROM release WHERE service = '%s' AND tag = '%s')
-		ORDER BY start_at ASC
-		LIMIT 1
-		;`,
-		serviceName,
-		serviceName, releaseName,
-	)
+		WHERE service = :serviceName
+		  AND start_at > (SELECT start_at FROM release WHERE service = :serviceName AND tag = :tagName)
+		ORDER BY start_at
+		LIMIT 1;`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't get next release from db")
+	rows, rowsErr := repo.db.NamedQueryContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+		"tagName":     tagName,
+	})
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't get next release from db")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
-	var (
-		tagName string
-		startAt time.Time
-	)
+	var startAt time.Time
 
 	if rows.Next() {
-		if err := rows.Scan(&tagName, &startAt); err != nil {
-			return nil, errors.Wrap(err, "can't scan release row")
+		if scanErr := rows.Scan(&tagName, &startAt); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan release row")
 		}
 
 		release := domain.Release{
@@ -166,26 +148,21 @@ func (repo releaseRepository) GetNextAfter(serviceName, releaseName string) (*do
 }
 
 func (repo releaseRepository) GetLast(serviceName string) (*domain.Release, error) {
-	query := fmt.Sprintf(
-		`
-SELECT tag, start_at 
-FROM release 
-WHERE service = '%s'
-ORDER BY start_at DESC
-LIMIT 1
-;`,
-		serviceName,
-	)
+	const query = `
+		SELECT tag, start_at 
+		FROM release 
+		WHERE service = :serviceName
+		ORDER BY start_at DESC
+		LIMIT 1;
+	`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't get least release from db")
+	rows, rowsErr := repo.db.NamedQueryContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+	})
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't get least release from db")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var (
 		tagName string
@@ -193,8 +170,8 @@ LIMIT 1
 	)
 
 	if rows.Next() {
-		if err := rows.Scan(&tagName, &startAt); err != nil {
-			return nil, errors.Wrap(err, "can't scan release row")
+		if scanErr := rows.Scan(&tagName, &startAt); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan release row")
 		}
 
 		release := domain.Release{
@@ -210,37 +187,33 @@ LIMIT 1
 }
 
 func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domain.Release, error) {
-	query := fmt.Sprintf(
-		`
+	const query = `
 		SELECT tag, start_at 
 		FROM release 
-		WHERE service = '%s'
+		WHERE service = :serviceName
 		ORDER BY start_at DESC
-		LIMIT %d
-		;`,
-		serviceName, count,
-	)
+		LIMIT :count;
+	`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't get N last releases from db")
+	rows, rowsErr := repo.db.NamedQueryContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+		"count":       count,
+	})
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't get N last releases from db")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var (
 		tagName string
 		startAt time.Time
 	)
 
-	result := make([]domain.Release, 0, len(rows.RawValues()))
+	var result []domain.Release
 
 	for rows.Next() {
-		if err := rows.Scan(&tagName, &startAt); err != nil {
-			return nil, errors.Wrap(err, "can't scan release row")
+		if scanErr := rows.Scan(&tagName, &startAt); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan release row")
 		}
 
 		result = append(result, domain.Release{
@@ -254,37 +227,34 @@ func (repo releaseRepository) GetNLasts(serviceName string, count uint) ([]domai
 }
 
 func (repo releaseRepository) GetReleases(serviceName string, from, till time.Time) ([]domain.Release, error) {
-	query := fmt.Sprintf(
-		`
-SELECT tag, start_at 
-FROM release 
-WHERE service = '%s' 
-  AND start_at BETWEEN '%s' AND '%s'
-ORDER BY start_at ASC
-;`,
-		serviceName, from.Format(time.RFC3339), till.Format(time.RFC3339),
-	)
+	const query = `
+		SELECT tag, start_at 
+		FROM release 
+		WHERE service = :serviceName
+		  AND start_at BETWEEN :from AND :till
+		ORDER BY start_at;
+	`
 
-	var (
-		rows pgx.Rows
-		err  error
-	)
-
-	if rows, err = repo.conn.Query(context.TODO(), query); err != nil {
-		return nil, errors.Wrap(err, "can't exec query")
+	rows, rowsErr := repo.db.NamedQueryContext(context.TODO(), query, map[string]interface{}{
+		"serviceName": serviceName,
+		"from":        from.Format(time.RFC3339),
+		"till":        till.Format(time.RFC3339),
+	})
+	if rowsErr != nil {
+		return nil, errors.Wrap(rowsErr, "can't exec query")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var (
 		tagName string
 		startAt time.Time
 	)
 
-	result := make([]domain.Release, 0, len(rows.RawValues()))
+	var result []domain.Release
 
 	for rows.Next() {
-		if err := rows.Scan(&tagName, &startAt); err != nil {
-			return nil, errors.Wrap(err, "can't scan release row")
+		if scanErr := rows.Scan(&tagName, &startAt); scanErr != nil {
+			return nil, errors.Wrap(scanErr, "can't scan release row")
 		}
 
 		result = append(result, domain.Release{

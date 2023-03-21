@@ -3,21 +3,21 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	"github.com/goforbroke1006/onix/domain"
 )
 
 // NewSourceRepository creates data exchange object with db.
-func NewSourceRepository(conn *pgxpool.Pool) domain.SourceRepository { //nolint:golint
-	return &sourceRepository{conn: conn}
+func NewSourceRepository(db *sqlx.DB) domain.SourceRepository { //nolint:golint
+	return &sourceRepository{db: db}
 }
 
 var _ domain.SourceRepository = (*sourceRepository)(nil)
 
 type sourceRepository struct {
-	conn *pgxpool.Pool
+	db *sqlx.DB
 }
 
 func (repo sourceRepository) Create(
@@ -30,7 +30,11 @@ func (repo sourceRepository) Create(
 		INSERT INTO source (id, kind, address) 
 		VALUES (:id, :kind, :address);`
 
-	if _, execErr := repo.conn.Exec(ctx, query, id, kind, address); execErr != nil {
+	if _, execErr := repo.db.NamedExecContext(ctx, query, map[string]interface{}{
+		"id":      id,
+		"kind":    kind,
+		"address": address,
+	}); execErr != nil {
 		return errors.Wrap(execErr, "can't exec query")
 	}
 
@@ -43,11 +47,11 @@ func (repo sourceRepository) Get(ctx context.Context, id string) (domain.Source,
 		FROM source 
 		WHERE id = :id;
 		`
-	rows, rowsErr := repo.conn.Query(ctx, query, id)
+	rows, rowsErr := repo.db.NamedQueryContext(ctx, query, map[string]interface{}{"id": id})
 	if rowsErr != nil {
 		return domain.Source{}, errors.Wrap(rowsErr, "can't exec query")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	if !rows.Next() {
 		return domain.Source{}, domain.ErrNotFound
@@ -73,14 +77,14 @@ func (repo sourceRepository) GetAll(ctx context.Context) ([]domain.Source, error
 	const query = `
 		SELECT id, kind, address
 		FROM source 
-		ORDER BY id ASC
+		ORDER BY id
 	;`
 
-	rows, rowsErr := repo.conn.Query(ctx, query)
+	rows, rowsErr := repo.db.QueryContext(ctx, query)
 	if rowsErr != nil {
 		return nil, errors.Wrap(rowsErr, "can't exec query")
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var (
 		identifier string
@@ -88,7 +92,7 @@ func (repo sourceRepository) GetAll(ctx context.Context) ([]domain.Source, error
 		address    string
 	)
 
-	result := make([]domain.Source, 0, len(rows.RawValues()))
+	var result []domain.Source
 
 	for rows.Next() {
 		if scanErr := rows.Scan(&identifier, &kind, &address); scanErr != nil {

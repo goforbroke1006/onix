@@ -1,23 +1,24 @@
 package domain
 
 import (
+	"context"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
-// DynamicDirType define expected progress/regress of metric.
-type DynamicDirType string
+// DirectionType define expected progress/regress of metric.
+type DirectionType string
 
 const (
 	// DynamicDirTypeIncrease means metric should rise.
-	DynamicDirTypeIncrease = DynamicDirType("increase")
+	DynamicDirTypeIncrease = DirectionType("increase")
 
 	// DynamicDirTypeDecrease means metric should fall.
-	DynamicDirTypeDecrease = DynamicDirType("decrease")
+	DynamicDirTypeDecrease = DirectionType("decrease")
 
 	// DynamicDirTypeEqual means metric should not change.
-	DynamicDirTypeEqual = DynamicDirType("equal")
+	DynamicDirTypeEqual = DirectionType("equal")
 )
 
 var ErrParseGroupIntervalFailed = errors.New("parse group interval failed")
@@ -83,18 +84,19 @@ type Criteria struct {
 	Service   string
 	Title     string
 	Selector  string
-	Direction DynamicDirType
+	Direction DirectionType
 	Interval  GroupingIntervalType
 }
 
 // CriteriaRepository describe methods for managing Criteria in db.
 type CriteriaRepository interface {
 	Create(
+		ctx context.Context,
 		serviceName, title string,
 		selector string,
-		expectedDir DynamicDirType,
+		expectedDir DirectionType,
 		interval GroupingIntervalType,
 	) (int64, error)
-	GetAll(serviceName string) ([]Criteria, error)
-	GetByID(identifier int64) (Criteria, error)
+	GetAll(ctx context.Context, serviceName string) ([]Criteria, error)
+	GetByID(ctx context.Context, identifier int64) (Criteria, error)
 }

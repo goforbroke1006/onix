@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
@@ -22,17 +21,17 @@ func NewDaemonMetricsExtractorCmd() *cobra.Command {
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 			defer stop()
 
-			conn, connErr := pgxpool.Connect(context.Background(), common.GetDBConnString())
-			if connErr != nil {
-				zap.L().Fatal("db connection fail", zap.Error(connErr))
+			db, dbErr := common.OpenDBConn(ctx)
+			if dbErr != nil {
+				zap.L().Fatal("db connection fail", zap.Error(dbErr))
 			}
-			defer conn.Close()
+			defer func() { _ = db.Close() }()
 
 			var (
-				serviceRepo           = repository.NewServiceRepository(conn)
-				criteriaRepository    = repository.NewCriteriaRepository(conn)
-				sourceRepository      = repository.NewSourceRepository(conn)
-				measurementRepository = repository.NewMeasurementRepository(conn)
+				serviceRepo           = repository.NewServiceRepository(db)
+				criteriaRepository    = repository.NewCriteriaRepository(db)
+				sourceRepository      = repository.NewSourceRepository(db)
+				measurementRepository = repository.NewMeasurementRepository(db)
 			)
 
 			application := metrics_extractor.NewApplication(
