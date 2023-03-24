@@ -5,20 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/goforbroke1006/onix/internal/common"
 	"github.com/goforbroke1006/onix/internal/storage"
 	"github.com/goforbroke1006/onix/tests"
 )
 
 func TestGetLast(t *testing.T) { //nolint:paralleltest
-	connString := common.GetTestConnectionStrings()
-
 	ctx := context.Background()
 
-	db, dbErr := sqlx.ConnectContext(ctx, "postgres", connString)
+	db, dbErr := GetTestDBConn(ctx)
 	if dbErr != nil {
 		t.Skip(dbErr)
 	}
@@ -39,11 +35,9 @@ func TestGetLast(t *testing.T) { //nolint:paralleltest
 }
 
 func TestGetReleases(t *testing.T) { //nolint:paralleltest
-	connString := common.GetTestConnectionStrings()
-
 	ctx := context.Background()
 
-	db, dbErr := sqlx.ConnectContext(ctx, "postgres", connString)
+	db, dbErr := GetTestDBConn(ctx)
 	if dbErr != nil {
 		t.Skip(dbErr)
 	}
