@@ -11,10 +11,10 @@ import (
 
 // NewHandlers creates new handlersImpl instance.
 func NewHandlers(
-	serviceRepo domain.ServiceRepository,
-	sourceRepo domain.SourceRepository,
-	criteriaRepo domain.CriteriaRepository,
-	releaseRepo domain.ReleaseRepository,
+	serviceRepo domain.ServiceStorage,
+	sourceRepo domain.SourceStorage,
+	criteriaRepo domain.CriteriaStorage,
+	releaseRepo domain.ReleaseStorage,
 	releaseSvc domain.ReleaseService,
 ) spec.ServerInterface {
 	return &handlersImpl{
@@ -29,10 +29,10 @@ func NewHandlers(
 var _ spec.ServerInterface = (*handlersImpl)(nil)
 
 type handlersImpl struct {
-	serviceRepo        domain.ServiceRepository
-	sourceRepo         domain.SourceRepository
-	criteriaRepo       domain.CriteriaRepository
-	releaseRepo        domain.ReleaseRepository
+	serviceRepo        domain.ServiceStorage
+	sourceRepo         domain.SourceStorage
+	criteriaRepo       domain.CriteriaStorage
+	releaseRepo        domain.ReleaseStorage
 	releaseSvc         domain.ReleaseService
 	measurementService domain.MeasurementService
 }

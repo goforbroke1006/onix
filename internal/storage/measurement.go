@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewMeasurementRepository creates data exchange object with db.
-func NewMeasurementRepository(db *sqlx.DB) domain.MeasurementRepository {
+// NewMeasurementStorage creates data exchange object with db.
+func NewMeasurementStorage(db *sqlx.DB) domain.MeasurementStorage {
 	return &measurementRepository{db: db}
 }
 
-var _ domain.MeasurementRepository = (*measurementRepository)(nil)
+var _ domain.MeasurementStorage = (*measurementRepository)(nil)
 
 type measurementRepository struct {
 	db *sqlx.DB

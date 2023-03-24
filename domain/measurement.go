@@ -11,7 +11,7 @@ type MeasurementRow struct {
 	Value  float64
 }
 
-type MeasurementRepository interface {
+type MeasurementStorage interface {
 	Store(
 		ctx context.Context,
 		sourceID string,

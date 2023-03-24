@@ -13,10 +13,10 @@ import (
 
 // NewApplication create metrics extractor app instance.
 func NewApplication(
-	serviceRepo domain.ServiceRepository,
-	criteriaRepo domain.CriteriaRepository,
-	sourceRepo domain.SourceRepository,
-	measurementRepo domain.MeasurementRepository,
+	serviceRepo domain.ServiceStorage,
+	criteriaRepo domain.CriteriaStorage,
+	sourceRepo domain.SourceStorage,
+	measurementRepo domain.MeasurementStorage,
 ) *Application {
 	return &Application{
 		serviceRepo:     serviceRepo,
@@ -27,10 +27,10 @@ func NewApplication(
 }
 
 type Application struct {
-	serviceRepo     domain.ServiceRepository
-	criteriaRepo    domain.CriteriaRepository
-	sourceRepo      domain.SourceRepository
-	measurementRepo domain.MeasurementRepository
+	serviceRepo     domain.ServiceStorage
+	criteriaRepo    domain.CriteriaStorage
+	sourceRepo      domain.SourceStorage
+	measurementRepo domain.MeasurementStorage
 }
 
 func (app Application) Run(ctx context.Context) error {
@@ -95,7 +95,7 @@ func (app Application) extractMetrics(ctx context.Context, period time.Duration)
 					)
 
 					resp, err := provider.LoadSeries(ctx,
-						criteria.Selector, startAt, stopAt, time.Duration(criteria.Interval))
+						criteria.Selector, startAt, stopAt, criteria.Interval)
 					if err != nil {
 						zap.L().Error("can't extract metric", zap.Error(err))
 						return

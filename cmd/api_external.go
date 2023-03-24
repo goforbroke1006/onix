@@ -15,8 +15,8 @@ import (
 	"github.com/goforbroke1006/onix/internal/common"
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/impl"
 	"github.com/goforbroke1006/onix/internal/component/api/external/v1/spec"
-	"github.com/goforbroke1006/onix/internal/repository"
 	"github.com/goforbroke1006/onix/internal/service"
+	"github.com/goforbroke1006/onix/internal/storage"
 	pkgEcho "github.com/goforbroke1006/onix/pkg/echo"
 )
 
@@ -35,10 +35,10 @@ func NewAPIExternalCmd() *cobra.Command {
 			defer func() { _ = db.Close() }()
 
 			var (
-				serviceRepo  = repository.NewServiceRepository(db)
-				sourceRepo   = repository.NewSourceRepository(db)
-				criteriaRepo = repository.NewCriteriaRepository(db)
-				releaseRepo  = repository.NewReleaseRepository(db)
+				serviceRepo  = storage.NewServiceStorage(db)
+				sourceRepo   = storage.NewSourceStorage(db)
+				criteriaRepo = storage.NewCriteriaStorage(db)
+				releaseRepo  = storage.NewReleaseStorage(db)
 				releaseSvc   = service.NewReleaseService(releaseRepo)
 			)
 

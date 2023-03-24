@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"context"
@@ -10,12 +10,12 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewReleaseRepository creates data exchange object with db.
-func NewReleaseRepository(db *sqlx.DB) domain.ReleaseRepository {
+// NewReleaseStorage creates data exchange object with db.
+func NewReleaseStorage(db *sqlx.DB) domain.ReleaseStorage {
 	return &releaseRepository{db: db}
 }
 
-var _ domain.ReleaseRepository = (*releaseRepository)(nil)
+var _ domain.ReleaseStorage = (*releaseRepository)(nil)
 
 type releaseRepository struct {
 	db *sqlx.DB

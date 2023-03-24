@@ -19,8 +19,8 @@ type ReleaseTimeRange struct {
 	StopAt  time.Time
 }
 
-// ReleaseRepository describes how to manage Release in db.
-type ReleaseRepository interface {
+// ReleaseStorage describes how to manage Release in db.
+type ReleaseStorage interface {
 	Store(serviceName string, releaseName string, startAt time.Time) error
 	GetReleases(serviceName string, from, till time.Time) ([]Release, error)
 	GetByName(serviceName, tagName string) (*Release, error)

@@ -1,15 +1,15 @@
-package repository //nolint:testpackage
+package storage //nolint:testpackage
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 	"testing"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goforbroke1006/onix/internal/common"
-	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/internal/storage"
 	"github.com/goforbroke1006/onix/tests"
 )
 
@@ -28,7 +28,7 @@ func TestGetLast(t *testing.T) { //nolint:paralleltest
 		t.Fatal(err)
 	}
 
-	releaseRepository := repository.NewReleaseRepository(db)
+	releaseRepository := storage.NewReleaseStorage(db)
 
 	release, err := releaseRepository.GetLast("foo/bar/backend")
 	if err != nil {
@@ -53,7 +53,7 @@ func TestGetReleases(t *testing.T) { //nolint:paralleltest
 		t.Fatal(err)
 	}
 
-	releaseRepository := repository.NewReleaseRepository(db)
+	releaseRepository := storage.NewReleaseStorage(db)
 
 	from, _ := time.Parse("2006-01-02 15:04:05", "2020-10-25 00:00:00")
 	till, _ := time.Parse("2006-01-02 15:04:05", "2020-11-06 00:00:00")

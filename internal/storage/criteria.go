@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"context"
@@ -10,12 +10,12 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewCriteriaRepository creates data exchange object with db.
-func NewCriteriaRepository(db *sqlx.DB) domain.CriteriaRepository {
+// NewCriteriaStorage creates data exchange object with db.
+func NewCriteriaStorage(db *sqlx.DB) domain.CriteriaStorage {
 	return &criteriaRepository{db: db}
 }
 
-var _ domain.CriteriaRepository = (*criteriaRepository)(nil)
+var _ domain.CriteriaStorage = (*criteriaRepository)(nil)
 
 type criteriaRepository struct {
 	db *sqlx.DB
@@ -104,7 +104,7 @@ func (repo criteriaRepository) GetAll(ctx context.Context, serviceName string) (
 			Title:     title,
 			Selector:  selector,
 			Direction: expectedDir,
-			Interval:  domain.GroupingIntervalType(duration),
+			Interval:  duration,
 		})
 	}
 
@@ -135,7 +135,7 @@ func (repo criteriaRepository) GetByID(ctx context.Context, identifier int64) (d
 		title     string
 		selector  string
 		direction domain.DirectionType
-		interval  string
+		interval  time.Duration
 	)
 
 	if rows.Next() {
@@ -149,7 +149,7 @@ func (repo criteriaRepository) GetByID(ctx context.Context, identifier int64) (d
 			Title:     title,
 			Selector:  selector,
 			Direction: direction,
-			Interval:  domain.MustParseGroupingIntervalType(interval),
+			Interval:  interval,
 		}
 
 		return release, nil

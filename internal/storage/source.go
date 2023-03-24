@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"context"
@@ -9,12 +9,12 @@ import (
 	"github.com/goforbroke1006/onix/domain"
 )
 
-// NewSourceRepository creates data exchange object with db.
-func NewSourceRepository(db *sqlx.DB) domain.SourceRepository { //nolint:golint
+// NewSourceStorage creates data exchange object with db.
+func NewSourceStorage(db *sqlx.DB) domain.SourceStorage { //nolint:golint
 	return &sourceRepository{db: db}
 }
 
-var _ domain.SourceRepository = (*sourceRepository)(nil)
+var _ domain.SourceStorage = (*sourceRepository)(nil)
 
 type sourceRepository struct {
 	db *sqlx.DB

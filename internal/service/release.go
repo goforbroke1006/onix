@@ -9,14 +9,14 @@ import (
 )
 
 // NewReleaseService creates service for manipulate with release data.
-func NewReleaseService(repo domain.ReleaseRepository) domain.ReleaseService {
+func NewReleaseService(repo domain.ReleaseStorage) domain.ReleaseService {
 	return &releaseService{repo: repo}
 }
 
 var _ domain.ReleaseService = (*releaseService)(nil)
 
 type releaseService struct {
-	repo domain.ReleaseRepository
+	repo domain.ReleaseStorage
 }
 
 func (svc releaseService) GetReleases(serviceName string, from, till time.Time) ([]domain.ReleaseTimeRange, error) {

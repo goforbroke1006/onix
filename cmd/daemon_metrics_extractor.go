@@ -10,7 +10,7 @@ import (
 
 	"github.com/goforbroke1006/onix/internal/common"
 	"github.com/goforbroke1006/onix/internal/component/daemon/metrics_extractor"
-	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/internal/storage"
 )
 
 // NewDaemonMetricsExtractorCmd create metrics extractor cobra-command.
@@ -28,10 +28,10 @@ func NewDaemonMetricsExtractorCmd() *cobra.Command {
 			defer func() { _ = db.Close() }()
 
 			var (
-				serviceRepo           = repository.NewServiceRepository(db)
-				criteriaRepository    = repository.NewCriteriaRepository(db)
-				sourceRepository      = repository.NewSourceRepository(db)
-				measurementRepository = repository.NewMeasurementRepository(db)
+				serviceRepo           = storage.NewServiceStorage(db)
+				criteriaRepository    = storage.NewCriteriaStorage(db)
+				sourceRepository      = storage.NewSourceStorage(db)
+				measurementRepository = storage.NewMeasurementStorage(db)
 			)
 
 			application := metrics_extractor.NewApplication(

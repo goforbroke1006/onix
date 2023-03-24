@@ -1,4 +1,4 @@
-package repository //nolint:testpackage
+package storage //nolint:testpackage
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goforbroke1006/onix/internal/common"
-	"github.com/goforbroke1006/onix/internal/repository"
+	"github.com/goforbroke1006/onix/internal/storage"
 	"github.com/goforbroke1006/onix/tests"
 )
 
@@ -28,7 +28,7 @@ func TestGetAll(t *testing.T) { //nolint:paralleltest
 		t.Fatal(err)
 	}
 
-	criteriaRepository := repository.NewCriteriaRepository(db)
+	criteriaRepository := storage.NewCriteriaStorage(db)
 
 	criteriaList, critListErr := criteriaRepository.GetAll(ctx, "foo/bar/backend")
 	assert.Nil(t, critListErr)
